@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confidentialité et support · nightbuilds</title>
+<meta name="description" content="Politique de confidentialité et support des jeux nightbuilds (Jellies on the Run, Lil' Gobbler, On the Line!, Jewel Box).">
+<!--
+  Politique de confidentialité ET page de support des jeux nightbuilds (une seule page pour les 4 jeux), en français et en anglais.
+  Rédigée le 30 sept. 2026 (plan.md, section 2.5). À héberger en ligne : son adresse va dans la fiche App Store (Privacy Policy URL et
+  Support URL), dans AdMob, dans RevenueCat et dans Shell.init({ privacyUrl }) de chaque jeu. `app-ads.txt` ira à la racine du même site.
+  À COMPLÉTER avant publication : l'adresse e-mail de contact (CONTACT ci-dessous) ; à revoir si l'outil de statistiques change
+  (GameAnalytics est celui recommandé dans le plan) ou si une donnée nouvelle est collectée.
+  Langue : celle du navigateur, ou ?lang=fr / ?lang=en, ou les boutons en haut.
+-->
+<style>
+  :root { --bg: #fffaf3; --card: #ffffff; --ink: #2b2118; --muted: #6b5b4d; --accent: #e8455f; --line: #eadfd2; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #16120f; --card: #211b16; --ink: #f3ebe2; --muted: #b3a393; --accent: #ff6f86; --line: #3a3029; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 60px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  h1 { font-size: 26px; line-height: 1.2; margin: 8px 0; }
+  h2 { font-size: 19px; margin: 32px 0 8px; }
+  p, li { color: var(--ink); }
+  .muted { color: var(--muted); font-size: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin: 16px 0; }
+  a { color: var(--accent); }
+  .lang button { font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+  .lang button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 6px; border-top: 1px solid var(--line); }
+  th { font-size: 13px; color: var(--muted); font-weight: 600; }
+  .tablewrap { overflow-x: auto; }
+  [data-l] { display: none; }
+  html[lang="fr"] [data-l="fr"], html[lang="en"] [data-l="en"] { display: revert; }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <strong>nightbuilds</strong>
+  <div class="lang"><button type="button" data-set="fr">Français</button> <button type="button" data-set="en">English</button></div>
+</header>
+
+<!-- ======================================================== FRANÇAIS -->
+<section data-l="fr">
+<h1>Politique de confidentialité et support</h1>
+<p class="muted">Jeux concernés : Gelées en cavale (Jellies on the Run), P’tit Glouton (Lil’ Gobbler), À la chaîne ! (On the Line!) et Écrin (Jewel Box).<br>Dernière mise à jour : 30 septembre 2026.</p>
+
+<div class="card">
+  <strong>En bref</strong>
+  <ul>
+    <li>Pas de compte, pas de nom, pas d’adresse e-mail demandés : vous jouez sans vous identifier.</li>
+    <li>Votre progression (niveaux, étoiles, pièces, réglages) reste <strong>sur votre téléphone</strong>.</li>
+    <li>Les jeux sont gratuits et financés par la <strong>publicité</strong> (Google AdMob) et des <strong>achats intégrés</strong> facultatifs (gérés par Apple et RevenueCat). Ces services reçoivent des données techniques sur votre appareil.</li>
+    <li>La publicité personnalisée et le suivi ne sont activés <strong>qu’avec votre accord</strong>, que vous pouvez retirer à tout moment.</li>
+  </ul>
+</div>
+
+<h2>1. Qui est responsable ?</h2>
+<p>Les jeux sont édités par Pierre Trochet (« nightbuilds »), développeur indépendant établi en France. Pour toute question sur vos données ou sur les jeux : <a class="contact"></a>.</p>
+
+<h2>2. Données enregistrées sur votre téléphone</h2>
+<p>Chaque jeu enregistre sur votre appareil votre progression (niveaux débloqués, étoiles, records), vos pièces, vos réglages (son, musique, vibrations) et l’état de l’achat « Sans pubs ». Ces informations ne nous sont pas envoyées. Elles sont effacées si vous supprimez le jeu, ou avec « Effacer la progression » dans les réglages (l’achat « Sans pubs » est conservé, il peut aussi être rétabli par « Restaurer les achats »).</p>
+
+<h2>3. Données traitées par nos partenaires</h2>
+<div class="tablewrap"><table>
+  <tr><th>Service</th><th>Pourquoi</th><th>Données</th></tr>
+  <tr><td><strong>Google AdMob</strong> (Google Ireland Ltd / Google LLC)</td><td>Afficher des publicités : entre certains niveaux, et des vidéos que vous choisissez de regarder contre une récompense (pièces, secours).</td><td>Identifiant publicitaire de l’appareil (IDFA, seulement si vous l’autorisez), adresse IP, modèle et système de l’appareil, langue, interactions avec les publicités, données de diagnostic.</td></tr>
+  <tr><td><strong>RevenueCat</strong> (RevenueCat Inc.)</td><td>Gérer les achats intégrés (packs de pièces, « Sans pubs ») et leur restauration.</td><td>Identifiant d’utilisateur anonyme créé par l’appli, historique des achats, pays et prix, modèle de l’appareil. Le paiement est traité par Apple : nous ne voyons jamais vos coordonnées bancaires.</td></tr>
+  <tr><td><strong>Apple</strong> (App Store)</td><td>Téléchargement, paiement des achats, rapports de plantage que vous acceptez de partager.</td><td>Selon la politique d’Apple, liée à votre identifiant Apple.</td></tr>
+  <tr><td><strong>GameAnalytics</strong> (GameAnalytics ApS)</td><td>Statistiques de jeu pour améliorer les jeux : niveaux commencés, réussis ou ratés, pièces gagnées et dépensées, durée des parties, fidélité des joueurs.</td><td>Identifiant anonyme propre au jeu, modèle et système de l’appareil, pays, événements de jeu. Aucune donnée permettant de vous identifier directement.</td></tr>
+</table></div>
+<p>Nous ne vendons pas vos données et nous ne les utilisons pas à d’autres fins que celles ci-dessus.</p>
+
+<h2>4. Votre consentement</h2>
+<ul>
+  <li><strong>Dans l’Espace économique européen, au Royaume-Uni et en Suisse</strong>, un message de consentement (Google) s’affiche à la première ouverture : vous choisissez si des publicités personnalisées peuvent être affichées. Sans accord, les publicités restent possibles mais ne sont pas personnalisées.</li>
+  <li><strong>Sur iPhone</strong>, Apple vous demande si le jeu peut « suivre votre activité » (App Tracking Transparency). Si vous refusez, l’identifiant publicitaire n’est pas partagé.</li>
+  <li>Vous pouvez changer d’avis à tout moment : Réglages de l’iPhone → Confidentialité et sécurité → Suivi, ou Réglages → [le jeu]. Vous pouvez aussi supprimer toute publicité entre les niveaux avec l’achat « Sans pubs ».</li>
+</ul>
+
+<h2>5. Bases légales</h2>
+<p>Publicité personnalisée, suivi et statistiques : votre consentement. Achats intégrés : l’exécution du contrat d’achat. Publicité non personnalisée, sécurité et lutte contre la fraude : notre intérêt légitime à financer des jeux gratuits et à les protéger.</p>
+
+<h2>6. Transferts hors de l’Union européenne</h2>
+<p>Google, RevenueCat et Apple peuvent traiter des données aux États-Unis. Ces transferts sont encadrés par le cadre de protection des données UE–États-Unis (Data Privacy Framework) et/ou par les clauses contractuelles types de la Commission européenne. GameAnalytics est établie au Danemark.</p>
+
+<h2>7. Durée de conservation</h2>
+<p>Les données sur votre téléphone : jusqu’à ce que vous supprimiez le jeu ou la progression. Les données de nos partenaires : selon leur propre politique (pour les statistiques, au plus 25 mois).</p>
+
+<h2>8. Enfants</h2>
+<p>Les jeux s’adressent à un public général et ne sont pas conçus pour les enfants de moins de 13 ans. Nous ne collectons pas sciemment de données sur ces enfants ; si vous pensez que c’est le cas, écrivez-nous et nous ferons le nécessaire.</p>
+
+<h2>9. Vos droits</h2>
+<p>Vous disposez d’un droit d’accès, de rectification, d’effacement, d’opposition, de limitation et de portabilité, et du droit de retirer votre consentement. Comme nous ne connaissons ni votre nom ni votre adresse, le plus simple est souvent d’agir sur votre téléphone (réinitialiser l’identifiant publicitaire, refuser le suivi, supprimer le jeu). Pour toute demande : <a class="contact"></a>. Vous pouvez aussi saisir la CNIL (<a href="https://www.cnil.fr/" rel="noopener">cnil.fr</a>).</p>
+<p class="muted">Politiques de nos partenaires : <a href="https://policies.google.com/privacy" rel="noopener">Google</a> · <a href="https://www.revenuecat.com/privacy/" rel="noopener">RevenueCat</a> · <a href="https://www.apple.com/legal/privacy/" rel="noopener">Apple</a> · <a href="https://gameanalytics.com/privacy/" rel="noopener">GameAnalytics</a></p>
+
+<h2>10. Modifications</h2>
+<p>Cette politique peut évoluer (nouveau jeu, nouveau service). La date en haut de page indique la dernière version.</p>
+
+<h2 id="support">Support</h2>
+<div class="card">
+  <p>Un problème, une question, une idée ? Écrivez-nous : <a class="contact"></a>. Précisez le jeu, le modèle de votre téléphone et, si possible, le numéro du niveau.</p>
+  <p><strong>Un achat n’apparaît pas ?</strong> Ouvrez la boutique du jeu et touchez « Restaurer les achats ». Pour un remboursement, la demande se fait auprès d’Apple : <a href="https://reportaproblem.apple.com/" rel="noopener">reportaproblem.apple.com</a>.</p>
+  <p><strong>Plus de publicités entre les niveaux ?</strong> L’achat « Sans pubs » les supprime définitivement. Les vidéos à récompense restent proposées, mais vous choisissez de les regarder.</p>
+</div>
+</section>
+
+<!-- ======================================================== ENGLISH -->
+<section data-l="en">
+<h1>Privacy policy and support</h1>
+<p class="muted">Games covered: Jellies on the Run, Lil’ Gobbler, On the Line! and Jewel Box.<br>Last updated: September 30, 2026.</p>
+
+<div class="card">
+  <strong>In short</strong>
+  <ul>
+    <li>No account, no name, no email address: you play without identifying yourself.</li>
+    <li>Your progress (levels, stars, coins, settings) stays <strong>on your phone</strong>.</li>
+    <li>The games are free and funded by <strong>ads</strong> (Google AdMob) and optional <strong>in-app purchases</strong> (handled by Apple and RevenueCat). These services receive technical data about your device.</li>
+    <li>Personalized ads and tracking are only enabled <strong>with your consent</strong>, which you can withdraw at any time.</li>
+  </ul>
+</div>
+
+<h2>1. Who is responsible?</h2>
+<p>The games are published by Pierre Trochet (“nightbuilds”), an independent developer based in France. For any question about your data or the games: <a class="contact"></a>.</p>
+
+<h2>2. Data stored on your phone</h2>
+<p>Each game stores on your device your progress (unlocked levels, stars, best times), your coins, your settings (sound, music, vibration) and whether you bought “No ads”. This information is not sent to us. It is deleted when you delete the game, or with “Reset progress” in the settings (the “No ads” purchase is kept, and can also be recovered with “Restore purchases”).</p>
+
+<h2>3. Data processed by our partners</h2>
+<div class="tablewrap"><table>
+  <tr><th>Service</th><th>Why</th><th>Data</th></tr>
+  <tr><td><strong>Google AdMob</strong> (Google Ireland Ltd / Google LLC)</td><td>Showing ads: between some levels, and videos you choose to watch for a reward (coins, a second chance).</td><td>Device advertising identifier (IDFA, only if you allow it), IP address, device model and system, language, ad interactions, diagnostic data.</td></tr>
+  <tr><td><strong>RevenueCat</strong> (RevenueCat Inc.)</td><td>Managing in-app purchases (coin packs, “No ads”) and restoring them.</td><td>Anonymous user identifier created by the app, purchase history, country and price, device model. Payment is processed by Apple: we never see your payment details.</td></tr>
+  <tr><td><strong>Apple</strong> (App Store)</td><td>Downloads, payment for purchases, crash reports you agree to share.</td><td>As described in Apple’s policy, linked to your Apple Account.</td></tr>
+  <tr><td><strong>GameAnalytics</strong> (GameAnalytics ApS)</td><td>Game statistics to improve the games: levels started, won or failed, coins earned and spent, session length, player retention.</td><td>Anonymous game-specific identifier, device model and system, country, game events. No data that directly identifies you.</td></tr>
+</table></div>
+<p>We do not sell your data and we do not use it for any purpose other than those above.</p>
+
+<h2>4. Your consent</h2>
+<ul>
+  <li><strong>In the European Economic Area, the UK and Switzerland</strong>, a consent message (from Google) appears the first time you open a game: you choose whether personalized ads may be shown. Without consent, ads may still be shown, but they are not personalized.</li>
+  <li><strong>On iPhone</strong>, Apple asks whether the game may “track your activity” (App Tracking Transparency). If you decline, the advertising identifier is not shared.</li>
+  <li>You can change your mind at any time: iPhone Settings → Privacy &amp; Security → Tracking, or Settings → [the game]. You can also remove all ads between levels with the “No ads” purchase.</li>
+</ul>
+
+<h2>5. Legal bases</h2>
+<p>Personalized ads, tracking and statistics: your consent. In-app purchases: performance of the purchase contract. Non-personalized ads, security and fraud prevention: our legitimate interest in funding free games and protecting them.</p>
+
+<h2>6. Transfers outside the European Union</h2>
+<p>Google, RevenueCat and Apple may process data in the United States. These transfers rely on the EU–U.S. Data Privacy Framework and/or the European Commission’s standard contractual clauses. GameAnalytics is based in Denmark.</p>
+
+<h2>7. Retention</h2>
+<p>Data on your phone: until you delete the game or your progress. Our partners’ data: according to their own policies (for statistics, 25 months at most).</p>
+
+<h2>8. Children</h2>
+<p>The games are intended for a general audience and are not designed for children under 13. We do not knowingly collect data from such children; if you believe we have, contact us and we will take the necessary steps.</p>
+
+<h2>9. Your rights</h2>
+<p>You have the right to access, rectify, erase, object, restrict and port your data, and to withdraw your consent. Since we know neither your name nor your address, the simplest way is often to act on your phone (reset the advertising identifier, decline tracking, delete the game). For any request: <a class="contact"></a>. You may also lodge a complaint with a data protection authority, such as the CNIL in France (<a href="https://www.cnil.fr/en" rel="noopener">cnil.fr</a>).</p>
+<p class="muted">Our partners’ policies: <a href="https://policies.google.com/privacy" rel="noopener">Google</a> · <a href="https://www.revenuecat.com/privacy/" rel="noopener">RevenueCat</a> · <a href="https://www.apple.com/legal/privacy/" rel="noopener">Apple</a> · <a href="https://gameanalytics.com/privacy/" rel="noopener">GameAnalytics</a></p>
+
+<h2>10. Changes</h2>
+<p>This policy may change (new game, new service). The date at the top of the page shows the latest version.</p>
+
+<h2 id="support-en">Support</h2>
+<div class="card">
+  <p>A problem, a question, an idea? Write to us: <a class="contact"></a>. Please mention the game, your phone model and, if possible, the level number.</p>
+  <p><strong>A purchase is missing?</strong> Open the game’s shop and tap “Restore purchases”. Refunds are requested from Apple: <a href="https://reportaproblem.apple.com/" rel="noopener">reportaproblem.apple.com</a>.</p>
+  <p><strong>No more ads between levels?</strong> The “No ads” purchase removes them for good. Rewarded videos are still offered, but you choose whether to watch them.</p>
+</div>
+</section>
+</main>
+<script>
+  const CONTACT = 'CONTACT@A-COMPLETER';   // À COMPLÉTER : adresse e-mail de support (celle de la fiche App Store)
+  document.querySelectorAll('a.contact').forEach(a => { a.href = 'mailto:' + CONTACT; a.textContent = CONTACT; });
+  function setLang(l) {
+    document.documentElement.lang = l;
+    document.title = l === 'fr' ? 'Confidentialité et support · nightbuilds' : 'Privacy and support · nightbuilds';
+    document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.set === l));
+  }
+  const q = new URLSearchParams(location.search).get('lang');
+  setLang(q === 'fr' || q === 'en' ? q : /^fr/i.test(navigator.language || '') ? 'fr' : 'en');
+  document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.set)));
+</script>
+</body>
+</html>
