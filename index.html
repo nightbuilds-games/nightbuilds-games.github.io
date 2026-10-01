@@ -1,36 +1,82 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-fr-title="nightbuilds — de petits jeux colorés pour ton téléphone">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>nightbuilds games</title>
-<meta name="description" content="Casual puzzle games by nightbuilds: Jellies on the Run, Lil' Gobbler, On the Line!, Jewel Box.">
+<title>nightbuilds — small, colorful games for your phone</title>
+<meta name="description" content="nightbuilds makes small, colorful puzzle games for your phone. First up: Jellies on the Run, a quick and cute sliding puzzle. Coming soon on the App Store.">
+<link rel="canonical" href="https://nightbuilds.app/">
+<link rel="icon" href="assets/img/favicon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="nightbuilds — small, colorful games for your phone">
+<meta property="og:description" content="Quick, cute puzzle games. First up: Jellies on the Run.">
+<meta property="og:url" content="https://nightbuilds.app/">
+<meta property="og:image" content="https://nightbuilds.app/jellies/share.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="assets/site.css">
 <!-- Accueil du site des jeux (https://nightbuilds.app/, dépôt public nightbuilds-games.github.io, copie du dossier site/ du dépôt des jeux).
-     Même site : privacy.html (confidentialité et support) et, une fois les jeux publiés, app-ads.txt à la racine (exigé par AdMob). -->
-<style>
-  :root { --bg: #fffaf3; --card: #fff; --ink: #2b2118; --muted: #6b5b4d; --accent: #e8455f; --line: #eadfd2; }
-  @media (prefers-color-scheme: dark) { :root { --bg: #16120f; --card: #211b16; --ink: #f3ebe2; --muted: #b3a393; --accent: #ff6f86; --line: #3a3029; } }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  main { max-width: 640px; margin: 0 auto; padding: 40px 16px 60px; }
-  h1 { font-size: 30px; margin: 0 0 4px; }
-  p { color: var(--muted); margin: 0 0 24px; }
-  ul { list-style: none; padding: 0; margin: 0 0 28px; display: grid; gap: 10px; }
-  li { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; font-weight: 600; }
-  li span { display: block; font-weight: 400; color: var(--muted); font-size: 14px; }
-  a { color: var(--accent); }
-</style>
+     Thème et interactions communs : assets/site.css et assets/site.js (langue : anglais dans la page, français dans data-fr).
+     Même site : jellies/ (page du jeu), privacy.html (confidentialité et support), app-ads.txt à la racine (exigé par AdMob). -->
 </head>
 <body>
-<main>
-  <h1>nightbuilds</h1>
-  <p>Small, colorful puzzle games for your phone.</p>
-  <ul>
-    <li><a href="jellies/">Jellies on the Run</a><span>Slide each jelly to the gate of its color. Coming soon on the App Store.</span></li>
-    <li>Lil’ Gobbler<span>Gobble everything your size, grow, and eat the big ones.</span></li>
-    <li>On the Line!<span>Sort the factory line before the boss fires you.</span></li>
-    <li>Jewel Box<span>Unset the gems and fill each box with its color.</span></li>
-  </ul>
-  <a href="privacy.html">Privacy policy &amp; support</a> · <a href="privacy.html?lang=fr">Confidentialité et support</a>
-</main>
+<div class="nav"><div class="wrap">
+  <a class="brand" href="./"><i></i>nightbuilds</a>
+  <nav><a href="#games" data-fr="Les jeux">Games</a><a href="privacy.html#support-en" data-fr-href="privacy.html#support" data-fr="Support">Support</a><a class="lang" href="?lang=fr">Français</a></nav>
+</div></div>
+
+<header class="sky home">
+  <div class="sun"><div class="rays"></div><div class="disc"></div></div>
+  <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
+  <div class="jelly side j1" data-color="pink" data-w="1" data-h="2" style="right: 9%; top: 150px; width: 92px"></div>
+  <div class="jelly side j2" data-color="yellow" data-w="2" data-h="1" style="right: 17%; top: 330px; width: 168px"></div>
+  <div class="jelly side j3" data-color="green" data-w="1" data-h="1" style="right: 4%; top: 380px; width: 88px"></div>
+  <div class="wrap">
+    <span class="kicker" data-fr="Studio de jeux indépendant">Indie game studio</span>
+    <h1><span data-fr="De petits jeux">Small games,</span><br><em data-fr="pleins de couleurs">big colors</em></h1>
+    <p class="lead" data-fr="Des casse-têtes rapides et mignons, faits pour ton téléphone et pour tes pauses. Attrape une gelée pour voir&nbsp;!">Quick, cute puzzle games made for your phone and for your breaks. Go on, grab a jelly!</p>
+    <div class="cta">
+      <a class="btn" href="jellies/" data-fr="Découvrir Jellies on the Run">Meet Jellies on the Run</a>
+      <a class="btn blue" href="#games" data-fr="Tous les jeux">All games</a>
+    </div>
+  </div>
+</header>
+
+<section class="light" id="games">
+  <div class="wrap">
+    <h2 class="title reveal"><span data-fr="Le premier arrive">First one out</span><small data-fr="Bientôt sur l’App Store">Coming soon on the App Store</small></h2>
+    <div class="feature reveal">
+      <div>
+        <img class="icon" src="assets/img/gelees-icon.webp" alt="" width="96" height="96">
+        <h3>Jellies on the Run</h3>
+        <p data-fr="Le soleil tape et les gelées fondent&nbsp;! Glisse chacune jusqu’à la trappe de sa couleur avant qu’il ne soit trop tard.">The sun is out and the jellies are melting! Slide each one to the gate of its color before it’s too late.</p>
+        <div class="cta"><a class="btn" href="jellies/" data-fr="Voir le jeu">See the game</a></div>
+      </div>
+      <a class="phone" href="jellies/" aria-label="Jellies on the Run"><video src="jellies/clip.mp4" poster="jellies/clip.jpg" muted loop playsinline preload="none" data-auto width="540" height="960"></video></a>
+    </div>
+
+    <h2 class="title reveal" style="margin-top: 70px"><span data-fr="Dans l’atelier">In the workshop</span><small data-fr="Trois autres jeux en préparation">Three more games in the making</small></h2>
+    <div class="games">
+      <div class="game g-glouton reveal"><span class="tag" data-fr="En préparation">In the making</span><img src="assets/img/glouton-icon.webp" alt="" width="104" height="104" loading="lazy"><h3>Lil’ Gobbler</h3><p data-fr="Gobe tout ce qui est à ta taille, grandis, puis avale les gros.">Gobble everything your size, grow, then eat the big ones.</p></div>
+      <div class="game g-chaine reveal"><span class="tag" data-fr="En préparation">In the making</span><img src="assets/img/chaine-icon.webp" alt="" width="104" height="104" loading="lazy"><h3>On the Line!</h3><p data-fr="Trie la chaîne de l’usine avant que le chef ne te vire.">Sort the factory line before the boss fires you.</p></div>
+      <div class="game g-ecrin reveal"><span class="tag" data-fr="En préparation">In the making</span><img src="assets/img/ecrin-icon.webp" alt="" width="104" height="104" loading="lazy"><h3>Jewel Box</h3><p data-fr="Dessertis les gemmes et remplis chaque écrin de sa couleur.">Unset the gems and fill each box with its color.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="picnic">
+  <div class="wrap reveal">
+    <h2 data-fr="Envie de jouer&nbsp;?">Fancy a game?</h2>
+    <p data-fr="Jellies on the Run arrive bientôt sur iPhone. Gratuit.">Jellies on the Run is coming soon to iPhone. Free to play.</p>
+    <div class="cta"><a class="btn" href="jellies/" data-fr="Voir le jeu">See the game</a></div>
+  </div>
+</section>
+
+<footer class="grass">
+  <div class="wrap">
+    <nav><a href="jellies/">Jellies on the Run</a><a href="privacy.html" data-fr="Confidentialité">Privacy</a><a href="privacy.html#support-en" data-fr-href="privacy.html#support" data-fr="Support">Support</a></nav>
+    <small>© 2026 nightbuilds</small>
+  </div>
+</footer>
+<script src="assets/site.js"></script>
 </body>
 </html>

@@ -13,35 +13,27 @@
   (GameAnalytics est celui recommandé dans le plan) ou si une donnée nouvelle est collectée.
   Langue : celle du navigateur, ou ?lang=fr / ?lang=en, ou les boutons en haut.
 -->
+<link rel="icon" href="assets/img/favicon.png">
+<link rel="stylesheet" href="assets/site.css">
 <style>
-  :root { --bg: #fffaf3; --card: #ffffff; --ink: #2b2118; --muted: #6b5b4d; --accent: #e8455f; --line: #eadfd2; }
-  @media (prefers-color-scheme: dark) { :root { --bg: #16120f; --card: #211b16; --ink: #f3ebe2; --muted: #b3a393; --accent: #ff6f86; --line: #3a3029; } }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 60px; }
-  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  h1 { font-size: 26px; line-height: 1.2; margin: 8px 0; }
-  h2 { font-size: 19px; margin: 32px 0 8px; }
-  p, li { color: var(--ink); }
-  .muted { color: var(--muted); font-size: 14px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin: 16px 0; }
-  a { color: var(--accent); }
-  .lang button { font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
-  .lang button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
-  table { width: 100%; border-collapse: collapse; font-size: 15px; }
-  th, td { text-align: left; vertical-align: top; padding: 8px 6px; border-top: 1px solid var(--line); }
-  th { font-size: 13px; color: var(--muted); font-weight: 600; }
-  .tablewrap { overflow-x: auto; }
-  [data-l] { display: none; }
-  html[lang="fr"] [data-l="fr"], html[lang="en"] [data-l="en"] { display: revert; }
+  /* thème commun du site (assets/site.css) ; ici seulement les boutons de langue, propres à cette page */
+  .langs { margin-left: auto; display: flex; gap: 6px; }
+  .langs button { font: inherit; font-size: 16px; color: #fff; cursor: pointer; border: 0; border-radius: 999px; padding: 8px 14px; background: rgba(255, 255, 255, .22); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .5); }
+  .langs button[aria-pressed="true"] { background: #fff; color: var(--sky); }
+  .sky.small { padding: 70px 0 110px; }
+  @media (max-width: 480px) { .langs button { font-size: 14px; padding: 7px 11px; } }
 </style>
 </head>
 <body>
-<main>
-<header>
-  <strong>nightbuilds</strong>
-  <div class="lang"><button type="button" data-set="fr">Français</button> <button type="button" data-set="en">English</button></div>
+<div class="nav"><div class="wrap">
+  <a class="brand" href="./"><i></i>nightbuilds</a>
+  <div class="langs lang"><button type="button" data-set="fr">Français</button><button type="button" data-set="en">English</button></div>
+</div></div>
+<header class="sky small">
+  <div class="sun"><div class="rays"></div><div class="disc"></div></div>
+  <div class="cloud c1"></div><div class="cloud c3"></div>
 </header>
+<main class="doc">
 
 <!-- ======================================================== FRANÇAIS -->
 <section data-l="fr">
@@ -173,6 +165,12 @@
 </div>
 </section>
 </main>
+<footer class="grass" style="margin-top: 70px">
+  <div class="wrap">
+    <nav><a href="./"><span data-l="fr">Les jeux nightbuilds</span><span data-l="en">nightbuilds games</span></a><a href="jellies/">Jellies on the Run</a></nav>
+    <small>© 2026 nightbuilds</small>
+  </div>
+</footer>
 <script>
   const CONTACT = 'pierremunozfrance@gmail.com';   // adresse e-mail de support (la même que dans la fiche App Store)
   document.querySelectorAll('a.contact').forEach(a => { a.href = 'mailto:' + CONTACT; a.textContent = CONTACT; });
