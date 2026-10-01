@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jellies on the Run — a quick, cute sliding puzzle for iPhone</title>
+<meta name="description" content="The sun is out and the jellies are melting! Slide each one to the gate of its color before it's too late. A free puzzle game for iPhone, with hundreds of levels.">
+<link rel="canonical" href="https://nightbuilds.app/jellies/">
+<link rel="alternate" hreflang="en" href="https://nightbuilds.app/jellies/">
+<link rel="alternate" hreflang="fr" href="https://nightbuilds.app/jellies/?lang=fr">
+<link rel="icon" href="icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Jellies on the Run">
+<meta property="og:description" content="Slide each jelly to the gate of its color before it melts. A quick, cute puzzle for iPhone.">
+<meta property="og:url" content="https://nightbuilds.app/jellies/">
+<meta property="og:image" content="https://nightbuilds.app/jellies/share.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Page du jeu (plan.md, section 13.1) : URL marketing de la fiche App Store et lien en bio des comptes de la campagne.
+     Anglais par défaut ; français si le navigateur est en français ou avec ?lang=fr (textes dans T, plus bas).
+     Captures et textes : les mêmes que la fiche (jeux/tools/captures-fiche.js, fiche-app-store-jellies.md).
+     Quand le jeu est sur l'App Store : renseigner STORE_URL plus bas, et ajouter dans <head>
+       <meta name="apple-itunes-app" content="app-id=6817679582">  (bannière « Ouvrir dans l'App Store » de Safari). -->
+<style>
+  :root { --sky: #2F7BFF; --grass: #3E9B35; --ink: #7c2d12; --panel: #FFF9F2; --primary: #FF4D6D; --primary-dark: #be123c; }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: #fff; background: linear-gradient(180deg, var(--sky) 0, var(--sky) 420px, var(--grass) 100%) no-repeat var(--grass);
+    font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 28px 18px 40px; }
+  header { display: flex; align-items: center; gap: 16px; }
+  header img { width: 84px; height: 84px; border-radius: 19px; box-shadow: 0 6px 18px rgba(0, 0, 0, .25); }
+  h1 { font-size: clamp(30px, 6vw, 46px); line-height: 1.05; margin: 0; font-weight: 900; text-shadow: 0 3px 0 rgba(0, 0, 0, .2); }
+  header p { margin: 4px 0 0; opacity: .92; font-weight: 600; }
+  .hero { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 32px; align-items: center; margin: 28px 0 8px; }
+  .hero h2 { font-size: clamp(24px, 4.4vw, 34px); line-height: 1.15; margin: 0 0 12px; font-weight: 900; }
+  .hero p { margin: 0 0 20px; font-size: 18px; }
+  .store { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px; text-decoration: none; color: #fff; background: #111; border-radius: 14px;
+    padding: 10px 22px 12px; font-weight: 800; font-size: 21px; line-height: 1.15; box-shadow: 0 5px 0 rgba(0, 0, 0, .35); }
+  .store small { font-weight: 600; font-size: 12px; opacity: .8; }
+  .store.soon { background: rgba(0, 0, 0, .38); box-shadow: none; cursor: default; }
+  .note { font-size: 14px; opacity: .9; margin: 12px 0 0; }
+  video { width: 100%; height: auto; aspect-ratio: 9 / 16; border-radius: 28px; border: 6px solid #1b1b22; background: #1b1b22; display: block; box-shadow: 0 14px 34px rgba(0, 0, 0, .35); }
+  .shots { display: flex; gap: 14px; overflow-x: auto; padding: 22px 18px 18px; margin: 0 -18px; scroll-snap-type: x mandatory; }
+  .shots img { width: 220px; height: auto; aspect-ratio: 660 / 1434; border-radius: 18px; flex: none; scroll-snap-align: center; box-shadow: 0 8px 22px rgba(0, 0, 0, .3); }
+  .card { background: var(--panel); color: var(--ink); border-radius: 22px; padding: 22px 24px; margin-top: 14px; }
+  .card h3 { margin: 0 0 8px; font-size: 20px; font-weight: 900; }
+  .card ul { margin: 0; padding-left: 20px; }
+  .card li { margin: 4px 0; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  footer { text-align: center; font-size: 14px; padding: 26px 0 0; opacity: .95; }
+  footer a, .lang a { color: #fff; }
+  .lang { margin-left: auto; font-size: 14px; font-weight: 700; }
+  @media (max-width: 720px) { .hero { grid-template-columns: 1fr; } .hero .clip { max-width: 270px; margin: 0 auto; width: 100%; } .cols { grid-template-columns: 1fr; } header img { width: 64px; height: 64px; border-radius: 15px; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="icon.png" alt="" width="84" height="84">
+    <div><h1>Jellies on the Run</h1><p data-t="tag">A quick, cute sliding puzzle</p></div>
+    <div class="lang"><a id="lang" href="?lang=fr">Français</a></div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <h2 data-t="h2">The sun is out and the jellies are melting!</h2>
+      <p data-t="lead">Slide each jelly to the gate of its color and get them all out before the heat wins. One finger, ten seconds to learn, and trickier than it looks.</p>
+      <a class="store soon" id="store"><small data-t="soonSmall">Coming soon on the</small><span>App Store</span></a>
+      <p class="note" data-t="note">Free on iPhone. Android version planned.</p>
+    </div>
+    <div class="clip">
+      <video src="clip.mp4" poster="clip.jpg" muted loop playsinline preload="none" controls width="540" height="960"></video>
+    </div>
+  </section>
+
+  <div class="shots" id="shots">
+    <img src="img/en-1.webp" width="660" height="1434" loading="lazy" alt="Slide every jelly to its color gate">
+    <img src="img/en-2.webp" width="660" height="1434" loading="lazy" alt="Beat the heat before they melt">
+    <img src="img/en-3.webp" width="660" height="1434" loading="lazy" alt="Earn 3 stars on every level">
+    <img src="img/en-4.webp" width="660" height="1434" loading="lazy" alt="Hundreds of levels, trickier and trickier">
+    <img src="img/en-5.webp" width="660" height="1434" loading="lazy" alt="A quick puzzle for every break">
+  </div>
+
+  <div class="cols">
+    <section class="card">
+      <h3 data-t="howT">How it works</h3>
+      <ul>
+        <li data-t="how1">Drag a jelly: it slides along the box until something blocks it.</li>
+        <li data-t="how2">Each jelly leaves through the gate of its color, if the gate is wide enough.</li>
+        <li data-t="how3">Jellies block each other, so the order matters.</li>
+        <li data-t="how4">Get everyone out before they melt!</li>
+      </ul>
+    </section>
+    <section class="card">
+      <h3 data-t="getT">What you get</h3>
+      <ul>
+        <li data-t="get1">Hundreds of levels that get trickier and trickier.</li>
+        <li data-t="get2">Short levels made for a quick break.</li>
+        <li data-t="get3">Three stars to earn on every level, and best times to beat.</li>
+        <li data-t="get4">Free to play; an optional purchase removes the ads between levels.</li>
+      </ul>
+    </section>
+  </div>
+
+  <footer>
+    <a href="../" data-t="more">More games by nightbuilds</a> · <a href="../privacy.html" id="privacy" data-t="privacy">Privacy &amp; support</a>
+  </footer>
+</main>
+<script>
+  // Lien de l'App Store : vide tant que la fiche n'est pas publique (bouton « bientôt ») ; ensuite lien de précommande puis de téléchargement.
+  const STORE_URL = '';
+  const T = { fr: {
+    title: 'Jellies on the Run — un casse-tête rapide et mignon pour iPhone', tag: 'Un casse-tête rapide et mignon',
+    h2: 'Le soleil tape et les gelées fondent !',
+    lead: 'Glisse chaque gelée jusqu’à la trappe de sa couleur et fais-les toutes sortir avant que la chaleur ne gagne. Un doigt, dix secondes pour comprendre, et plus malin qu’il n’en a l’air.',
+    soonSmall: 'Bientôt sur l’', getSmall: 'Télécharger dans l’', note: 'Gratuit sur iPhone. Version Android prévue.',
+    howT: 'Comment ça marche', how1: 'Fais glisser une gelée : elle avance dans le bac jusqu’à ce que quelque chose la bloque.',
+    how2: 'Chaque gelée sort par la trappe de sa couleur, si la trappe est assez large.', how3: 'Les gelées se gênent entre elles : l’ordre compte.',
+    how4: 'Sors tout le monde avant que ça fonde !',
+    getT: 'Ce qui t’attend', get1: 'Des centaines de niveaux de plus en plus corsés.', get2: 'Des niveaux courts, parfaits pour une pause.',
+    get3: 'Trois étoiles à décrocher à chaque niveau, et des records à battre.', get4: 'Gratuit ; un achat facultatif retire les pubs entre les niveaux.',
+    more: 'Les autres jeux de nightbuilds', privacy: 'Confidentialité et support',
+    alts: ['Glisse chaque gelée vers sa trappe', 'Fais vite, avant qu’elles fondent', 'Vise les 3 étoiles à chaque niveau', 'Des centaines de niveaux de plus en plus corsés', 'Un casse-tête rapide pour chaque pause'],
+  }, en: { getSmall: 'Download on the' } };
+  const q = new URLSearchParams(location.search).get('lang'), lang = (q || navigator.language || 'en').toLowerCase().startsWith('fr') ? 'fr' : 'en';
+  if (lang === 'fr') {
+    document.documentElement.lang = 'fr'; document.title = T.fr.title;
+    document.querySelectorAll('[data-t]').forEach(e => { const t = T.fr[e.dataset.t]; if (t) e.textContent = t; });
+    document.querySelectorAll('#shots img').forEach((img, i) => { img.src = 'img/fr-' + (i + 1) + '.webp'; img.alt = T.fr.alts[i]; });
+    const l = document.getElementById('lang'); l.textContent = 'English'; l.href = '?lang=en';
+    document.getElementById('privacy').href = '../privacy.html?lang=fr';
+  }
+  if (STORE_URL) { const b = document.getElementById('store'); b.href = STORE_URL; b.classList.remove('soon'); b.querySelector('small').textContent = T[lang].getSmall; }
+  // le clip se lance tout seul (sans son) quand il entre à l'écran, et s'arrête quand il en sort
+  const v = document.querySelector('video');
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) v.play().catch(() => { }); else v.pause(); }), { threshold: .5 }).observe(v);
+</script>
+</body>
+</html>
