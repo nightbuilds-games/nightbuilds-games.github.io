@@ -91,5 +91,12 @@
     s.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; down = true; x0 = e.clientX; l0 = s.scrollLeft; s.classList.add('drag'); });
     window.addEventListener('pointermove', e => { if (down) s.scrollLeft = l0 - (e.clientX - x0); });
     window.addEventListener('pointerup', () => { down = false; s.classList.remove('drag'); });
+    // points du carrousel (affichés sur téléphone) : un par capture, celui de la capture au centre est allumé ; un point touché y amène
+    const imgs = [...s.querySelectorAll('img')], dots = document.createElement('div'); dots.className = 'dots';
+    const center = i => imgs[i].offsetLeft + imgs[i].offsetWidth / 2 - s.clientWidth / 2;
+    imgs.forEach((im, i) => { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', (i + 1) + ' / ' + imgs.length); b.addEventListener('click', () => s.scrollTo({ left: center(i), behavior: 'smooth' })); dots.appendChild(b); });
+    s.after(dots);
+    const mark = () => { const mid = s.scrollLeft + s.clientWidth / 2; let best = 0, bd = Infinity; imgs.forEach((im, i) => { const d = Math.abs(im.offsetLeft + im.offsetWidth / 2 - mid); if (d < bd) { bd = d; best = i; } }); [...dots.children].forEach((b, i) => b.classList.toggle('on', i === best)); };
+    s.addEventListener('scroll', mark, { passive: true }); window.addEventListener('resize', mark); mark();
   });
 })();
