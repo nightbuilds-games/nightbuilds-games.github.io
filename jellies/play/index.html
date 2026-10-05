@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jellies on the Run — play the demo in your browser</title>
+<meta name="description" content="Play the first levels of Jellies on the Run in your browser: slide each jelly to the gate of its color before it melts. No install, no sign-up.">
+<link rel="canonical" href="https://nightbuilds.app/jellies/play/">
+<link rel="icon" href="../../assets/img/favicon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Jellies on the Run — playable demo">
+<meta property="og:description" content="Play the first levels of Jellies on the Run in your browser: slide each jelly to the gate of its color before it melts. No install, no sign-up.">
+<meta property="og:url" content="https://nightbuilds.app/jellies/play/">
+<meta property="og:image" content="https://nightbuilds.app/jellies/share.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#2F7BFF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="engine/shell.css">
+</head>
+<body>
+<canvas id="game"></canvas>
+<script>
+  // DÉMO du site, fabriquée par `node jeux/build.js gelees --demo` : ne pas modifier à la main.
+  // Les paramètres d'URL de développement (?level, ?zone, ?dev, ?bot…) sont ignorés : seuls la langue (?lang) et ?mute sont gardés.
+  (function () { var keep = (location.search.match(/[?&](lang=(fr|en)|mute)(?=&|$)/g) || []).map(function (s) { return s.slice(1); }), q = keep.length ? "?" + keep.join("&") : ""; if (location.search !== q || location.hash) history.replaceState(null, "", location.pathname + q); })();
+  window.GAME_DEMO = {"levels":12,"url":"","label":"preorder"};
+</script>
+<script src="engine/core.js"></script>
+<script src="engine/stats.js"></script>   <!-- statistiques GameAnalytics (rien n est envoyé en développement) -->
+<script src="engine/monet.js"></script>   <!-- pubs et achats (simulés en développement) -->
+<script src="engine/shell.js"></script>
+<script src="audio/manifest.js"></script>   <!-- musiques et bruitages enregistrés (facultatifs : sans eux, tout est synthétisé) -->
+<script src="levels.js"></script>   <!-- niveaux précalculés (node jeux/tools/gelees-niveaux.js) -->
+<script src="game.js"></script>
+<script>
+  // configuration de la coquille pour ce jeu : nom, couleurs des menus et du fond de page (ciel en haut, herbe en bas, comme le décor)
+  Shell.init({
+    id: 'gelees',
+    version: '0.1.0',
+    title: { fr: 'Jellies on the Run', en: 'Jellies on the Run' },   // le nom ne se traduit pas
+    maxShown: 24,
+    privacyUrl: 'https://nightbuilds.app/privacy.html',   // site des jeux (dossier site/ du dépôt)
+    colors: {
+      'bg-top': '#2F7BFF', 'bg-bottom': '#3E9B35',
+      primary: '#FF4D6D', 'primary-dark': '#be123c', secondary: '#3B9CFF', 'secondary-dark': '#1d4ed8',
+      panel: '#FFF9F2', ink: '#7c2d12',
+    },
+  });
+</script>
+</body>
+</html>
