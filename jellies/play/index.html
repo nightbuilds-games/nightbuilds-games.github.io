@@ -22,7 +22,7 @@
 <script>
   // DÉMO du site, fabriquée par `node jeux/build.js gelees --demo` : ne pas modifier à la main.
   // Les paramètres d'URL de développement (?level, ?zone, ?dev, ?bot…) sont ignorés : seuls la langue (?lang) et ?mute sont gardés.
-  (function () { var keep = (location.search.match(/[?&](lang=(fr|en|es|pt)|mute)(?=&|$)/g) || []).map(function (s) { return s.slice(1); }), q = keep.length ? "?" + keep.join("&") : ""; if (location.search !== q || location.hash) history.replaceState(null, "", location.pathname + q); })();
+  (function () { var keep = (location.search.match(/[?&](lang=(fr|en|es|pt)|mute)(?=&|$)/g) || []).map(function (s) { return s.slice(1); }), q = keep.length ? "?" + keep.join("&") : ""; try { if (location.search !== q || location.hash) history.replaceState(null, "", location.pathname + q); } catch (e) { } })();
   window.GAME_DEMO = {"levels":12,"url":"","label":"preorder","stats":{"key":"0e8f8bd8f044c424a9d705d2940fca9f","secret":"b7e95af423f9935257e5bd6c1f719fb9a08f5407"}};
 </script>
 <script src="engine/core.js"></script>

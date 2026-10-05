@@ -85,7 +85,7 @@
   function push(category, fields) {
     if (!active() || !session) return;
     const e = Object.assign({ category, device: 'unknown', v: 2, user_id: st.uid, client_ts: now(), sdk_version: SDK, os_version: sys.os, manufacturer: sys.maker,
-      platform: sys.platform, session_id: session, session_num: st.n, build: cfg.version + (WEB ? '-web' : HTTP ? '-dev' : '') }, fields);
+      platform: sys.platform, session_id: session, session_num: st.n, build: cfg.version + (WEB ? '-' + (cfg.source || 'web') : HTTP ? '-dev' : '') }, fields);   // source : portail de jeux (« itch »…), posé par jeux/build.js
     if (LOG) return console.log('[stats]', category, JSON.stringify(fields || {}));
     st.q.push(e); if (st.q.length > MAX_QUEUE) st.q.splice(0, st.q.length - MAX_QUEUE);
     persist(); if (!timer) timer = setTimeout(flush, EVERY);
