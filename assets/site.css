@@ -164,6 +164,13 @@ footer.grass small { opacity: .8; font-size: 14px; }
 .doc .card { background: var(--cream); border-radius: 18px; padding: 16px 20px 6px; margin: 16px 0; box-shadow: inset 0 0 0 2px #F0DFCB; }
 .doc table { width: 100%; border-collapse: collapse; font-size: 15px; } .doc th, .doc td { text-align: left; vertical-align: top; padding: 9px 8px; border-top: 2px solid #F3E7D8; }
 .doc th { font-size: 13px; color: #7a6656; } .doc .tablewrap { overflow-x: auto; }
+/* page presse (press.html) : fiche du jeu, bouton et vignettes dans la page de texte */
+.doc a.btn { color: #fff; margin: 6px 0 10px; }
+.doc.press th { width: 9.5em; font-size: 14px; }
+.doc.press ul { padding-left: 22px; margin: 0 0 12px; } .doc.press li { margin-bottom: 6px; }
+.pressgame { display: flex; gap: 18px; align-items: center; margin: 14px 0 18px; } .pressgame img { width: 96px; height: 96px; border-radius: 23px; flex: none; box-shadow: 0 5px 0 #F0DFCB; } .pressgame p { margin: 0; }
+.pressshots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0 6px; } .pressshots img { width: 100%; height: auto; border-radius: 16px; box-shadow: 0 5px 0 #F0DFCB; }
+@media (max-width: 560px) { .pressshots { grid-template-columns: repeat(2, 1fr); } .pressgame { flex-direction: column; text-align: center; } }
 [data-l] { display: none; } html[lang="fr"] [data-l="fr"], html[lang="en"] [data-l="en"] { display: revert; }
 
 /* ------------------------------------------------------------ petits écrans, et moins de mouvement */

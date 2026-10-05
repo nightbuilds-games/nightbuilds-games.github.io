@@ -4,9 +4,11 @@
    - gelées : <div class="jelly" data-color="pink" data-w="1" data-h="2" style="left:…;top:…;width:…"> devient une gelée du jeu
      (SVG) dont le regard suit le pointeur ; on peut l'attraper et la lâcher (elle revient en rebondissant) ou la tapoter (éclats) ;
    - apparition des blocs .reveal au défilement, clip lancé quand il entre à l'écran, rangée de captures qui se tire à la souris ;
-   - boutons de téléchargement : STORE (plus bas), vide tant que le jeu n'est pas sur l'App Store. */
+   - boutons de téléchargement : STORE (plus bas), vide tant que le jeu n'est pas sur l'App Store ;
+   - adresse de contact : CONTACT (plus bas), posée dans les liens a.contact. */
 (function () {
   const STORE = { jellies: '' };   // lien App Store par jeu : précommande puis téléchargement
+  const CONTACT = 'pierremunozfrance@gmail.com';   // adresse de contact (liens a.contact) : la même que dans privacy.html et dans la fiche App Store
 
   // ------------------------------------------------------------ langue
   const q = new URLSearchParams(location.search).get('lang');
@@ -22,6 +24,8 @@
   document.querySelectorAll('a.lang').forEach(a => { a.textContent = lang === 'fr' ? 'English' : 'Français'; a.href = '?lang=' + (lang === 'fr' ? 'en' : 'fr'); });
   // la langue choisie suit les liens internes du site
   if (q) document.querySelectorAll('a[href]').forEach(a => { const h = a.getAttribute('href'); if (/^(\.\.?\/|[\w-]+\/|[\w-]+\.html)/.test(h) && !/[?#]/.test(h)) a.setAttribute('href', h + '?lang=' + lang); });
+
+  document.querySelectorAll('a.contact').forEach(a => { a.href = 'mailto:' + CONTACT; a.textContent = CONTACT; });
 
   // ------------------------------------------------------------ boutons de téléchargement
   document.querySelectorAll('[data-store]').forEach(b => {
