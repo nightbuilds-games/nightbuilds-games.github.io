@@ -752,7 +752,7 @@
       const atWall = wall === 0 ? r === 0 : wall === 1 ? r + b.bh === ROWS : wall === 2 ? c === 0 : c + b.bw === COLS;
       const lo = wall < 2 ? c : r, hi = wall < 2 ? c + b.bw : r + b.bh;
       if (atWall && gates.some(g => g.wall === wall && g.color === b.color && !fitsGate(b, g) && g.i < hi && g.i + g.len > lo)) {
-        C.floatText(toSX(BOX.x + (b.x + b.bw / 2) * S), toSY(BOX.y + (b.y + b.bh / 2) * S) - 70, tr('TROP LARGE !'), { size: 60, color: '#fff', stroke: '#E5303C', strokeW: 10, dur: .9, vy: -50 });
+        C.floatText(toSX(BOX.x + (b.x + b.bw / 2) * S), toSY(BOX.y + (b.y + b.bh / 2) * S) - 70, tr('TROP LARGE !'), { size: 60, color: '#fff', stroke: '#E5303C', strokeW: 10, dur: .9, vy: -50, keep: true });
         if (kid.mood === 0 || kid.mood === 2 || kid.mood === 7) kidReact(5, .8);   // le personnage grimace (sans couper une joie en cours)
       }
     }
@@ -920,7 +920,7 @@
     // fonte mise en scène (FEATURES.meltShow) : plus lente, gouttes qui coulent, flaque qui s'étale, visage qui glisse et panique avant les yeux en croix
     const dur = FEATURES.meltShow ? 1.5 : .9;
     blocks.forEach((b, i) => { if (b.state === 'gone') return; if (!victim || b === victim) C.tween(b, { melt: 1 }, dur, { ease: FEATURES.meltShow ? ease.inQuad : ease.inOutQuad, delay: victim ? 0 : i * .05 }); else b.mood = -1; });
-    if (victim) C.floatText(toSX(BOX.x + (victim.x + victim.bw / 2) * S), toSY(BOX.y + victim.y * S) - 40, tr('FONDUE !'), { size: 80, color: '#FFC533', stroke: '#7c2d12', strokeW: 12, dur: 1.4, vy: -50 });
+    if (victim) C.floatText(toSX(BOX.x + (victim.x + victim.bw / 2) * S), toSY(BOX.y + victim.y * S) - 40, tr('FONDUE !'), { size: 80, color: '#FFC533', stroke: '#7c2d12', strokeW: 12, dur: 1.4, vy: -50, keep: true });
     C.after(dur + .5, () => { state = 'over'; if (global.Shell) Shell.levelFailed({ level }); });
   }
   function rescue() {

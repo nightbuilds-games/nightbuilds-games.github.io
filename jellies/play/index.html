@@ -22,15 +22,17 @@
 <script>
   // DÉMO du site, fabriquée par `node jeux/build.js gelees --demo` : ne pas modifier à la main.
   // Les paramètres d'URL de développement (?level, ?zone, ?dev, ?bot…) sont ignorés : seuls la langue (?lang) et ?mute sont gardés.
-  (function () { var keep = (location.search.match(/[?&](lang=(fr|en)|mute)(?=&|$)/g) || []).map(function (s) { return s.slice(1); }), q = keep.length ? "?" + keep.join("&") : ""; if (location.search !== q || location.hash) history.replaceState(null, "", location.pathname + q); })();
-  window.GAME_DEMO = {"levels":12,"url":"","label":"preorder"};
+  (function () { var keep = (location.search.match(/[?&](lang=(fr|en|es|pt)|mute)(?=&|$)/g) || []).map(function (s) { return s.slice(1); }), q = keep.length ? "?" + keep.join("&") : ""; if (location.search !== q || location.hash) history.replaceState(null, "", location.pathname + q); })();
+  window.GAME_DEMO = {"levels":12,"url":"","label":"preorder","stats":{"key":"0e8f8bd8f044c424a9d705d2940fca9f","secret":"b7e95af423f9935257e5bd6c1f719fb9a08f5407"}};
 </script>
 <script src="engine/core.js"></script>
 <script src="engine/stats.js"></script>   <!-- statistiques GameAnalytics (rien n est envoyé en développement) -->
 <script src="engine/monet.js"></script>   <!-- pubs et achats (simulés en développement) -->
 <script src="engine/shell.js"></script>
+<script src="engine/lang.js"></script>   <!-- coquille en espagnol et en portugais -->
 <script src="audio/manifest.js"></script>   <!-- musiques et bruitages enregistrés (facultatifs : sans eux, tout est synthétisé) -->
 <script src="levels.js"></script>   <!-- niveaux précalculés (node jeux/tools/gelees-niveaux.js) -->
+<script src="lang.js"></script>   <!-- jeu en espagnol et en portugais -->
 <script src="game.js"></script>
 <script>
   // configuration de la coquille pour ce jeu : nom, couleurs des menus et du fond de page (ciel en haut, herbe en bas, comme le décor)

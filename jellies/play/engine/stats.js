@@ -19,10 +19,15 @@
      - appli (page embarquée, hors http) : envoi réel ;
      - développement (page servie en http par jeux/serve.js) : RIEN n'est envoyé, pour ne pas polluer les chiffres ;
        ?stats=log affiche les événements dans la console, ?stats les envoie pour de bon avec la version suffixée « -dev » ;
-     - pas de clés pour ce jeu, ou réglage coupé : rien. */
+     - pas de clés pour ce jeu, ou réglage coupé : rien ;
+     - démo du site (Stats.init({ web: true, … }), demandé par la coquille en mode démo) : envoi réel depuis le site, avec ses propres clés
+       (jeu GameAnalytics à part) et la version suffixée « -web ». RIEN n'est écrit dans le navigateur : l'identifiant est tiré au hasard à
+       chaque visite et la file d'attente reste en mémoire (pas de suivi d'une visite à l'autre, donc pas de bandeau de consentement).
+       Sur le PC de développement (localhost, réseau local), rien n'est envoyé, comme pour le jeu. */
 (function (global) {
   const C = global.Core, U = C.URLP || {};
-  const HTTP = /^https?:$/.test(location.protocol), LOG = U.stats === 'log', SEND = !HTTP || (U.stats !== undefined && !LOG);
+  const HTTP = /^https?:$/.test(location.protocol), LOG = U.stats === 'log', LOCAL = /^(localhost|127.|192.168.|10.|[::1])/.test(location.hostname);
+  let SEND = !HTTP || (U.stats !== undefined && !LOG), WEB = false;   // WEB : démo du site (voir plus haut), réglé par init
   const API = 'https://api.gameanalytics.com/v2/', SDK = 'rest api v2', MAX_QUEUE = 500, BATCH = 100, EVERY = 15000;
 
   // ------------------------------------------------------------ HMAC-SHA256 (crypto.subtle n'existe pas sur une page http du réseau local)
@@ -69,7 +74,7 @@
     return { platform: 'linux', os: 'linux 0', maker: 'unknown' };
   }
   let cfg = null, st = null, key = '', on = false, sys = null, session = '', t0 = 0, tsOff = 0, ready = false, timer = 0, busy = false;
-  const persist = () => store.set(key, JSON.stringify(st));
+  const persist = () => { if (!WEB) store.set(key, JSON.stringify(st)); };   // démo du site : rien n'est gardé dans le navigateur
   const active = () => !!cfg && on && (SEND || LOG);
   const now = () => Math.floor(Date.now() / 1000) + tsOff;
 
@@ -80,7 +85,7 @@
   function push(category, fields) {
     if (!active() || !session) return;
     const e = Object.assign({ category, device: 'unknown', v: 2, user_id: st.uid, client_ts: now(), sdk_version: SDK, os_version: sys.os, manufacturer: sys.maker,
-      platform: sys.platform, session_id: session, session_num: st.n, build: cfg.version + (HTTP ? '-dev' : '') }, fields);
+      platform: sys.platform, session_id: session, session_num: st.n, build: cfg.version + (WEB ? '-web' : HTTP ? '-dev' : '') }, fields);
     if (LOG) return console.log('[stats]', category, JSON.stringify(fields || {}));
     st.q.push(e); if (st.q.length > MAX_QUEUE) st.q.splice(0, st.q.length - MAX_QUEUE);
     persist(); if (!timer) timer = setTimeout(flush, EVERY);
@@ -121,7 +126,8 @@
     async init(c) {
       if (!c || !c.key || !c.secret) return;
       cfg = c; key = c.id + '.stats'; sys = system(); on = c.enabled !== false;
-      try { st = JSON.parse(await store.get(key) || 'null'); } catch (_) { st = null; }
+      WEB = !!c.web; if (WEB && !LOCAL) SEND = true;
+      if (!WEB) { try { st = JSON.parse(await store.get(key) || 'null'); } catch (_) { st = null; } }
       if (!st || !st.uid) st = { uid: uuid(), n: 0, tx: 0, q: [] }; if (!Array.isArray(st.q)) st.q = [];
       document.addEventListener('visibilitychange', () => { if (document.hidden) close(); else start(); });
       global.addEventListener('pagehide', close);

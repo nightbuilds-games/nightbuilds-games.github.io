@@ -8,7 +8,7 @@
    - adresse de contact : CONTACT (plus bas), posée dans les liens a.contact. */
 (function () {
   const STORE = { jellies: '' };   // lien App Store par jeu : précommande puis téléchargement
-  const CONTACT = 'pierremunozfrance@gmail.com';   // adresse de contact (liens a.contact) : la même que dans privacy.html et dans la fiche App Store
+  const CONTACT = 'contact@nightbuilds.app';   // adresse de contact (liens a.contact) : la même que dans privacy.html
 
   // ------------------------------------------------------------ langue
   const q = new URLSearchParams(location.search).get('lang');

@@ -234,7 +234,11 @@
     }
   }
   const floaters = [];
-  function floatText(x, y, str, o = {}) { floaters.push({ x, y, str, t: 0, dur: o.dur || 0.9, size: o.size || 64, color: o.color || '#fff', stroke: o.stroke === undefined ? '#00000088' : o.stroke, vy: o.vy || -220 }); }
+  // keep: true garde le texte entier à l'écran (il est recentré s'il déborde d'un bord : texte long né près d'un bord, traductions plus longues)
+  function floatText(x, y, str, o = {}) {
+    if (o.keep) { ctx.save(); ctx.font = '900 ' + (o.size || 64) + 'px ' + FONT; const hw = ctx.measureText(str).width / 2 + 24; ctx.restore(); x = hw * 2 > W ? W / 2 : clamp(x, hw, W - hw); }
+    floaters.push({ x, y, str, t: 0, dur: o.dur || 0.9, size: o.size || 64, color: o.color || '#fff', stroke: o.stroke === undefined ? '#00000088' : o.stroke, vy: o.vy || -220 });
+  }
   function updateFloaters(dt) { for (let i = floaters.length - 1; i >= 0; i--) { const f = floaters[i]; f.t += dt; f.y += f.vy * dt; if (f.t >= f.dur) floaters.splice(i, 1); } }
   function drawFloaters() { for (const f of floaters) { const p = f.t / f.dur; const s = ease.outBack(clamp(p * 4, 0, 1)); ctx.save(); ctx.translate(f.x, f.y); ctx.scale(s, s); text(f.str, 0, 0, { size: f.size, color: f.color, stroke: f.stroke, strokeW: 12, alpha: 1 - clamp((p - .6) / .4, 0, 1) }); ctx.restore(); } }
 
@@ -416,17 +420,23 @@
   // Les variables s'écrivent {n} : C.tr('NIVEAU {n} RÉUSSI !', { n: 47 }). Les listes (accroches, cartes de fin) se déclarent par langue :
   // C.byLang({ fr: [...], en: [...] }). Sans ?lang, ou avec une langue inconnue, tout reste en français : les clips déjà tournés ne changent pas.
   // jeux : langue du téléphone (français si le téléphone est en français, anglais sinon) ; ?lang=fr / ?lang=en pour forcer
-  const LANG = String(URLP.lang || (/^fr/i.test((typeof navigator !== 'undefined' && navigator.language) || '') ? 'fr' : 'en')).toLowerCase().slice(0, 2);
+  // AUTRES LANGUES (5 oct. 2026 : espagnol, portugais du Brésil) : une table par langue, toujours à partir du texte français,
+  // C.i18n({ 'JOUER': 'JUGAR' }, 'es') (engine/lang.js pour la coquille, <jeu>/lang.js pour le jeu). Un texte absent de la table de la langue
+  // retombe sur l'anglais, puis sur le français. C.byLang({ fr, en }) cherche aussi le texte français dans la table de la langue.
+  // Langue du téléphone si elle est dans LANGS, anglais sinon ; ?lang=es, ?lang=pt… pour forcer.
+  const LANGS = ['fr', 'en', 'es', 'pt'];
+  const LANG = (() => { const l = String(URLP.lang || (typeof navigator !== 'undefined' && navigator.language) || '').toLowerCase().slice(0, 2); return LANGS.includes(l) ? l : 'en'; })();
   const DEV = !!URLP.dev;   // ?dev : raccourcis clavier (bot, recommencer, tournage…) et doigt affiché, comme dans les prototypes
-  const dict = {}, untranslated = new Set();
+  const dicts = { en: {} }, untranslated = new Set();
+  const lookup = fr => { const d = dicts[LANG]; return d && d[fr] !== undefined ? d[fr] : dicts.en[fr]; };   // la langue, sinon l'anglais
   function tr(fr, vars) {
     let s = fr;
-    if (LANG !== 'fr') { const e = dict[fr]; if (e !== undefined) s = e; else if (!untranslated.has(fr)) { untranslated.add(fr); console.warn('[lang=' + LANG + '] pas de traduction : ' + fr); } }
+    if (LANG !== 'fr') { const e = lookup(fr); if (e !== undefined) s = e; else if (!untranslated.has(fr)) { untranslated.add(fr); console.warn('[lang=' + LANG + '] pas de traduction : ' + fr); } }
     if (vars) for (const k in vars) s = s.split('{' + k + '}').join(vars[k]);
     return s;
   }
-  function i18n(table) { Object.assign(dict, table); }
-  function byLang(o) { return o[LANG] || o.fr; }
+  function i18n(table, lang) { Object.assign(dicts[lang || 'en'] || (dicts[lang] = {}), table); }
+  function byLang(o) { return o[LANG] || (LANG !== 'fr' && ((typeof o.fr === 'string' && dicts[LANG] && dicts[LANG][o.fr]) || o.en)) || o.fr; }
   const kitTexts = { hooks: [], endcards: [], failcards: [] }; let endcardI = 0, failcardI = 0;
   const kit = {
     setup(t) { for (const k in t) kitTexts[k] = Array.isArray(t[k]) ? t[k] : byLang(t[k]); },   // listes simples, ou { fr: [...], en: [...] }

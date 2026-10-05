@@ -445,7 +445,7 @@
       key = c.id + (c.demo ? '.demo' : '') + '.save';   // la démo a sa propre sauvegarde
       try { save = migrate(JSON.parse(await store.get(key) || 'null')); } catch (_) { save = DEFAULT(); }
       C.setSound(save.settings.sound); C.setHaptics(save.settings.haptics);
-      S.init(Object.assign({ id: c.id, version: c.version || '0', enabled: save.settings.stats }, c.demo ? c.demo.stats : c.stats));   // démo : ses propres clés (jeu GameAnalytics séparé), sinon rien
+      S.init(Object.assign({ id: c.id, version: c.version || '0', enabled: save.settings.stats }, c.demo ? Object.assign({ web: true }, c.demo.stats) : c.stats));   // démo : ses propres clés (jeu GameAnalytics séparé), sans rien garder dans le navigateur ; sans clés, rien
       // pubs et achats : consentement puis pubs, achats configurés (sans effet hors de l'appli) ; le son du jeu se coupe pendant une pub
       Monet.onAd = on => C.setSound(on ? false : save.settings.sound);
       Monet.init(c.demo ? { off: true } : { ads: c.ads, store: c.store });   // démo : ni pubs ni achats, pas même simulés
