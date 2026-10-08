@@ -23,7 +23,7 @@
   // DÉMO du site, fabriquée par `node jeux/build.js ecrin --demo` : ne pas modifier à la main.
   // Les paramètres d'URL de développement (?level, ?zone, ?dev, ?bot…) sont ignorés : seuls la langue (?lang) et ?mute sont gardés.
   (function () { var keep = (location.search.match(/[?&](lang=(fr|en|es|pt)|mute)(?=&|$)/g) || []).map(function (s) { return s.slice(1); }), q = keep.length ? "?" + keep.join("&") : ""; try { if (location.search !== q || location.hash) history.replaceState(null, "", location.pathname + q); } catch (e) { } })();
-  window.GAME_DEMO = {"levels":12,"url":"","label":"preorder"};
+  window.GAME_DEMO = {"levels":12,"url":"","label":"preorder","stats":{"key":"fec0cb516a827c6d949ec97827fcf6ba","secret":"642a1fb785075d9ed95fd272e0226ffc1a05cdf2"}};
 </script>
 <script src="engine/core.js"></script>
 <script src="engine/stats.js"></script>   <!-- statistiques GameAnalytics (rien n est envoyé en développement) -->
@@ -42,6 +42,7 @@
     version: '0.1.0',
     title: { fr: 'Jewel Box', en: 'Jewel Box' },   // un seul nom dans toutes les langues (décidé le 6 oct. 2026), comme Jellies on the Run
     maxShown: 24,
+    splash: { bg: '#09162e' },   // écran de démarrage repris au lancement (splash.webp, node jeux/tools/splash-web.js ecrin) ; bg : couleur de ses bords
     privacyUrl: 'https://nightbuilds.app/privacy.html',   // site des jeux (dossier site/ du dépôt)
     colors: {
       'bg-top': '#1c1f52', 'bg-bottom': '#08091c',

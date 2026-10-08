@@ -438,10 +438,23 @@
     if (!save.noAds && Monet.ads.interReady && n >= ECONOMY.interFrom && Date.now() - lastInter > ECONOMY.interGap * 1000) { lastInter = Date.now(); S.ad('interstitial', 'next_level', 'show'); await Monet.ads.interstitial(); }
     startLevel(n);
   }
+  // ÉCRAN DE DÉMARRAGE (8 oct. 2026) : iOS n'affiche le sien que le temps de lancer l'appli, un éclair. La page le reprend à l'identique
+  // (splash.webp du jeu, fabriqué par tools/splash-web.js) et le garde SPLASH_MS après le début du chargement, puis fond vers le menu.
+  // Dans l'appli seulement (ou ?splash dans le navigateur, pour l'essayer) ; image absente ou illisible : rien, le menu vient tout de suite.
+  const SPLASH_MS = 1500;
+  function splash(c) {
+    const native = global.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform();
+    if (!c.splash || c.demo || global.ART || !(native || C.URLP.splash)) return;
+    const d = el('div', ''), img = new Image(), off = () => { d.classList.add('out'); setTimeout(() => d.remove(), 400); };
+    d.id = 'splash'; d.style.backgroundColor = c.splash.bg || '#000'; document.body.appendChild(d);
+    img.onload = () => { d.style.backgroundImage = 'url(' + img.src + ')'; setTimeout(off, Math.max(300, SPLASH_MS - performance.now())); };
+    img.onerror = off; img.src = c.splash.src || 'splash.webp';
+  }
   const fmt = t => t < 60 ? t.toFixed(1) + ' s' : Math.floor(t / 60) + ' min ' + String(Math.round(t % 60)).padStart(2, '0');
   const Shell = {
     async init(c) {
       cfg = c; if (!c.demo && global.GAME_DEMO) c.demo = global.GAME_DEMO;   // démo du site : réglée par la page (jeux/build.js --demo)
+      splash(c);
       key = c.id + (c.demo ? '.demo' : '') + '.save';   // la démo a sa propre sauvegarde
       try { save = migrate(JSON.parse(await store.get(key) || 'null')); } catch (_) { save = DEFAULT(); }
       // essais en développement (serveur du PC seulement, jamais dans l'appli ni sur le site) : ?debloque=81 ouvre les niveaux jusqu'au 81

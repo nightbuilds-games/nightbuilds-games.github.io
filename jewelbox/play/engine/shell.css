@@ -21,6 +21,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
 body { display: flex; align-items: center; justify-content: center; }
 canvas#game { display: block; touch-action: none; }
 
+/* ------------------------------------------------------------ écran de démarrage repris par la page (Shell.init({ splash }), voir shell.js) */
+#splash { position: fixed; inset: 0; z-index: 100; background: center / auto 100% no-repeat; transition: opacity .35s ease-out; }   /* à pleine hauteur, comme iOS affiche le sien */
+#splash.out { opacity: 0; pointer-events: none; }
+
 /* ------------------------------------------------------------ superposition des menus */
 #shell { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
 #shell.open { pointer-events: auto; background: var(--veil); animation: fade .18s ease-out; }
