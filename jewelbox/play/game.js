@@ -19,9 +19,6 @@
     'ÉCRIN': 'JEWEL BOX', 'NIVEAU {n}': 'LEVEL {n}', 'NIVEAU {n}  ·  RÉUSSI': 'LEVEL {n}  ·  CLEARED', '+1 PLACE': '+1 SLOT', 'PRÉSENTOIR AU MAXIMUM': 'TRAY AT ITS MAX', 'PRÉSENTOIR DÉJÀ VIDE': 'TRAY ALREADY EMPTY', 'PRÉSENTOIR VIDÉ': 'TRAY EMPTIED', 'TOUCHE UNE PIÈCE': 'TAP A PIECE', 'PLEIN !': 'FULL!', 'COMPLET !': 'COMPLETE!',
     'BLOQUÉ !': 'STUCK!', 'On recommence…': 'Try again…', 'À SUIVRE': 'UP NEXT', 'PRÉSENTOIR PLEIN': 'TRAY FULL', 'Une place de plus pour continuer ?': 'One more slot to keep going?',
     '✦  +1 PLACE  ✦': '✦  +1 SLOT  ✦', 'offert': 'free', 'Touche une gemme : elle rejoint l’écrin de sa couleur': 'Tap a gem: it goes to the box of its color', 'IL FAUT LA CLÉ': 'FIND THE KEY', 'DÉVERROUILLÉ !': 'UNLOCKED!',
-    // constellations
-    'GRANDE OURSE': 'BIG DIPPER', 'CASSIOPÉE': 'CASSIOPEIA', 'ORION': 'ORION', 'CYGNE': 'CYGNUS', 'LYRE': 'LYRA', 'SCORPION': 'SCORPIUS', 'SAGITTAIRE': 'SAGITTARIUS', 'LION': 'LEO', 'BÉLIER': 'ARIES', 'TAUREAU': 'TAURUS', 'GÉMEAUX': 'GEMINI', 'CANCER': 'CANCER', 'VIERGE': 'VIRGO', 'BALANCE': 'LIBRA', 'CAPRICORNE': 'CAPRICORNUS', 'VERSEAU': 'AQUARIUS',
-    'POISSONS': 'PISCES', 'PÉGASE': 'PEGASUS', 'DRAGON': 'DRACO', 'AIGLE': 'AQUILA', 'DAUPHIN': 'DELPHINUS', 'HERCULE': 'HERCULES', 'ANDROMÈDE': 'ANDROMEDA', 'PHÉNIX': 'PHOENIX',
   });
 
   // gemmes : rubis, saphir, émeraude, améthyste, topaze, aigue-marine, quartz rose (7 oct. 2026 : émeraude plus verte et aigue-marine plus claire, on les confondait)
@@ -107,86 +104,10 @@
   const starMargin = k => Math.ceil(total / (k === 3 ? 12 : 5));
   const starsNow = () => trayUses <= par + starMargin(3) ? 3 : trayUses <= par + starMargin(2) ? 2 : 1;
   const starLeft = () => { const st = starsNow(); return st > 1 ? par + starMargin(st) - trayUses : -1; };   // passages encore permis avant de perdre une étoile
-  // constellations : les gemmes rangées allument les étoiles du ciel de velours, une par niveau (coordonnées 0..1, y vers le bas)
-  // img : gravure d'or sur fond noir (jeux/ecrin/constellations/<img>.webp, générée d'après jeux/art/prompts-constellations.md), dessinée dans tout le carré du
-  // ciel et additionnée au fond : les étoiles sont placées sur elle. fy : haut et bas de la figure dans l'image (elle se remplit d'or de bas en haut).
-  const CONSTELLATIONS = [
-    { name: 'GRANDE OURSE', img: 'grande-ourse', fy: [.24, .76], stars: [[.625, .31], [.83, .355], [.81, .54], [.60, .52], [.42, .31], [.25, .355], [.125, .47]], edges: [[0, 1], [1, 2], [2, 3], [3, 0], [0, 4], [4, 5], [5, 6]] },
-    { name: 'CASSIOPÉE', img: 'cassiopee', fy: [.14, .85], stars: [[.22, .34], [.40, .63], [.50, .19], [.65, .52], [.78, .22]], edges: [[0, 1], [1, 2], [2, 3], [3, 4]] },
-    { name: 'ORION', img: 'orion', fy: [.07, .93], stars: [[.43, .31], [.57, .31], [.46, .46], [.50, .465], [.54, .47], [.365, .875], [.67, .895]], edges: [[0, 1], [0, 2], [1, 4], [2, 3], [3, 4], [2, 5], [4, 6]] },
-    { name: 'CYGNE', img: 'cygne', fy: [.14, .86], stars: [[.49, .25], [.49, .38], [.50, .83], [.90, .44], [.18, .17], [.33, .31]], edges: [[0, 1], [1, 2], [1, 3], [1, 5], [5, 4]] },
-    { name: 'LYRE', img: 'lyre', fy: [.18, .82], stars: [[.355, .23], [.73, .23], [.315, .50], [.77, .50], [.54, .71], [.155, .365]], edges: [[0, 1], [0, 2], [1, 3], [2, 4], [3, 4], [0, 5]] },
-    { name: 'SCORPION', img: 'scorpion', fy: [.12, .84], stars: [[.125, .31], [.40, .17], [.375, .40], [.44, .52], [.54, .69], [.69, .80], [.83, .75], [.885, .60], [.80, .45]], edges: [[0, 2], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8]] },
-    { name: 'SAGITTAIRE', img: 'sagittaire', fy: [.10, .86], stars: [[.10, .275], [.21, .30], [.27, .115], [.28, .49], [.43, .22], [.57, .27], [.40, .44], [.69, .50], [.91, .54], [.79, .81], [.23, .645]], edges: [[0, 1], [2, 1], [1, 3], [1, 5], [4, 5], [5, 6], [6, 7], [7, 8], [7, 9], [6, 10]] },
-    { name: 'BÉLIER', img: 'belier', fy: [.18, .82], stars: [[.72, .31], [.56, .35], [.69, .56], [.40, .50], [.17, .60], [.42, .78], [.83, .72]], edges: [[0, 1], [1, 2], [2, 3], [3, 4], [2, 6], [3, 5]] },
-    { name: 'TAUREAU', img: 'taureau', fy: [.22, .78], stars: [[.08, .45], [.31, .52], [.48, .27], [.69, .31], [.85, .42], [.855, .74], [.55, .74], [.62, .60]], edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [1, 6], [2, 7]] },
-    { name: 'GÉMEAUX', img: 'gemeaux', fy: [.10, .90], stars: [[.375, .20], [.60, .20], [.18, .46], [.36, .54], [.57, .54], [.31, .86], [.63, .86], [.835, .155]], edges: [[0, 1], [0, 3], [1, 4], [3, 5], [4, 6], [2, 3], [1, 7]] },
-    { name: 'CANCER', img: 'cancer', fy: [.14, .84], stars: [[.29, .21], [.65, .21], [.19, .375], [.78, .385], [.50, .50], [.16, .69], [.83, .69], [.50, .63]], edges: [[0, 2], [2, 4], [1, 3], [3, 4], [4, 7], [7, 5], [7, 6]] },
-    { name: 'VIERGE', img: 'vierge', fy: [.08, .93], stars: [[.24, .10], [.76, .10], [.49, .20], [.49, .34], [.27, .565], [.50, .50], [.52, .88]], edges: [[0, 3], [1, 3], [2, 3], [3, 5], [3, 4], [5, 6]] },
-    { name: 'BALANCE', img: 'balance', fy: [.14, .86], stars: [[.50, .18], [.24, .27], [.76, .26], [.25, .69], [.75, .67], [.50, .81]], edges: [[1, 0], [0, 2], [1, 3], [2, 4], [0, 5]] },
-    { name: 'CAPRICORNE', img: 'capricorne', fy: [.16, .86], stars: [[.51, .23], [.25, .39], [.31, .69], [.37, .83], [.58, .66], [.73, .50], [.80, .28], [.67, .72]], edges: [[0, 1], [1, 2], [2, 3], [2, 4], [4, 7], [4, 5], [5, 6]] },
-    { name: 'VERSEAU', img: 'verseau', fy: [.12, .90], stars: [[.46, .23], [.39, .38], [.61, .41], [.705, .385], [.72, .63], [.69, .84], [.29, .63], [.19, .83], [.52, .70]], edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [1, 6], [6, 7], [6, 8]] },
-    { name: 'POISSONS', img: 'poissons', fy: [.12, .86], stars: [[.46, .21], [.25, .36], [.22, .66], [.49, .51], [.75, .30], [.77, .55], [.56, .78]], edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6]] },
-    { name: 'PÉGASE', img: 'pegase', fy: [.10, .88], stars: [[.18, .15], [.83, .155], [.70, .34], [.52, .42], [.63, .54], [.36, .60], [.15, .73], [.37, .86], [.78, .58]], edges: [[0, 3], [1, 3], [2, 3], [3, 4], [3, 5], [5, 6], [5, 7], [4, 8]] },
-    { name: 'DRAGON', img: 'dragon', fy: [.08, .92], stars: [[.74, .24], [.55, .31], [.27, .35], [.33, .52], [.67, .565], [.74, .67], [.42, .80], [.23, .71], [.48, .885]], edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8]] },
-    { name: 'AIGLE', img: 'aigle', fy: [.24, .76], stars: [[.07, .31], [.27, .48], [.46, .41], [.49, .54], [.73, .47], [.93, .29], [.50, .71]], edges: [[0, 1], [1, 3], [2, 3], [3, 4], [4, 5], [3, 6]] },
-    { name: 'DAUPHIN', img: 'dauphin', fy: [.17, .86], stars: [[.84, .32], [.67, .29], [.55, .20], [.33, .20], [.27, .42], [.31, .70], [.22, .84], [.44, .77], [.52, .46]], edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [5, 7], [1, 8]] },
-    { name: 'HERCULE', img: 'hercule', fy: [.10, .88], stars: [[.56, .135], [.33, .23], [.55, .31], [.52, .54], [.44, .66], [.69, .63], [.67, .83], [.27, .83]], edges: [[0, 1], [1, 3], [2, 3], [3, 4], [4, 5], [5, 6], [4, 7]] },
-    { name: 'ANDROMÈDE', img: 'andromede', fy: [.10, .92], stars: [[.50, .19], [.50, .40], [.22, .405], [.125, .53], [.78, .405], [.865, .53], [.50, .57], [.49, .89]], edges: [[0, 1], [1, 2], [2, 3], [1, 4], [4, 5], [1, 6], [6, 7]] },
-    { name: 'PHÉNIX', img: 'phenix', fy: [.06, .94], stars: [[.20, .105], [.31, .31], [.51, .25], [.50, .42], [.69, .31], [.81, .105], [.50, .69], [.50, .915], [.33, .75], [.67, .75]], edges: [[0, 1], [1, 3], [2, 3], [3, 4], [4, 5], [3, 6], [6, 7], [6, 8], [6, 9]] },
-    { name: 'LION', img: 'lion', fy: [.22, .72], stars: [[.19, .36], [.26, .25], [.36, .28], [.41, .41], [.33, .56], [.62, .50], [.80, .57], [.75, .29], [.64, .69]], edges: [[0, 1], [1, 2], [2, 3], [3, 4], [3, 5], [5, 6], [6, 7], [6, 8], [4, 8]] },
-  ];
-  const skyImgs = {};
-  function skyImage(f) {   // l'image d'une constellation, chargée à la première demande ; null tant qu'elle n'est pas arrivée (la figure tracée la remplace)
-    if (!f || typeof Image === 'undefined') return null;
-    const im = skyImgs[f] || (skyImgs[f] = Object.assign(new Image(), { src: 'constellations/' + f + '.webp' }));
-    return im.complete && im.naturalWidth ? im : null;
-  }
-  // figures des constellations, en trait d'or à la manière des anciens atlas (mêmes coordonnées 0..1 que les étoiles)
-  // chaque figure = liste d'éléments : { p: points, closed, fill } (tracé lissé) ou { c: [x, y, rayon] } (cercle)
-  const FIGURES = {
-    'GRANDE OURSE': [   // ourse de profil, tournée vers la gauche ; le manche de la casserole est sa longue queue
-      { p: [[.03, .46], [.06, .4], [.1, .32], [.13, .27], [.16, .22], [.19, .27], [.26, .24], [.4, .18], [.56, .24], [.62, .3], [.72, .27], [.84, .36], [.92, .48], [.87, .51], [.75, .42], [.64, .42], [.6, .56], [.6, .8], [.66, .94], [.52, .95], [.5, .74], [.42, .71], [.34, .73], [.36, .94], [.22, .95], [.2, .72], [.14, .64], [.07, .56], [.03, .52]], closed: true, fill: true },
-      { c: [.1, .38, .012] }],
-    'CASSIOPÉE': [   // couronne de la reine
-      { p: [[.18, .88], [.82, .88], [.82, .78], [.76, .5], [.64, .7], [.5, .38], [.36, .7], [.24, .5], [.18, .78]], closed: true, fill: true },
-      { c: [.24, .5, .025] }, { c: [.5, .38, .025] }, { c: [.76, .5, .025] }, { p: [[.18, .78], [.82, .78]] }],
-    'ORION': [   // le chasseur : tête, torse, jambes, massue levée à droite, bouclier à gauche
-      { c: [.49, -.02, .06] },
-      { p: [[.3, .1], [.68, .14], [.6, .54], [.4, .52]], closed: true, fill: true },
-      { p: [[.4, .52], [.32, .92], [.24, .92], [.3, .53]], closed: true, fill: true },
-      { p: [[.6, .54], [.72, .9], [.8, .9], [.68, .55]], closed: true, fill: true },
-      { p: [[.68, .14], [.82, .0], [.9, -.1]] }, { p: [[.86, -.06], [.98, -.22]] }, { p: [[.84, -.12], [.96, -.26]] },
-      { p: [[.3, .1], [.16, .26]] }, { p: [[.04, .14], [.0, .3], [.06, .44], [.16, .5], [.22, .38], [.2, .2], [.12, .12]], closed: true }],
-    'CYGNE': [   // cygne en vol, ailes ouvertes, cou tendu vers le bas
-      { p: [[.5, .0], [.55, .1], [.57, .3], [.72, .34], [.88, .44], [.96, .54], [.86, .56], [.72, .5], [.6, .5], [.56, .56], [.55, .68], [.57, .8], [.55, .9], [.5, .97], [.45, .9], [.44, .8], [.45, .68], [.44, .56], [.4, .48], [.26, .4], [.1, .32], [.04, .22], [.14, .22], [.3, .26], [.43, .28], [.45, .1]], closed: true, fill: true },
-      { c: [.5, .93, .03] }, { p: [[.5, .96], [.5, 1.04]] }],
-    'LYRE': [   // deux bras courbes, barre, caisse et cordes
-      { p: [[.28, .06], [.2, .34], [.3, .62]] }, { p: [[.72, .06], [.8, .34], [.7, .62]] }, { p: [[.24, .14], [.76, .14]] },
-      { p: [[.3, .62], [.7, .62], [.66, .84], [.5, .9], [.34, .84]], closed: true, fill: true },
-      { p: [[.36, .16], [.36, .64]] }, { p: [[.43, .16], [.43, .64]] }, { p: [[.5, .16], [.5, .64]] }, { p: [[.57, .16], [.57, .64]] }, { p: [[.64, .16], [.64, .64]] }],
-    'SCORPION': [   // corps le long des étoiles, pinces en haut à gauche, dard recourbé
-      { p: [[.2, .32], [.3, .34], [.42, .42], [.5, .54], [.56, .7], [.66, .82], [.8, .9], [.9, .82], [.86, .78], [.76, .84], [.68, .74], [.6, .6], [.52, .46], [.4, .36], [.28, .38]], closed: true, fill: true },
-      { p: [[.24, .36], [.14, .24], [.08, .14]] }, { p: [[.02, .1], [.04, .02], [.1, .04], [.1, .12]], closed: true, fill: true },
-      { p: [[.3, .34], [.28, .2], [.24, .08]] }, { p: [[.2, .08], [.22, .0], [.28, .02], [.28, .1]], closed: true, fill: true },
-      { p: [[.9, .82], [.96, .68], [.9, .54], [.84, .58]] },
-      { p: [[.4, .4], [.34, .52]] }, { p: [[.48, .5], [.42, .62]] }, { p: [[.56, .62], [.5, .74]] }, { p: [[.46, .36], [.52, .26]] }, { p: [[.54, .46], [.62, .38]] }],
-    'SAGITTAIRE': [   // l'arc bandé et la flèche
-      { p: [[.3, .12], [.12, .5], [.3, .88]] }, { p: [[.3, .12], [.3, .88]] },
-      { p: [[.18, .5], [.9, .5]] }, { p: [[.9, .5], [.8, .43]] }, { p: [[.9, .5], [.8, .57]] },
-      { p: [[.2, .5], [.26, .42]] }, { p: [[.2, .5], [.26, .58]] }, { p: [[.26, .5], [.32, .42]] }, { p: [[.26, .5], [.32, .58]] }],
-    'LION': [   // lion de profil tourné vers la gauche, crinière sur la faucille, queue vers l'arrière
-      { p: [[.1, .44], [.14, .3], [.24, .14], [.42, .1], [.54, .2], [.64, .3], [.78, .34], [.86, .42], [.92, .55], [.96, .72], [.9, .74], [.86, .6], [.82, .5], [.82, .7], [.84, .92], [.72, .93], [.7, .72], [.56, .7], [.44, .72], [.46, .93], [.34, .93], [.32, .72], [.24, .7], [.16, .6], [.08, .54]], closed: true, fill: true },
-      { p: [[.18, .3], [.34, .16], [.5, .2], [.56, .36], [.5, .52], [.36, .58], [.2, .5]], closed: true },
-      { c: [.15, .38, .012] }],
-  };
-  // bornes verticales de la figure (pour la remplir d'or de bas en haut) et niveau de remplissage, lissé dans update()
-  function figBounds(k) { if (k.fyb) { k.fy0 = k.fyb[0]; k.fy1 = k.fyb[1]; k.fill = 0; return; } const ys = k.fig.flatMap(it => it.c ? [it.c[1] - it.c[2], it.c[1] + it.c[2]] : it.p.map(q => q[1])); k.fy0 = ys.length ? Math.min(...ys) : 0; k.fy1 = ys.length ? Math.max(...ys) : 1; k.fill = 0; }
-  let sky = null;   // constellation du niveau : { name, stars: [{x, y, lit, litAt}], edges, fig }
-  const SKY_BOX = { x: BOARD.x + 140, y: BOARD.y + 40, w: 700, h: 700 };   // zone du ciel (le bas du plateau reste libre pour le nom au final)
+  let sky = null;   // les lumières du décor de la zone : { name, stars: [{x, y, out, lit, litAt}], edges }
   const starGlow = i => clamp(boxed / total * sky.stars.length - i, 0, 1);   // chaque gemme rangée fait grandir l'étoile suivante
   // DÉCORS DE ZONE (7 oct. 2026) : une zone qui a son décor (jeux/ecrin/decors/<img>.webp, généré d'après jeux/art/prompts-decors-ecrin.md) le montre à
-  // la place du velours, du lambrequin et du comptoir de marbre, et n'a plus de constellation : ce sont les joyaux du décor qui s'allument un à un à
+  // la place du velours, du lambrequin et du comptoir de marbre, : ce sont les joyaux du décor qui s'allument un à un à
   // mesure que les gemmes sont rangées (lights, du premier allumé au dernier), puis flamboient au final, où s'écrit le nom de l'objet.
   //   cut, top : l'image est posée en deux bandes. Sa partie haute (jusqu'à la fraction cut de sa hauteur : l'eau, le ciel…) est étirée de 0 à top, le
   //              reste va de top au bas de l'écran : le sommet de l'arche passe ainsi sous le bord du plateau au lieu de tomber sur le numéro du niveau.
@@ -219,8 +140,8 @@
       lights: [[780, 1868], [516, 1860], [268, 1816], [676, 1808], [1004, 1456], [76, 1436], [984, 1288], [164, 1168], [108, 984], [996, 980], [68, 836], [876, 760], [804, 388], [116, 308], [624, 236]] },
     maison: { img: 'maison', cut: .152, top: 192, dim: .48,
       lights: [[284, 1852], [784, 1816], [472, 1804], [600, 1804], [96, 1556], [1008, 1424], [156, 1400], [860, 1300], [196, 1136], [856, 932], [212, 756], [864, 752], [760, 332], [316, 328], [540, 228]] },
-    // contes et étoiles : la zone garde les constellations (ciel : true), le décor n'allume pas ses joyaux
-    contes: { img: 'contes', cut: .13, top: 192, dim: .48, ciel: true, lights: [] },
+    contes: { img: 'contes', cut: .13, top: 192, dim: .48,
+      lights: [[760, 1844], [108, 1840], [952, 1824], [356, 1800], [96, 1512], [1000, 1488], [828, 1300], [164, 1184], [1012, 1096], [52, 1076], [56, 856], [968, 832], [868, 472], [212, 300], [536, 264]] },
     fetes: { img: 'fetes', cut: .116, top: 192, dim: .48,
       lights: [[844, 1844], [404, 1820], [88, 1800], [660, 1800], [1000, 1532], [80, 1508], [956, 1356], [244, 1344], [120, 940], [960, 936], [168, 796], [992, 776], [104, 524], [976, 524], [544, 228]] },
     curiosites: { img: 'curiosites', cut: .11, top: 192, dim: .48,
@@ -244,16 +165,15 @@
     decorBg = bg; decorBoard = b;
   }
   const decorReady = () => { if (!decor) return null; if (!decorBg) { const im = decorImage(decor); if (im) buildDecor(im, decor); } return decorBg ? decor : null; };
-  // au début du niveau : le décor et la musique de la zone de l'objet ; les lumières du décor prennent la place des étoiles de la constellation
+  // au début du niveau : le décor et la musique de la zone de l'objet ; les lumières du décor prennent la place des lumières du décor
   function zoneLook() {
     const d = DECORS[objet.z] || null;
     if (d !== decor) { decor = d; decorBg = decorBoard = null; }
     theme = THEMES[objet.z] || THEMES.base;
     if (!d) return;
-    decorImage(d); if (d.ciel) return;
+    decorImage(d);
     const inBoard = (x, y) => x > BOARD.x - 20 && x < BOARD.x + BOARD.w + 20 && y > BOARD.y - 20 && y < BOARD.y + BOARD.h + 20;
-    sky = { name: C.byLang(objet.name), decor: true, edges: [], img: null, fig: [], stars: d.lights.map(([x, y]) => ({ x, y, out: !inBoard(x, y), lit: false, litAt: 0, ph: rand(Math.PI * 2) })) };
-    figBounds(sky);
+    sky = { name: C.byLang(objet.name), decor: true, edges: [], stars: d.lights.map(([x, y]) => ({ x, y, out: !inBoard(x, y), lit: false, litAt: 0, ph: rand(Math.PI * 2) })) };
   }
   let clip = /[?&#]clip/.test(href), genTries = 0;
   const live = () => ({ plates, screws, boxes, buffer });   // l'état réel, au format attendu par la politique
@@ -378,7 +298,7 @@
     drop() { if (smp('drop', { rate: rand(.9, 1.05) })) return; C.tone({ type: 'sine', f0: 130, f1: 45, dur: .26, vol: .3 }); C.noise({ dur: .12, vol: .05, f: 350, q: .6 }); },
     bounce() { if (smp('bounce', { rate: rand(.9, 1.05) })) return; C.tone({ type: 'sine', f0: 110, f1: 40, dur: .18, vol: .18 }); C.noise({ dur: .08, vol: .04, f: 300, q: .6 }); },
     reveal(i) { const hit = smp('reveal', { rate: 1 + Math.min(i, 8) * .05 }); bell(midS(86 + i * 2), { vol: hit ? .04 : .07, dur: .7 }); },   // petite note claire par gemme révélée
-    starLit(i) { bell(midS(86 + (i % 5) * 2), { vol: .1, dur: 1.4 }); bell(midS(98 + (i % 5) * 2), { t: at(.04), vol: .04, dur: .8 }); },   // étoile de constellation qui naît
+    starLit(i) { bell(midS(86 + (i % 5) * 2), { vol: .1, dur: 1.4 }); bell(midS(98 + (i % 5) * 2), { t: at(.04), vol: .04, dur: .8 }); },   // lumière du décor qui s'allume
     flare(i) { bell(midS(74 + i * 2), { vol: .11, dur: 1.2 }); },   // flamboiement au final : gamme qui monte
     star(i) { bell(midS(81 + i * 4), { vol: .16, dur: 1.6 }); bell(midS(88 + i * 4), { t: at(.05), vol: .08, dur: 1.2 }); },   // étoile qui apparaît
     slowmo() { [62, 66, 69, 74, 78].forEach((n, i) => bell(midS(n + 12), { t: at(i * .18), vol: .06, dur: 1.4 })); C.noise({ dur: 1.1, vol: .05, f: 400, f1: 3200, q: 1.5 }); },   // ralenti : montée cristalline
@@ -796,14 +716,11 @@
     return s;
   }
   function init() {
-    bufN = BUF_N; rescued = false; if (C.test) C.test.figAlpha = 0; levelStart = tm;
+    bufN = BUF_N; rescued = false; levelStart = tm;
     drama = { phase: 'calm', moves: 0, peaks: 0, tries: 0 }; hbT = 0;
     boxes = [null, null, null]; leaving = []; buffer = new Array(bufN).fill(null); state = 'play'; boxed = 0; reserve = []; aim = null; if (global.Shell && Shell.boostAim) Shell.boostAim(null);
     shelf = []; flyers = []; trayUses = 0; litPrev = 0; starsPrev = 3; finale = null; slowGem = null;
-    // la constellation du niveau, placée dans la zone du ciel
-    const cst = CONSTELLATIONS[(level - 1) % CONSTELLATIONS.length];
-    sky = { name: cst.name, edges: cst.edges, img: cst.img, fyb: cst.fy, fig: FIGURES[cst.name] || [], stars: cst.stars.map(([nx, ny]) => ({ x: SKY_BOX.x + nx * SKY_BOX.w, y: SKY_BOX.y + ny * SKY_BOX.h, lit: false, litAt: 0, ph: rand(Math.PI * 2) })) };
-    figBounds(sky);
+    sky = { name: '', edges: [], stars: [] };   // rien tant que le décor de la zone n'est pas connu (zoneLook pose ses lumières)
     duck(1);
     // si le rideau est baissé (fin du niveau précédent), il se relève sur le nouveau niveau
     const curtained = curtain.v > 0;
@@ -1172,7 +1089,7 @@
   });
   function levelComplete() {
     state = 'done'; snd.win(); duck(.35);
-    // durée du final selon le nombre d'étoiles de la constellation (flamboiement une à une), puis nom, puis étoiles de score
+    // durée du final selon le nombre d'lumières du décor (flamboiement une à une), puis nom, puis étoiles de score
     const n = sky.stars.length, tStars = .5 + n * .2 + .6;
     finale = { t: 0, stars: starsNow(), popped: 0, pinged: 0, flared: 0, tStars, dur: tStars + 3 * .32 + 1.3, card: C.kit.endcard('win', '') };
     C.confetti(W / 2, BOARD.y + BOARD.h / 2, { count: 120, speed: 1600, spread: Math.PI * 2, colors: [GOLD, GOLD_LIGHT, '#ffffff', CREAM, ...COLORS] });
@@ -1180,7 +1097,7 @@
     // le rideau de velours se baisse, puis le niveau suivant démarre derrière et le rideau se relève (dans init)
     // mode boucle : coupe franche pendant la révélation (la figure flamboie, le nom vient d'apparaître), et le même niveau repart
     if (loopMode) { C.after(.5 + sky.stars.length * .2 + .8, () => C.restart()); return; }
-    // coquille : écran de résultat à la fin du final (constellation, nom, étoiles) ; sans coquille, rideau et niveau suivant comme au proto
+    // coquille : écran de résultat à la fin du final (lumières, nom, étoiles) ; sans coquille, rideau et niveau suivant comme au proto
     const st = starsNow(), t = tm - levelStart;
     if (global.Shell) { C.after(finale.dur, () => Shell.levelWon({ level, stars: st, time: t })); return; }
     C.after(finale.dur, () => { snd.slide(); C.tween(curtain, { v: 1 }, .6, { ease: ease.inCubic, onDone() { level++; C.restart(); } }); });
@@ -1216,7 +1133,6 @@
     sparkT -= dt; if (sparkT <= 0) { sparkT = rand(.04, .11); spawnSpark(); }
     for (let i = sparks.length - 1; i >= 0; i--) { sparks[i].t += dt; if (sparks[i].t >= sparks[i].dur) sparks.splice(i, 1); }
     updateDust(dt);
-    if (sky && total) sky.fill += (boxed / total - sky.fill) * Math.min(1, dt * 3);
     // présentoir presque plein : battement de cœur, plus rapide et plus fort quand il est plein
     const trayN = buffer.filter(x => x).length;
     if (state === 'play' && trayN >= bufN - 1) { hbT -= dt; if (hbT <= 0) { const fullT = trayN >= bufN; snd.heart(fullT ? 1 : .6); hbT = fullT ? .6 : .95; } } else hbT = 0;
@@ -1224,7 +1140,7 @@
     if (finale) {
       finale.t += dt;
       while (finale.pinged < shelf.length && finale.t > .3 + finale.pinged * .09) { bell(mid(74 + finale.pinged * 2), { vol: .07, dur: .6 }); finale.pinged++; }
-      // flamboiement des étoiles de la constellation une à une, puis accord à l'apparition du nom
+      // flamboiement des lumières du décor une à une, puis accord à l'apparition du nom
       while (finale.flared < sky.stars.length && finale.t > .4 + finale.flared * .2) { const st = sky.stars[finale.flared]; snd.flare(finale.flared); C.burst(st.x, st.y, { colors: ['#ffffff', GOLD_LIGHT, '#cfe4ff'], count: 14, speed: 380, size: 7, life: .7, gravity: 0, drag: 2.5 }); finale.flared++; }
       if (!finale.named && finale.t > .5 + sky.stars.length * .2) { finale.named = true; snd.close(); }
       while (finale.popped < 3 && finale.t > finale.tStars + finale.popped * .32) {
@@ -1232,7 +1148,7 @@
         if (i < finale.stars) { snd.star(i); C.burst(x, y, { colors: [GOLD_LIGHT, '#ffffff', GOLD], count: 18, speed: 520, size: 9, life: .7 }); for (let k = 0; k < 4; k++) sparks.push({ x: x + rand(-60, 60), y: y + rand(-60, 60), t: -k * .05, dur: .5, size: rand(16, 30), rot: rand(Math.PI), vr: rand(-2, 2), glow: rgba('#fff0be', 1) }); }
       }
     }
-    // étoiles de la constellation qui s'allument (une étoile pleine = environ un écrin fermé), étoile de score perdue
+    // lumières du décor qui s'allument (une étoile pleine = environ un écrin fermé), étoile de score perdue
     sky.stars.forEach((st, i) => {
       if (st.lit || starGlow(i) < 1) return;
       st.lit = true; st.litAt = tm; snd.starLit(i);
@@ -1572,52 +1488,12 @@
       ctx.restore();
     }
   }
-  // étoile à quatre branches (étoiles de constellation)
+  // étoile à quatre branches (lumières du décor)
   function starShape(x, y, s, thin = .22) { poly([[x, y - s], [x + s * thin, y - s * thin], [x + s, y], [x + s * thin, y + s * thin], [x, y + s], [x - s * thin, y + s * thin], [x - s, y], [x - s * thin, y - s * thin]]); }
-  // ciel de velours sous les tablettes : la constellation du niveau, dont les étoiles s'allument avec les gemmes rangées
-  // boost > 0 pendant le final : étoiles qui flamboient une à une, fils plus lumineux
-  // figure de la constellation en trait d'or lissé (courbes passant par les milieux des segments)
-  function drawFigure(alpha, fillK = .16, lw = 3, glow = 0) {
-    const im = skyImage(sky.img);
-    if (im && alpha > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha *= Math.min(1, alpha * (lw > 3 ? 1.06 : .8)); ctx.drawImage(im, SKY_BOX.x, SKY_BOX.y, SKY_BOX.w, SKY_BOX.h); ctx.restore(); return; }
-    if (alpha <= 0 || !sky.fig.length) return;
-    const X = nx => SKY_BOX.x + nx * SKY_BOX.w, Y = ny => SKY_BOX.y + ny * SKY_BOX.h;
-    ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-    if (glow) { ctx.shadowColor = 'rgba(255,210,110,' + glow + ')'; ctx.shadowBlur = 26; }
-    for (const it of sky.fig) {
-      if (it.c) { ctx.fillStyle = 'rgba(255,230,170,' + alpha + ')'; ctx.beginPath(); ctx.arc(X(it.c[0]), Y(it.c[1]), it.c[2] * SKY_BOX.w, 0, Math.PI * 2); ctx.fill(); continue; }
-      const P = it.p.map(([nx, ny]) => [X(nx), Y(ny)]), n = P.length;
-      ctx.beginPath();
-      if (n === 2) { ctx.moveTo(P[0][0], P[0][1]); ctx.lineTo(P[1][0], P[1][1]); }
-      else if (it.closed) {
-        ctx.moveTo((P[0][0] + P[1][0]) / 2, (P[0][1] + P[1][1]) / 2);
-        for (let i = 1; i <= n; i++) { const a = P[i % n], b = P[(i + 1) % n]; ctx.quadraticCurveTo(a[0], a[1], (a[0] + b[0]) / 2, (a[1] + b[1]) / 2); }
-        ctx.closePath();
-      } else {
-        ctx.moveTo(P[0][0], P[0][1]);
-        for (let i = 1; i < n - 1; i++) { const a = P[i], b = P[i + 1]; ctx.quadraticCurveTo(a[0], a[1], (a[0] + b[0]) / 2, (a[1] + b[1]) / 2); }
-        ctx.lineTo(P[n - 1][0], P[n - 1][1]);
-      }
-      if (it.fill) { ctx.fillStyle = 'rgba(255,215,130,' + (alpha * fillK) + ')'; ctx.fill(); }
-      ctx.strokeStyle = 'rgba(255,232,180,' + alpha + ')'; ctx.lineWidth = lw; ctx.stroke();
-    }
-    ctx.restore();
-  }
+  // les lumières du décor de la zone, qui s'allument avec les gemmes rangées ; boost > 0 pendant le final : elles flamboient une à une
   // part : dans une zone à décor, 'in' = les lumières sous le plateau (dessinées sous l'objet), 'out' = celles du tour de l'écran (dessinées par-dessus le décor)
   function drawSky(boost = 0, part) {
     const S = sky.stars; if (sky.decor && !decorBg) return;
-    // la figure : discrète pendant la partie, révélée au final avant le nom
-    // la récompense se voit dès la première seconde : silhouette nette, qui se remplit d'or de bas en haut à mesure que les gemmes sont rangées
-    const full = (C.test && C.test.figAlpha) || finale, fill = full ? 1 : sky.fill;
-    drawFigure(.34);
-    if (fill > 0 && !sky.decor) {   // zone à décor : pas de gravure à remplir, donc pas de niveau d'or (un trait de lumière traversait le plateau)
-      const yb = SKY_BOX.y + sky.fy1 * SKY_BOX.h + 12, yt = yb - (yb - (SKY_BOX.y + sky.fy0 * SKY_BOX.h - 12)) * fill, sh = .5 + .5 * Math.sin(tm * 2.2);
-      ctx.save(); ctx.beginPath(); ctx.rect(BOARD.x - 20, yt, BOARD.w + 40, yb - yt); ctx.clip();
-      drawFigure(.95, .42 + .12 * sh + .25 * boost, 5, .55 + .3 * boost);
-      ctx.restore();
-      // le niveau de l'or : un trait de lumière qui ondule à la surface
-      if (fill < 1) { const lg = ctx.createLinearGradient(SKY_BOX.x - 80, 0, SKY_BOX.x + SKY_BOX.w + 80, 0); lg.addColorStop(0, 'rgba(255,240,190,0)'); lg.addColorStop(.5, 'rgba(255,240,190,' + (.35 + .25 * sh) + ')'); lg.addColorStop(1, 'rgba(255,240,190,0)'); ctx.fillStyle = lg; ctx.fillRect(SKY_BOX.x - 80, yt - 2, SKY_BOX.w + 160, 4); }
-    }
     // fils de lumière entre étoiles allumées, tracés progressivement depuis la plus ancienne
     for (const [a, b] of sky.edges) {
       const A = S[a], B = S[b]; if (!A.lit || !B.lit) continue;
@@ -1685,10 +1561,10 @@
       ctx.restore();
     }
   }
-  // final de niveau : le ciel s'assombrit, la constellation flamboie étoile par étoile, son nom s'écrit en or, puis les étoiles de score
+  // final de niveau : le ciel s'assombrit, les lumières du décor flamboient une à une, le nom de l'objet s'écrit en or, puis les étoiles de score
   function drawFinale() {
     const t = finale.t, cx = BOARD.x + BOARD.w / 2, cy = BOARD.y + BOARD.h / 2, n = sky.stars.length;
-    // nuit qui tombe sur le plateau, constellation redessinée par-dessus, plus lumineuse
+    // nuit qui tombe sur le plateau, lumières redessinées par-dessus, plus vives
     const night = clamp(t / .6, 0, 1);
     ctx.save(); roundRect(BOARD.x - 20, BOARD.y - 20, BOARD.w + 40, BOARD.h + 40, 40); ctx.clip();
     ctx.fillStyle = 'rgba(4,3,18,' + (.6 * night) + ')'; ctx.fillRect(0, 0, W, H);
@@ -1697,7 +1573,7 @@
     if (sky.decor) drawSky(night, 'out');
     if (t < .5) { ctx.fillStyle = 'rgba(255,250,230,' + (.55 * (1 - t / .5)) + ')'; cover(); }
     if (t < 1.2) { ctx.strokeStyle = 'rgba(255,236,180,' + (.8 * (1 - t / 1.2)) + ')'; ctx.lineWidth = 8; ctx.beginPath(); ctx.arc(cx, cy, 60 + t * 1100, 0, Math.PI * 2); ctx.stroke(); }
-    // bandeau de velours avec le nom de la constellation, une fois toutes les étoiles flamboyantes
+    // bandeau de velours avec le nom de l'objet, une fois toutes les lumières flamboyantes
     const tn = .5 + n * .2, pin = ease.outBack(clamp((t - tn) / .45, 0, 1)); if (pin <= 0) return;
     ctx.save(); ctx.translate(W / 2, BOARD.y + BOARD.h - 170); ctx.scale(pin, pin);
     ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 36; ctx.shadowOffsetY = 12;
@@ -2188,8 +2064,6 @@
     voir(n, v = 0) { OBJ_URL = n; voirV = v; C.restart(); return n ? OBJETS[(n - 1) % OBJETS.length].name.fr + ' v' + v + ' : ' + total + ' gemmes' : 'niveau'; },   // Core.test.voir(17) : montre le 17e objet de objets.js (0 : retour au niveau)
     // Core.test.level(n) : saute directement au niveau n
     level(n = 1) { level = Math.max(1, n | 0); C.restart(); return level; },
-    // Core.test.sky(i) : montre la constellation i (tablettes retirées, étoiles allumées, figure bien visible) ; R pour revenir au jeu
-    sky(i = 0) { const cst = CONSTELLATIONS[i % CONSTELLATIONS.length]; plates = []; screws = screws.filter(s => s.state === 'box'); C.test.figAlpha = .7; sky = { name: cst.name, edges: cst.edges, img: cst.img, fyb: cst.fy, fig: FIGURES[cst.name] || [], stars: cst.stars.map(([nx, ny]) => ({ x: SKY_BOX.x + nx * SKY_BOX.w, y: SKY_BOX.y + ny * SKY_BOX.h, lit: true, litAt: tm - 5, ph: rand(Math.PI * 2) })) }; figBounds(sky); return sky.name; },
     // Core.test.stuck() : affiche la proposition de secours (le bot ou un tap sur le bouton l'accepte)
     stuck() { if (state === 'play') { state = 'stuck'; duck(.3); } },
     // Core.test.fakeTray(n) : n gemmes factices sur le présentoir (rendu de la tension seulement, R pour nettoyer)

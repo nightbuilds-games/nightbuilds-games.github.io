@@ -11,10 +11,6 @@
     'BLOQUÉ !': '¡BLOQUEADO!', 'On recommence…': 'Otra vez…', 'À SUIVRE': 'SIGUIENTES', 'PRÉSENTOIR PLEIN': 'BANDEJA LLENA',
     'Une place de plus pour continuer ?': '¿Un espacio más para continuar?', '✦  +1 PLACE  ✦': '✦  +1 ESPACIO  ✦', 'offert': 'gratis',
     'Touche une gemme : elle rejoint l’écrin de sa couleur': 'Toca una gema: va al joyero de su color', 'IL FAUT LA CLÉ': 'FALTA LA LLAVE', 'DÉVERROUILLÉ !': '¡DESBLOQUEADO!',
-    // constellations
-    'GRANDE OURSE': 'OSA MAYOR', 'CASSIOPÉE': 'CASIOPEA', 'ORION': 'ORIÓN', 'CYGNE': 'CISNE', 'LYRE': 'LIRA', 'SCORPION': 'ESCORPIO', 'SAGITTAIRE': 'SAGITARIO', 'LION': 'LEO',
-    'BÉLIER': 'ARIES', 'TAUREAU': 'TAURO', 'GÉMEAUX': 'GÉMINIS', 'CANCER': 'CÁNCER', 'VIERGE': 'VIRGO', 'BALANCE': 'LIBRA', 'CAPRICORNE': 'CAPRICORNIO', 'VERSEAU': 'ACUARIO',
-    'POISSONS': 'PISCIS', 'PÉGASE': 'PEGASO', 'DRAGON': 'DRAGÓN', 'AIGLE': 'ÁGUILA', 'DAUPHIN': 'DELFÍN', 'HERCULE': 'HÉRCULES', 'ANDROMÈDE': 'ANDRÓMEDA', 'PHÉNIX': 'FÉNIX',
     // aides
     'Place en plus': 'Espacio extra', 'Une place de plus sur le présentoir, jusqu’à la fin du niveau.': 'Un espacio más en la bandeja, hasta el final del nivel.',
     'Plateau de réserve': 'Bandeja de reserva',
@@ -97,10 +93,6 @@
     'BLOQUÉ !': 'TRAVADO!', 'On recommence…': 'De novo…', 'À SUIVRE': 'A SEGUIR', 'PRÉSENTOIR PLEIN': 'BANDEJA CHEIA', 'Une place de plus pour continuer ?': 'Mais um espaço para continuar?',
     '✦  +1 PLACE  ✦': '✦  +1 ESPAÇO  ✦', 'offert': 'grátis', 'Touche une gemme : elle rejoint l’écrin de sa couleur': 'Toque em uma gema: ela vai para o estojo da sua cor',
     'IL FAUT LA CLÉ': 'FALTA A CHAVE', 'DÉVERROUILLÉ !': 'DESTRANCADO!',
-    // constellations
-    'GRANDE OURSE': 'URSA MAIOR', 'CASSIOPÉE': 'CASSIOPEIA', 'ORION': 'ÓRION', 'CYGNE': 'CISNE', 'LYRE': 'LIRA', 'SCORPION': 'ESCORPIÃO', 'SAGITTAIRE': 'SAGITÁRIO', 'LION': 'LEÃO',
-    'BÉLIER': 'ÁRIES', 'TAUREAU': 'TOURO', 'GÉMEAUX': 'GÊMEOS', 'CANCER': 'CÂNCER', 'VIERGE': 'VIRGEM', 'BALANCE': 'LIBRA', 'CAPRICORNE': 'CAPRICÓRNIO', 'VERSEAU': 'AQUÁRIO',
-    'POISSONS': 'PEIXES', 'PÉGASE': 'PÉGASO', 'DRAGON': 'DRAGÃO', 'AIGLE': 'ÁGUIA', 'DAUPHIN': 'GOLFINHO', 'HERCULE': 'HÉRCULES', 'ANDROMÈDE': 'ANDRÔMEDA', 'PHÉNIX': 'FÊNIX',
     // aides
     'Place en plus': 'Espaço extra', 'Une place de plus sur le présentoir, jusqu’à la fin du niveau.': 'Mais um espaço na bandeja, até o fim do nível.', 'Plateau de réserve': 'Bandeja reserva',
     'Vide le présentoir : ses gemmes attendent en réserve et rejoignent leur écrin dès qu’il s’ouvre.': 'Esvazia a bandeja: as gemas esperam na reserva e vão para o estojo assim que ele abre.',
