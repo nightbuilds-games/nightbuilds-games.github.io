@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jewel Box — play the demo in your browser</title>
+<meta name="description" content="Play the first levels of Jewel Box in your browser: tap the gems out of each jewelled object and sort them into their boxes. No install, no sign-up.">
+<link rel="canonical" href="https://nightbuilds.app/jewelbox/play/">
+<link rel="icon" href="../../assets/img/favicon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Jewel Box — playable demo">
+<meta property="og:description" content="Play the first levels of Jewel Box in your browser: tap the gems out of each jewelled object and sort them into their boxes. No install, no sign-up.">
+<meta property="og:url" content="https://nightbuilds.app/jewelbox/play/">
+<meta property="og:image" content="https://nightbuilds.app/jewelbox/share.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1c1f52">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="engine/shell.css">
+</head>
+<body>
+<canvas id="game"></canvas>
+<script>
+  // DÉMO du site, fabriquée par `node jeux/build.js ecrin --demo` : ne pas modifier à la main.
+  // Les paramètres d'URL de développement (?level, ?zone, ?dev, ?bot…) sont ignorés : seuls la langue (?lang) et ?mute sont gardés.
+  (function () { var keep = (location.search.match(/[?&](lang=(fr|en|es|pt)|mute)(?=&|$)/g) || []).map(function (s) { return s.slice(1); }), q = keep.length ? "?" + keep.join("&") : ""; try { if (location.search !== q || location.hash) history.replaceState(null, "", location.pathname + q); } catch (e) { } })();
+  window.GAME_DEMO = {"levels":12,"url":"","label":"preorder"};
+</script>
+<script src="engine/core.js"></script>
+<script src="engine/stats.js"></script>   <!-- statistiques GameAnalytics (rien n est envoyé en développement) -->
+<script src="engine/house.js"></script>   <!-- pubs maison : les autres jeux du studio, aux emplacements des pubs -->
+<script src="engine/monet.js"></script>   <!-- pubs et achats (simulés en développement) -->
+<script src="engine/lang.js"></script>   <!-- coquille en espagnol et en portugais -->
+<script src="engine/shell.js"></script>
+<script src="audio/manifest.js"></script>   <!-- musiques et bruitages enregistrés (facultatifs : sans eux, tout est synthétisé) -->
+<script src="lang.js"></script>   <!-- jeu en espagnol et en portugais -->
+<script src="objets.js"></script>   <!-- les objets à démonter, un par niveau -->
+<script src="game.js"></script>
+<script>
+  // configuration de la coquille pour ce jeu : nom, couleurs des menus (rubis, saphir, crème) et du fond de page (velours bleu nuit, comme le décor)
+  Shell.init({
+    id: 'ecrin',
+    version: '0.1.0',
+    title: { fr: 'Jewel Box', en: 'Jewel Box' },   // un seul nom dans toutes les langues (décidé le 6 oct. 2026), comme Jellies on the Run
+    maxShown: 24,
+    privacyUrl: 'https://nightbuilds.app/privacy.html',   // site des jeux (dossier site/ du dépôt)
+    colors: {
+      'bg-top': '#1c1f52', 'bg-bottom': '#08091c',
+      primary: '#E5173F', 'primary-dark': '#8b0d26', secondary: '#2E6BFF', 'secondary-dark': '#1e3a8a',
+      panel: '#FFF8E7', ink: '#3a2408',
+    },
+  });
+</script>
+</body>
+</html>

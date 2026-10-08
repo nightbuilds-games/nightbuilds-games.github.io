@@ -1,0 +1,28 @@
+{
+  "_": "Catalogue des pubs maison (engine/house.js) : les jeux du studio que chaque jeu peut présenter aux joueurs des autres. Source de vérité ; `node jeux/tools/pubs-maison.js` le contrôle et le copie dans site/promo/catalog.json, d'où les applis déjà publiées le relisent (un jeu ajouté ici apparaît donc sans mise à jour des applis). id = identifiant du jeu dans la coquille (Shell.init). store : lien du store par plateforme ; vide = jeu pas encore sorti, jamais présenté. clip : vidéo verticale muette (celle de la page du site) ; poster : son image d'attente. share : part des pubs entre niveaux données à une pub maison quand une pub payante est prête (0.25 = une sur quatre) ; quand aucune pub payante n'est prête, la pub maison prend la place. pt : jeton de campagne App Store Connect (facultatif, pour mesurer les téléchargements venus des pubs maison).",
+  "version": 1,
+  "share": 0.25,
+  "pt": "",
+  "games": [
+    {
+      "id": "gelees",
+      "name": "Jellies on the Run",
+      "tagline": { "en": "Slide, sort, beat the heat!", "fr": "Glisse, trie, fais vite !", "es": "Desliza, ordena, ¡date prisa!", "pt": "Deslize, organize, corra!" },
+      "icon": "https://nightbuilds.app/assets/img/gelees-icon.webp",
+      "clip": "https://nightbuilds.app/jellies/clip.mp4",
+      "poster": "https://nightbuilds.app/jellies/clip.jpg",
+      "color": "#FF4D6D",
+      "store": { "ios": "", "android": "" }
+    },
+    {
+      "id": "ecrin",
+      "name": "Jewel Box",
+      "tagline": { "en": "Sort gems, fill every box", "fr": "Dessertis, trie, range tout !", "es": "Ordena gemas, llena joyeros", "pt": "Separe gemas, encha estojos" },
+      "icon": "https://nightbuilds.app/assets/img/ecrin-icon.webp",
+      "clip": "https://nightbuilds.app/jewelbox/clip.mp4",
+      "poster": "https://nightbuilds.app/jewelbox/clip.jpg",
+      "color": "#E5173F",
+      "store": { "ios": "", "android": "" }
+    }
+  ]
+}

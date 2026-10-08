@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="../assets/site.css">
 <!-- Page du jeu Jewel Box (plan.md, section 13.1) : URL marketing de la fiche App Store. Thème de nuit : <body class="night"> (assets/site.css).
      Captures et textes : les mêmes que la fiche (jeux/tools/captures-fiche.js ecrin, fiche-app-store-jewelbox.md) ; clip et image de partage :
-     jeux/tools/clip-site.js ecrin. Pas encore de démo jouable (bouton à ajouter quand elle existera, comme sur la page de Jellies).
+     jeux/tools/clip-site.js ecrin. Démo jouable : play/ (node jeux/build.js ecrin --demo).
      Quand le jeu est sur l'App Store : renseigner STORE.jewelbox dans assets/site.js, et ajouter ici
        <meta name="apple-itunes-app" content="app-id=…">  (bannière « Ouvrir dans l'App Store » de Safari). -->
 </head>
@@ -37,6 +37,7 @@
       <p class="lead" data-fr="Chaque niveau est un objet précieux tenu par ses gemmes. Dessertis-les dans le bon ordre, range-les par trois dans leur écrin, et regarde l’objet se défaire.">Every level is a jewelled object held together by gems. Tap them out in the right order, fill each box with three of a color, and watch the piece come apart.</p>
       <div class="cta">
         <a class="btn store soon" data-store="jewelbox"><small data-fr="Bientôt sur l’">Coming soon on the</small><span>App Store</span></a>
+        <a class="btn blue" href="play/" data-fr="Essayer dans le navigateur">Try it in your browser</a>
       </div>
       <div class="badges"><span data-fr="Gratuit">Free</span><span data-fr="300 objets">300 objects</span><span data-fr="Quinze mondes">Fifteen worlds</span><span data-fr="Sans chrono">No timer</span><span data-fr="Hors ligne">Plays offline</span></div>
     </div>
@@ -93,7 +94,7 @@
   <div class="wrap reveal">
     <h2 data-fr="Prêt à ouvrir l’écrin&nbsp;?">Ready to open the box?</h2>
     <p data-fr="Gratuit sur iPhone. Version Android prévue.">Free on iPhone. Android version planned.</p>
-    <div class="cta"><a class="btn store soon" data-store="jewelbox"><small data-fr="Bientôt sur l’">Coming soon on the</small><span>App Store</span></a></div>
+    <div class="cta"><a class="btn store soon" data-store="jewelbox"><small data-fr="Bientôt sur l’">Coming soon on the</small><span>App Store</span></a><a class="btn blue" href="play/" data-fr="Essayer la démo">Play the demo</a></div>
   </div>
 </section>
 
