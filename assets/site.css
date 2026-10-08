@@ -88,6 +88,7 @@ section.light { padding: 56px 0 30px; position: relative; }
 
 /* cartes des jeux (accueil) */
 .games { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 34px; }
+.games:where(.two) { grid-template-columns: repeat(2, 1fr); max-width: 760px; margin-left: auto; margin-right: auto; }
 .game { position: relative; display: block; text-decoration: none; color: #fff; border-radius: 30px; padding: 24px 22px 26px; overflow: hidden; isolation: isolate; box-shadow: 0 9px 0 rgba(0, 0, 0, .18), var(--shadow);
   transition: transform .18s cubic-bezier(.2, 1.4, .4, 1), box-shadow .18s; transform-style: preserve-3d; }
 .game:hover { transform: translateY(-6px) rotate(-1deg); }

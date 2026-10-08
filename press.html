@@ -18,13 +18,13 @@
 <link rel="stylesheet" href="assets/site.css">
 <!-- Presse et contact (plan.md, section 13.2). Anglais dans la page, français dans data-fr (assets/site.js).
      Faits et textes : les mêmes que la fiche App Store (fiche-app-store-jellies.md) ; à tenir à jour avec elle (date de sortie, prix, langues).
-     Dossier à télécharger : press/jellies-press-kit.zip, refait par `node jeux/tools/dossier-presse.js`.
+     Dossiers à télécharger : press/jellies-press-kit.zip et press/jewelbox-press-kit.zip, refaits par `node jeux/tools/dossier-presse.js [gelees|ecrin]`.
      Adresse de contact : CONTACT dans assets/site.js (liens a.contact). -->
 </head>
 <body>
 <div class="nav"><div class="wrap">
   <a class="brand" href="./"><i></i>nightbuilds</a>
-  <nav><a href="jellies/">Jellies on the Run</a><a href="#contact">Contact</a><a class="lang" href="?lang=fr">Français</a></nav>
+  <nav><a href="jellies/">Jellies on the Run</a><a href="jewelbox/">Jewel Box</a><a href="#contact">Contact</a><a class="lang" href="?lang=fr">Français</a></nav>
 </div></div>
 <header class="sky small">
   <div class="sun"><div class="rays"></div><div class="disc"></div></div>
@@ -33,7 +33,7 @@
 <main class="doc press">
 
 <h1 data-fr="Presse et contact">Press &amp; contact</h1>
-<p class="muted" data-fr="Tout ce qu’il faut pour parler de nightbuilds et de Jellies on the Run. Dernière mise à jour&nbsp;: 5 octobre 2026.">Everything you need to write about nightbuilds and Jellies on the Run. Last updated: October 5, 2026.</p>
+<p class="muted" data-fr="Tout ce qu’il faut pour parler de nightbuilds et de ses jeux, Jellies on the Run et Jewel Box. Dernière mise à jour&nbsp;: 8 octobre 2026.">Everything you need to write about nightbuilds and its games, Jellies on the Run and Jewel Box. Last updated: October 8, 2026.</p>
 
 <div class="card" id="contact">
   <strong data-fr="Contact">Contact</strong>
@@ -44,7 +44,7 @@
 
 <h2 data-fr="Le studio">The studio</h2>
 <p data-fr="nightbuilds est un studio de jeux indépendant fondé en 2026 par Pierre Trochet, développeur seul, en France. Il fait de petits casse-têtes colorés pour téléphone&nbsp;: des parties courtes, jouables d’une main, qu’on comprend en dix secondes.">nightbuilds is an indie game studio founded in 2026 by Pierre Trochet, a solo developer based in France. It makes small, colorful puzzle games for phones: short sessions, playable with one hand, understood in ten seconds.</p>
-<p data-fr="Jellies on the Run est son premier jeu. Trois autres sont en préparation&nbsp;: P’tit Glouton, À la chaîne&nbsp;! et Écrin.">Jellies on the Run is its first game. Three more are in the making: Lil’ Gobbler, On the Line! and Jewel Box.</p>
+<p data-fr="Jellies on the Run est son premier jeu. Deux autres sont en préparation&nbsp;: Jewel Box et P’tit Glouton.">Jellies on the Run is its first game. Two more are in the making: Jewel Box and Lil’ Gobbler.</p>
 
 <h2>Jellies on the Run</h2>
 <div class="pressgame">
@@ -86,8 +86,48 @@
   <img src="jellies/img/en-5.webp" data-fr-src="jellies/img/fr-5.webp" width="660" height="1434" loading="lazy" alt="Six sunny worlds, hundreds of levels" data-fr-alt="Six mondes ensoleillés, des centaines de niveaux">
 </div>
 
+<h2 id="jewelbox">Jewel Box</h2>
+<div class="pressgame">
+  <img src="assets/img/ecrin-icon.webp" alt="" width="96" height="96">
+  <p><strong data-fr="Dessertis, trie, range tout&nbsp;!">Sort gems, fill every box</strong><br>
+  <span data-fr="Chaque niveau est un objet précieux tenu par ses gemmes. On les dessertit dans le bon ordre, on les range par trois dans leur écrin, et l’objet se défait pièce par pièce. Un casse-tête calme, sans chrono.">Every level is a jewelled object held together by gems. Tap them out in the right order, fill each box with three of a color, and the object comes apart piece by piece. A calm puzzle with no timer.</span></p>
+</div>
+
+<div class="tablewrap"><table>
+  <tr><th data-fr="Développeur">Developer</th><td data-fr="nightbuilds (Pierre Trochet), France">nightbuilds (Pierre Trochet), France</td></tr>
+  <tr><th data-fr="Genre">Genre</th><td data-fr="Casse-tête (tri, démontage)">Puzzle (sorting, take-apart)</td></tr>
+  <tr><th data-fr="Sortie">Release date</th><td data-fr="À annoncer">To be announced</td></tr>
+  <tr><th data-fr="Plateformes">Platforms</th><td data-fr="iPhone (iOS 15 ou plus récent). Version Android prévue.">iPhone (iOS 15 or later). Android version planned.</td></tr>
+  <tr><th data-fr="Prix">Price</th><td data-fr="Gratuit, avec publicités, sans bandeau. Achats facultatifs&nbsp;: retirer les pubs (3,99&nbsp;$), pièces (1,99&nbsp;$ et 4,99&nbsp;$).">Free, with ads, no banners. Optional purchases: remove ads ($3.99), coin packs ($1.99 and $4.99).</td></tr>
+  <tr><th data-fr="Langues">Languages</th><td data-fr="Anglais, français, espagnol, portugais (Brésil)">English, French, Spanish, Portuguese (Brazil)</td></tr>
+  <tr><th data-fr="Âge">Age rating</th><td>4+</td></tr>
+  <tr><th data-fr="Connexion">Connection</th><td data-fr="Jouable hors ligne, sans compte">Plays offline, no account</td></tr>
+  <tr><th data-fr="Page du jeu">Game page</th><td><a href="jewelbox/">nightbuilds.app/jewelbox</a> · <a href="jewelbox/play/" data-fr="démo jouable dans le navigateur">playable demo in the browser</a></td></tr>
+</table></div>
+
+<h2 data-fr="Jewel Box en bref">Jewel Box in short</h2>
+<ul>
+  <li data-fr="On touche une gemme&nbsp;: elle file dans l’écrin de sa couleur, ou attend sur un petit présentoir s’il n’y a pas d’écrin ouvert. Trois gemmes pareilles referment l’écrin.">Tap a gem and it flies to the box of its color, or waits on a small tray if no such box is open. Three of a kind close the box.</li>
+  <li data-fr="Les pièces se chevauchent&nbsp;: une pièce sans gemme tombe et dévoile ce qu’elle cachait. L’ordre compte, et un présentoir plein bloque la partie.">Pieces overlap: a piece with no gems left drops away and reveals what it was hiding. The order matters, and a full tray ends the run.</li>
+  <li data-fr="300 objets différents à démonter, un par niveau&nbsp;: bijoux, animaux, gourmandises, instruments, monuments.">300 different objects to take apart, one per level: jewels, animals, treats, instruments, monuments.</li>
+  <li data-fr="Quinze mondes de vingt niveaux, chacun avec son décor de joaillerie et sa musique, et un gros objet retors pour finir.">Fifteen worlds of twenty levels, each with its own jewelled scenery and music, and a big, tricky object to close it.</li>
+  <li data-fr="Des surprises en chemin&nbsp;: gemmes mystère, cadenas dont il faut trouver la clé, gemmes enchaînées, et trois aides (place en plus, plateau de réserve, marteau).">New twists along the way: mystery gems, padlocks with a key to find, chained gems, and three boosters (extra slot, spare tray, hammer).</li>
+  <li data-fr="Pas de chrono, trois étoiles à décrocher, symboles pour les daltoniens, jouable d’une seule main.">No timer, three stars to earn, color-blind symbols, playable with one hand.</li>
+  <li data-fr="Même fabrication maison que Jellies on the Run&nbsp;: le jeu, son moteur et le solveur qui garantit chaque niveau sont écrits en JavaScript.">Hand-built like Jellies on the Run: the game, its engine and the solver that guarantees every level are written in JavaScript.</li>
+</ul>
+
+<h2 data-fr="Images et vidéo de Jewel Box">Jewel Box images and video</h2>
+<p data-fr="Icône, captures en quatre langues, clip de jeu et image de partage, dans une seule archive.">Icon, screenshots in four languages, a gameplay clip and a share image, in a single archive.</p>
+<p><a class="btn" href="press/jewelbox-press-kit.zip" download data-fr="Télécharger le dossier de presse">Download the press kit</a></p>
+<div class="pressshots">
+  <img src="jewelbox/img/en-1.webp" data-fr-src="jewelbox/img/fr-1.webp" width="660" height="1434" loading="lazy" alt="Tap a gem: it finds its jewel box" data-fr-alt="Touche une gemme : elle file dans son écrin">
+  <img src="jewelbox/img/en-2.webp" data-fr-src="jewelbox/img/fr-2.webp" width="660" height="1434" loading="lazy" alt="300 jewelled objects to take apart" data-fr-alt="300 objets précieux à démonter">
+  <img src="jewelbox/img/en-3.webp" data-fr-src="jewelbox/img/fr-3.webp" width="660" height="1434" loading="lazy" alt="Free the pieces, layer by layer" data-fr-alt="Libère les pièces, couche après couche">
+  <img src="jewelbox/img/en-4.webp" data-fr-src="jewelbox/img/fr-4.webp" width="660" height="1434" loading="lazy" alt="Locks, chains, mysteries: new twists all the way" data-fr-alt="Cadenas et chaînes : des surprises partout">
+</div>
+
 <h2 data-fr="Utilisation">Usage</h2>
-<p data-fr="Vous pouvez utiliser ces images et ce clip, ainsi que vos propres captures et vidéos du jeu, dans des articles, des tests et des vidéos, y compris monétisées. Merci de citer «&nbsp;Jellies on the Run&nbsp;» et nightbuilds.">You may use these images and this clip, as well as your own screenshots and footage of the game, in articles, reviews and videos, including monetized ones. Please credit “Jellies on the Run” and nightbuilds.</p>
+<p data-fr="Vous pouvez utiliser ces images et ces clips, ainsi que vos propres captures et vidéos des jeux, dans des articles, des tests et des vidéos, y compris monétisées. Merci de citer le nom du jeu et nightbuilds.">You may use these images and these clips, as well as your own screenshots and footage of the games, in articles, reviews and videos, including monetized ones. Please credit the name of the game and nightbuilds.</p>
 
 <h2 data-fr="Crédits">Credits</h2>
 <p data-fr="Conception et développement&nbsp;: Pierre Trochet. Musique&nbsp;: Kevin MacLeod (<a href=&quot;https://incompetech.com&quot; rel=&quot;noopener&quot;>incompetech.com</a>), sous licence <a href=&quot;https://creativecommons.org/licenses/by/4.0/&quot; rel=&quot;noopener&quot;>Creative Commons Attribution 4.0</a>. Bruitages&nbsp;: Kenney (<a href=&quot;https://kenney.nl&quot; rel=&quot;noopener&quot;>kenney.nl</a>).">Design and development: Pierre Trochet. Music: Kevin MacLeod (<a href="https://incompetech.com" rel="noopener">incompetech.com</a>), licensed under <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">Creative Commons Attribution 4.0</a>. Sound effects: Kenney (<a href="https://kenney.nl" rel="noopener">kenney.nl</a>).</p>
@@ -95,7 +135,7 @@
 </main>
 <footer class="grass" style="margin-top: 70px">
   <div class="wrap">
-    <nav><a href="./" data-fr="Les jeux nightbuilds">nightbuilds games</a><a href="jellies/">Jellies on the Run</a><a href="privacy.html" data-fr="Confidentialité">Privacy</a><a href="privacy.html#support-en" data-fr-href="privacy.html#support" data-fr="Support">Support</a></nav>
+    <nav><a href="./" data-fr="Les jeux nightbuilds">nightbuilds games</a><a href="jellies/">Jellies on the Run</a><a href="jewelbox/">Jewel Box</a><a href="privacy.html" data-fr="Confidentialité">Privacy</a><a href="privacy.html#support-en" data-fr-href="privacy.html#support" data-fr="Support">Support</a></nav>
     <small>© 2026 nightbuilds</small>
   </div>
 </footer>
