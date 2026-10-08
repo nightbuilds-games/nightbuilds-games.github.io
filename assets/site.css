@@ -32,6 +32,8 @@ p { margin: 0; }
 .nav nav a { color: #fff; text-decoration: none; font-size: 16px; padding: 8px 14px; border-radius: 999px; transition: background .15s; }
 .nav nav a:hover { background: rgba(255, 255, 255, .2); }
 .nav nav a.lang { background: rgba(255, 255, 255, .22); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .5); }
+.nav nav select.lang { font: inherit; font-size: 16px; color: #fff; cursor: pointer; border: 0; border-radius: 999px; padding: 8px 12px; background: rgba(255, 255, 255, .22); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .5); -webkit-appearance: none; appearance: none; text-align: center; }
+.nav nav select.lang option { color: #222; background: #fff; }
 
 /* ------------------------------------------------------------ ciel (haut de page) : dégradé, soleil, nuages, puis bord ondulé */
 .sky { position: relative; color: #fff; padding: 110px 0 120px; overflow: hidden; isolation: isolate;

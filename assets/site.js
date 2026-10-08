@@ -1,6 +1,8 @@
 /* Interactions communes du site nightbuilds.app (refonte du 1er oct. 2026). Sans dépendance.
-   - langue : anglais dans la page, français dans les attributs data-fr (texte), data-fr-src, data-fr-alt, data-fr-href ; le français
-     s'applique si le navigateur est en français ou avec ?lang=fr ; le lien .lang bascule ;
+   - langue : celle du navigateur si le site la parle (anglais, français, espagnol, portugais), anglais sinon ; ?lang=fr, es, pt ou en pour
+     forcer, et le menu .lang pour changer. L'anglais est dans la page ; le français dans les attributs data-fr (texte), data-fr-src,
+     data-fr-alt, data-fr-href ; l'espagnol et le portugais dans assets/i18n.js (table « texte anglais → traduction », chargée avant ce
+     fichier). Les captures suivent la langue quand le bloc qui les contient l'annonce (data-langs="en fr es pt") ;
    - gelées : <div class="jelly" data-color="pink" data-w="1" data-h="2" style="left:…;top:…;width:…"> devient une gelée du jeu
      (SVG) dont le regard suit le pointeur ; on peut l'attraper et la lâcher (elle revient en rebondissant) ou la tapoter (éclats) ;
    - apparition des blocs .reveal au défilement, clip lancé quand il entre à l'écran, rangée de captures qui se tire à la souris ;
@@ -11,17 +13,31 @@
   const CONTACT = 'contact@nightbuilds.app';   // adresse de contact (liens a.contact) : la même que dans privacy.html
 
   // ------------------------------------------------------------ langue
+  const LANGS = { en: 'English', fr: 'Français', es: 'Español', pt: 'Português' };
+  const known = s => { s = String(s || '').toLowerCase().slice(0, 2); return LANGS[s] ? s : null; };
   const q = new URLSearchParams(location.search).get('lang');
-  const lang = (q || navigator.language || 'en').toLowerCase().startsWith('fr') ? 'fr' : 'en';
+  const lang = known(q) || known(navigator.language) || 'en';
+  const root = document.documentElement; root.lang = lang === 'pt' ? 'pt-BR' : lang;
   if (lang === 'fr') {
-    const root = document.documentElement; root.lang = 'fr';
     if (root.dataset.frTitle) document.title = root.dataset.frTitle;
     document.querySelectorAll('[data-fr]').forEach(e => { e.innerHTML = e.dataset.fr; });
     document.querySelectorAll('[data-fr-src]').forEach(e => { e.src = e.dataset.frSrc; });
     document.querySelectorAll('[data-fr-alt]').forEach(e => { e.alt = e.dataset.frAlt; });
     document.querySelectorAll('[data-fr-href]').forEach(e => { e.href = e.dataset.frHref; });
+  } else if (lang !== 'en') {   // espagnol, portugais : la table de assets/i18n.js ; un texte qui n'y est pas reste en anglais
+    const T = (window.SITE_I18N || {})[lang] || {}, tr = k => T[String(k).trim()];
+    if (tr(document.title)) document.title = tr(document.title);
+    document.querySelectorAll('[data-fr]').forEach(e => { const t = tr(e.innerHTML); if (t !== undefined) e.innerHTML = t; });
+    document.querySelectorAll('[data-fr-alt]').forEach(e => { const t = tr(e.alt); if (t !== undefined) e.alt = t; });
+    document.querySelectorAll('[data-langs] [data-fr-src]').forEach(e => { if (e.closest('[data-langs]').dataset.langs.split(' ').includes(lang)) e.src = e.dataset.frSrc.replace(/(^|\/)fr-/, '$1' + lang + '-'); });
   }
-  document.querySelectorAll('a.lang').forEach(a => { a.textContent = lang === 'fr' ? 'English' : 'Français'; a.href = '?lang=' + (lang === 'fr' ? 'en' : 'fr'); });
+  // le lien de langue devient un menu des quatre langues
+  document.querySelectorAll('a.lang').forEach(a => {
+    const s = document.createElement('select'); s.className = 'lang'; s.setAttribute('aria-label', 'Language');
+    for (const l in LANGS) { const o = document.createElement('option'); o.value = l; o.textContent = LANGS[l]; o.selected = l === lang; s.appendChild(o); }
+    s.addEventListener('change', () => { location.href = location.pathname + '?lang=' + s.value + location.hash; });
+    a.replaceWith(s);
+  });
   // la langue choisie suit les liens internes du site
   if (q) document.querySelectorAll('a[href]').forEach(a => { const h = a.getAttribute('href'); if (/^(\.\.?\/|[\w-]+\/|[\w-]+\.html)/.test(h) && !/[?#]/.test(h)) a.setAttribute('href', h + '?lang=' + lang); });
 
@@ -32,7 +48,7 @@
     const url = STORE[b.dataset.store];
     if (!url) return;
     b.href = url; b.classList.remove('soon');
-    const s = b.querySelector('small'); if (s) s.textContent = lang === 'fr' ? 'Télécharger dans l’' : 'Download on the';
+    const s = b.querySelector('small'); if (s) s.textContent = { fr: 'Télécharger dans l’', es: 'Descárgalo en el', pt: 'Baixar na' }[lang] || 'Download on the';
   });
 
   // ------------------------------------------------------------ gelées
