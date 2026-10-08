@@ -59,7 +59,7 @@
     'LA SUITE DANS L’APPLI': 'MORE IN THE APP', 'BRAVO !': 'WELL DONE!', 'Tu as fini la démo. Dans l’appli : six mondes, des centaines de niveaux et de nouvelles surprises.': 'You finished the demo. In the app: six worlds, hundreds of levels and new surprises.',
     'Télécharger': 'Download', 'Précommander': 'Pre-order', 'Bientôt': 'Coming soon', 'sur l’App Store': 'on the App Store', 'Gratuit sur iPhone': 'Free on iPhone',
     'Démo : {n} niveaux. Ta progression reste dans ce navigateur.': 'Demo: {n} levels. Your progress stays in this browser.',
-    'Cadeau au niveau {n}': 'Gift at level {n}', 'Cadeau du niveau {n}': 'Level {n} gift', 'Bonus niveau difficile': 'Hard level bonus', 'Nouveauté': 'New',
+    'Cadeau au niveau {n}': 'Gift at level {n}', 'Cadeau du niveau {n}': 'Level {n} gift', 'Bonus niveau difficile': 'Hard level bonus', 'Nouveauté': 'New', 'Prochaine nouveauté': 'Coming up', 'Prochaine aide': 'Next booster', 'Encore {n} niveaux': '{n} levels to go', 'Encore {n} niveau': '{n} level to go', 'Au prochain niveau !': 'Next level!',
   });
   const ECONOMY = { start: 100, firstWin: 10, perStar: 5, replayWin: 5, rescue: 60, freeCoins: 25, freePerDay: 5, interFrom: 8, interGap: 150,
     hardBonus: 10, gift: { every: 5, coins: 30 }, reviewFrom: 8 };   // bonus de première victoire d'un niveau difficile (×2 si très difficile) ; cadeau tous les 5 niveaux (première victoire)
@@ -220,14 +220,14 @@
   let resultEl = null;
   function buildResult() {
     const s = el('section', 'screen result'); const p = el('div', 'panel');
-    resultEl = { h: el('h2'), st: el('div', 'bigstars'), time: el('p', 'time'), best: el('p', 'best'), gain: el('p', 'gain'), extra: el('div', 'extra') };
+    resultEl = { h: el('h2'), st: el('div', 'bigstars'), time: el('p', 'time'), best: el('p', 'best'), gain: el('p', 'gain'), extra: el('div', 'extra'), next: el('div', 'nextnews') };
     // gain de pièces, doublé par une pub récompensée (une fois par victoire)
     resultEl.dbl = button('', 'ad', async () => {
       if (resultEl.doubled) return; resultEl.dbl.disabled = true;
       if (await rewarded('double')) { resultEl.doubled = true; addCoins(resultEl.coins, 'double'); resultEl.gain.innerHTML = '+' + coinTxt(resultEl.coins * 2); resultEl.dbl.style.display = 'none'; }
       else resultEl.dbl.disabled = false;
     });
-    p.appendChild(resultEl.h); p.appendChild(resultEl.st); p.appendChild(resultEl.time); p.appendChild(resultEl.best); p.appendChild(resultEl.gain); p.appendChild(resultEl.extra); p.appendChild(resultEl.dbl);
+    p.appendChild(resultEl.h); p.appendChild(resultEl.st); p.appendChild(resultEl.time); p.appendChild(resultEl.best); p.appendChild(resultEl.gain); p.appendChild(resultEl.extra); p.appendChild(resultEl.next); p.appendChild(resultEl.dbl);
     p.appendChild(button(tr('SUIVANT'), 'big primary', () => nextLevel(resultEl.level + 1)));
     const row = el('div', 'row');
     row.appendChild(button(tr('REJOUER'), 'secondary', () => startLevel(resultEl.level)));
@@ -438,17 +438,33 @@
     if (!save.noAds && Monet.ads.interReady && n >= ECONOMY.interFrom && Date.now() - lastInter > ECONOMY.interGap * 1000) { lastInter = Date.now(); S.ad('interstitial', 'next_level', 'show'); await Monet.ads.interstitial(); }
     startLevel(n);
   }
+  // ÉCRAN DE DÉMARRAGE (8 oct. 2026) : iOS n'affiche le sien que le temps de lancer l'appli, un éclair. La page le reprend à l'identique
+  // (splash.webp du jeu, fabriqué par tools/splash-web.js) et le garde SPLASH_MS après le début du chargement, puis fond vers le menu.
+  // Dans l'appli seulement (ou ?splash dans le navigateur, pour l'essayer) ; image absente ou illisible : rien, le menu vient tout de suite.
+  const SPLASH_MS = 1500;
+  function splash(c) {
+    const native = global.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform();
+    if (!c.splash || c.demo || global.ART || !(native || C.URLP.splash)) return;
+    const d = el('div', ''), img = new Image(), off = () => { d.classList.add('out'); setTimeout(() => d.remove(), 400); };
+    d.id = 'splash'; d.style.backgroundColor = c.splash.bg || '#000'; document.body.appendChild(d);
+    img.onload = () => { d.style.backgroundImage = 'url(' + img.src + ')'; setTimeout(off, Math.max(300, SPLASH_MS - performance.now())); };
+    img.onerror = off; img.src = c.splash.src || 'splash.webp';
+  }
   const fmt = t => t < 60 ? t.toFixed(1) + ' s' : Math.floor(t / 60) + ' min ' + String(Math.round(t % 60)).padStart(2, '0');
   const Shell = {
     async init(c) {
       cfg = c; if (!c.demo && global.GAME_DEMO) c.demo = global.GAME_DEMO;   // démo du site : réglée par la page (jeux/build.js --demo)
+      splash(c);
       key = c.id + (c.demo ? '.demo' : '') + '.save';   // la démo a sa propre sauvegarde
       try { save = migrate(JSON.parse(await store.get(key) || 'null')); } catch (_) { save = DEFAULT(); }
+      // essais en développement (serveur du PC seulement, jamais dans l'appli ni sur le site) : ?debloque=81 ouvre les niveaux jusqu'au 81
+      const dq = /^(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+)$/.test(location.hostname) && (location.search.match(/[?&]debloque=(\d+)/) || [])[1];
+      if (dq && !c.demo) save.unlocked = Math.max(save.unlocked, +dq);
       C.setSound(save.settings.sound); C.setHaptics(save.settings.haptics);
       S.init(Object.assign({ id: c.id, version: c.version || '0', enabled: save.settings.stats }, c.demo ? Object.assign({ web: true }, c.demo.stats) : c.stats));   // démo : ses propres clés (jeu GameAnalytics séparé), sans rien garder dans le navigateur ; sans clés, rien
       // pubs et achats : consentement puis pubs, achats configurés (sans effet hors de l'appli) ; le son du jeu se coupe pendant une pub
       Monet.onAd = on => C.setSound(on ? false : save.settings.sound);
-      Monet.init(c.demo ? { off: true } : { ads: c.ads, store: c.store });   // démo : ni pubs ni achats, pas même simulés
+      Monet.init(c.demo ? { off: true } : { ads: c.ads, store: c.store, game: c.id });   // démo : ni pubs ni achats, pas même simulés
       if (c.colors) for (const k in c.colors) document.documentElement.style.setProperty('--' + k, c.colors[k]);
       root = el('div', ''); root.id = 'shell'; document.body.appendChild(root);
       screens = { title: buildTitle(), levels: buildLevels(), pause: buildPause(), result: buildResult(), settings: buildSettings(), shop: buildShop(), rescue: buildRescue(), news: buildNews(), buy: buildBuy() };
@@ -481,6 +497,14 @@
       resultEl.extra.innerHTML = (bonus ? '<span class="tag hardtag">' + ICON.flame + tr('Bonus niveau difficile') + ' +' + bonus + '</span>' : '') +
         (gift ? '<span class="tag gift got">' + ICON.gift + tr('Cadeau du niveau {n}', { n: level }) + ' +' + coinTxt(gift) + '</span>'
           : inDemo(nextGift()) ? '<span class="tag gift">' + ICON.gift + tr('Cadeau au niveau {n}', { n: nextGift() }) + '</span>' : '');
+      // PROCHAINE NOUVEAUTÉ (8 oct. 2026, vue chez Sort Factory! et Pig Loop!) : la nouveauté ou l'aide qui vient, et le chemin déjà fait depuis la précédente
+      const nws = newsList().filter(x => inDemo(x.level)).sort((a, b) => a.level - b.level), nw = nws.find(x => x.level > level && !save.seen[x.key]);
+      resultEl.next.style.display = nw ? '' : 'none';
+      if (nw) {
+        const from = Math.max(0, ...nws.filter(x => x.level <= level).map(x => x.level)), left = nw.level - level - 1, pct = Math.round(100 * (level + 1 - from) / (nw.level - from));
+        resultEl.next.innerHTML = '<span class="ic">' + (nw.icon || '') + '</span><div><b>' + tr(nw.boost ? 'Prochaine aide' : 'Prochaine nouveauté') + ' · ' + C.byLang(nw.title) + '</b><i><u style="width:' + pct + '%"></u></i>' +
+          '<small>' + (left > 0 ? tr(left > 1 ? 'Encore {n} niveaux' : 'Encore {n} niveau', { n: left }) : tr('Au prochain niveau !')) + '</small></div>';
+      }
       resultEl.dbl.innerHTML = ICON.ad + '<span>' + tr('×2 avec une pub') + '</span>'; resultEl.dbl.disabled = false; resultEl.dbl.style.display = Monet.ads.available ? '' : 'none';
       C.haptic('success'); show('result'); addCoins(resultEl.coins, 'win'); if (gift) addCoins(gift, 'gift');
       flyCoins(resultEl.gain, Math.min(10, 3 + Math.round((resultEl.coins + gift) / 8)));

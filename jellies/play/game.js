@@ -111,8 +111,10 @@
   const FINALE = { under: 3, zoom: 1.28, text: tr('IN EXTREMIS !') };
   // accroches (« | » = retour à la ligne, {n} = numéro de niveau affiché) ; X fait défiler, ?hook=N
   const HOOKS = C.byLang({
-    fr: ['Niveau {n} : seulement 3 %|y arrivent du premier coup', 'Tu vois la solution ?|Moi j’ai mis 12 essais', 'Sors-les toutes avant|qu’elles ne fondent…', 'Le niveau {n} rend fou|(regarde la fin)', 'Facile ? Dis-moi|en combien de secondes'],
-    en: ['Level {n}: only 3%|beat it on the first try', 'Can you see the solution?|Took me 12 tries', 'Get them all out|before they melt…', 'Level {n} drives you crazy|(watch till the end)', 'Easy? Tell me|how many seconds'],
+    fr: ['Niveau {n} : seulement 3 %|y arrivent du premier coup', 'Tu vois la solution ?|Moi j’ai mis 12 essais', 'Sors-les toutes avant|qu’elles ne fondent…', 'Le niveau {n} rend fou|(regarde la fin)', 'Facile ? Dis-moi|en combien de secondes',
+      'Prise dans la glace.|Tu la sors comment ?', 'Il y a quoi dans la caisse ?|Attends la fin…', 'Deux couches, deux trappes.|Tu suis ?', 'Nouveau monde,|nouveaux ennuis (niveau {n})'],   // 5 à 8 (5 oct. 2026) : clips du jeu complet, une accroche par mécanique
+    en: ['Level {n}: only 3%|beat it on the first try', 'Can you see the solution?|Took me 12 tries', 'Get them all out|before they melt…', 'Level {n} drives you crazy|(watch till the end)', 'Easy? Tell me|how many seconds',
+      'Frozen solid.|How would you get it out?', 'What’s inside the crate?|Wait for it…', 'Two layers, two gates.|Can you keep up?', 'New world,|new trouble (level {n})'],
   });
   const ENDCARDS = C.byLang({
     fr: ['Tu l’aurais eu ?', 'Niveau suivant ?', 'Trop facile ? Dis-le en commentaire', 'Combien de secondes il te restait ?'],
@@ -598,8 +600,11 @@
     if (trackName !== name && !(trackFail[name] && Date.now() < trackWait)) {
       trackName = name; if (trackSrc) { try { trackSrc.stop(); } catch (_) { } trackSrc = null; }
       C.fetchBytes((AUDIO.base || 'audio/') + name).then(a => new Promise((ok, ko) => A.decodeAudioData(a, ok, ko))).then(b => {
-        if (trackName !== name) return; const g = A.createGain(); g.gain.value = AUDIO.musicVol === undefined ? .6 : AUDIO.musicVol;
-        trackSrc = A.createBufferSource(); trackSrc.buffer = b; trackSrc.loop = true; trackSrc.connect(g); g.connect(musicGain); trackSrc.start();
+        if (trackName !== name) return; const g = A.createGain(), tone = (AUDIO.musicTone && AUDIO.musicTone[name]) || {};   // équilibre du morceau (audio/manifest.js) : graves, aigus et volume, pour que toutes les zones sonnent aussi fort sur un téléphone
+        g.gain.value = (AUDIO.musicVol === undefined ? .6 : AUDIO.musicVol) * Math.pow(10, (tone.gain || 0) / 20);
+        trackSrc = A.createBufferSource(); trackSrc.buffer = b; trackSrc.loop = true; let node = trackSrc;
+        for (const [type, f, db] of [['lowshelf', 300, tone.bass], ['highshelf', 1500, tone.treble]]) if (db) { const q = A.createBiquadFilter(); q.type = type; q.frequency.value = f; q.gain.value = db; node.connect(q); node = q; }
+        node.connect(g); g.connect(musicGain); trackSrc.start();
         if (C.DEV && !URLP.nolabel) C.floatText(W / 2, 300, '♪ ' + name.replace(/^zone\d+-|\.mp3$/g, '').replace(/-/g, ' '), { size: 44, color: '#fff', dur: 2.5, vy: -20 });   // en développement : le morceau qui démarre s'affiche (pour vérifier le changement de zone)
       }).catch(() => { trackFail[name] = (trackFail[name] || 0) + 1; trackWait = Date.now() + 3000; if (trackName === name) trackName = null; if (C.DEV) C.floatText(W / 2, 300, '♪ échec : ' + name, { size: 40, color: '#ffb4b4', dur: 4, vy: -20 }); });
     }

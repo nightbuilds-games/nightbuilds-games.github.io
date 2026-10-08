@@ -8,6 +8,14 @@ window.GAME_AUDIO = {
   base: 'audio/',
   musicVol: .6,
   music: ['zone1-carefree.mp3', 'zone2-wallpaper.mp3', 'zone3-easy-lemon.mp3', 'zone4-bossa-antigua.mp3', 'zone5-lobby-time.mp3', 'zone6-life-of-riley.mp3'],   // 110 premières secondes de chaque morceau, mono, 64 kbit/s
+  // Équilibre des morceaux (5 oct. 2026) : ils ont le même volume global (−18 à −20 LUFS), mais « Carefree » est bien plus riche en médiums et
+  // en aigus ; sur le haut-parleur d'un téléphone, qui ne rend pas les graves, les cinq autres paraissaient faibles (6 à 9 dB de moins au-dessus
+  // de 500 Hz). Correction à la lecture, par morceau, en décibels : bass = étagère basse à 300 Hz, treble = étagère haute à 1,5 kHz, gain = volume.
+  // Résultat mesuré : −19 à −21 LUFS en entier, −26 à −27 LUFS au-dessus de 500 Hz, pour les six. Un morceau absent de la liste est joué tel quel.
+  musicTone: {
+    'zone2-wallpaper.mp3': { bass: -9, gain: 5.5 }, 'zone3-easy-lemon.mp3': { bass: -9, treble: 1.5, gain: 5.5 }, 'zone4-bossa-antigua.mp3': { bass: -9, treble: 3, gain: 7 },
+    'zone5-lobby-time.mp3': { bass: -9, treble: 4, gain: 5 }, 'zone6-life-of-riley.mp3': { bass: -6, gain: 3 },
+  },
   // bruitages de Kenney (kenney.nl, domaine public CC0), convertis en MP3 ; les autres bruitages du jeu restent synthétisés
   sfx: {
     click: { file: 'click.mp3', vol: .25 },   // Interface Sounds, click_001

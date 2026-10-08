@@ -21,6 +21,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
 body { display: flex; align-items: center; justify-content: center; }
 canvas#game { display: block; touch-action: none; }
 
+/* ------------------------------------------------------------ écran de démarrage repris par la page (Shell.init({ splash }), voir shell.js) */
+#splash { position: fixed; inset: 0; z-index: 100; background: center / auto 100% no-repeat; transition: opacity .35s ease-out; }   /* à pleine hauteur, comme iOS affiche le sien */
+#splash.out { opacity: 0; pointer-events: none; }
+
 /* ------------------------------------------------------------ superposition des menus */
 #shell { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
 #shell.open { pointer-events: auto; background: var(--veil); animation: fade .18s ease-out; }
@@ -122,6 +126,12 @@ h1.logo { margin-bottom: 4vh; }
 .news h3 { margin: 0; font-size: 24px; color: #1d5fa8; }
 .news p { margin: 0; color: var(--ink); font-size: 18px; }
 .news-icon svg { width: 130px; height: 130px; filter: drop-shadow(0 6px 0 rgba(0,0,0,.15)); animation: starin .45s cubic-bezier(.2, 1.6, .4, 1) both; }
+.nextnews { display: flex; align-items: center; gap: 10px; width: 100%; box-sizing: border-box; margin: 8px 0 2px; padding: 8px 12px; border-radius: 16px; background: rgba(0,0,0,.08); text-align: left; }
+.nextnews .ic { flex: none; width: 46px; height: 46px; } .nextnews .ic svg { width: 100%; height: 100%; }
+.nextnews div { flex: 1; min-width: 0; } .nextnews b { display: block; font-size: 14px; line-height: 1.2; }
+.nextnews i { display: block; height: 10px; margin: 5px 0 3px; border-radius: 5px; background: rgba(0,0,0,.15); overflow: hidden; }
+.nextnews u { display: block; height: 100%; border-radius: 5px; background: var(--secondary); }
+.nextnews small { display: block; font-size: 12px; opacity: .7; }
 .result .extra { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .result .extra .tag { font-size: 14px; }
 .result .extra .tag.gift:not(.got) { background: rgba(0,0,0,.4); }

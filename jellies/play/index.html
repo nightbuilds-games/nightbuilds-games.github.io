@@ -27,6 +27,7 @@
 </script>
 <script src="engine/core.js"></script>
 <script src="engine/stats.js"></script>   <!-- statistiques GameAnalytics (rien n est envoyé en développement) -->
+<script src="engine/house.js"></script>   <!-- pubs maison : les autres jeux du studio, aux emplacements des pubs -->
 <script src="engine/monet.js"></script>   <!-- pubs et achats (simulés en développement) -->
 <script src="engine/shell.js"></script>
 <script src="engine/lang.js"></script>   <!-- coquille en espagnol et en portugais -->
@@ -38,9 +39,10 @@
   // configuration de la coquille pour ce jeu : nom, couleurs des menus et du fond de page (ciel en haut, herbe en bas, comme le décor)
   Shell.init({
     id: 'gelees',
-    version: '0.1.0',
+    version: '1.0.0',
     title: { fr: 'Jellies on the Run', en: 'Jellies on the Run' },   // le nom ne se traduit pas
     maxShown: 24,
+    splash: { bg: '#FF9A55' },   // écran de démarrage repris au lancement (splash.webp, node jeux/tools/splash-web.js gelees) ; bg : couleur de ses bords
     privacyUrl: 'https://nightbuilds.app/privacy.html',   // site des jeux (dossier site/ du dépôt)
     colors: {
       'bg-top': '#2F7BFF', 'bg-bottom': '#3E9B35',

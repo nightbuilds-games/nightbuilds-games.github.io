@@ -146,20 +146,28 @@
     };
   }
 
+  // PUBS MAISON (engine/house.js, 8 oct. 2026) : elles prennent la place d'une pub payante qui n'est pas prête, et une part des pubs entre
+  // niveaux (catalogue). En développement la simulation reste la règle ; ?maison les montre à sa place.
+  const H = () => global.House && House.ready ? House : null;
   const Monet = global.Monet = {
     init(c) {
       c = c || {}; if (c.off) { off = true; return; }
+      if (global.House) House.init({ game: c.game });
       if (!ads) startAds(c.ads); if (!shop) startStore(c.store);
       if (realAds()) { let o = {}; try { o = Intl.DateTimeFormat().resolvedOptions(); } catch (_) { } dbg('réglages du téléphone', { langue: navigator.language, langues: navigator.languages, region: o.locale, fuseau: o.timeZone }); }   // mise au point
     },
     onAd: null,
     ads: {
-      get available() { const r = realAds(); return r ? r.ready : sim(); },
-      get interReady() { const r = realAds(); return r ? r.interReady : sim(); },
+      get available() { const r = realAds(); return (r && r.ready) || !!H() || (!r && sim()); },
+      get interReady() { const r = realAds(); return (r && r.interReady) || !!H() || (!r && sim()); },
       get privacyRequired() { const r = realAds(); return !!r && r.privacy; },
       privacyOptions() { const r = realAds(); return r ? r.privacyOptions() : Promise.resolve(); },
-      rewarded() { const r = realAds(); return r ? r.rewarded() : sim() ? simAd(true) : Promise.resolve(false); },
-      interstitial() { const r = realAds(); return r ? r.interstitial() : sim() ? simAd(false).then(() => { }) : Promise.resolve(); },
+      rewarded() { const r = realAds(), h = H(); if (r && r.ready) return r.rewarded(); if (h && (r || !sim() || h.forced)) return h.show(true); return r ? r.rewarded() : sim() ? simAd(true) : Promise.resolve(false); },
+      interstitial() {
+        const r = realAds(), h = H();
+        if (h && (r ? !r.interReady || h.turn() : !sim() || h.forced)) return h.show(false).then(() => { });   // pub payante absente, ou tour de la pub maison
+        return r ? r.interstitial() : sim() ? simAd(false).then(() => { }) : Promise.resolve();
+      },
     },
     store: {
       products: PRODUCTS,
