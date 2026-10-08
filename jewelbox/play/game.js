@@ -1794,7 +1794,7 @@
       const t = slotPos(b, k), sx = t.x - b.x, sy = t.y - b.y;
       ctx.fillStyle = deep; ctx.beginPath(); ctx.arc(sx, sy, SCREW_R * .9, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = 'rgba(255,225,160,.3)'; ctx.lineWidth = 2; ctx.stroke();
-      if (!b.slots[k] && !b.art && symbolsOn()) drawSymbol(b.color, sx, sy, SCREW_R * .3, .6);   // daltoniens : l'alvéole vide dit quelle gemme elle attend
+      if (!b.slots[k] && symbolsOn()) drawSymbol(b.color, sx, sy, SCREW_R * .3, .6);   // daltoniens : l'alvéole vide dit quelle gemme elle attend
       // prochaine alvéole libre : anneau d'or qui pulse
       if (k === nextFree) { const pk = .5 + .5 * Math.sin(tm * 5); ctx.strokeStyle = 'rgba(255,235,170,' + (.35 + .5 * pk) + ')'; ctx.lineWidth = 3 + 2 * pk; ctx.beginPath(); ctx.arc(sx, sy, SCREW_R * (1 + .08 * pk), 0, Math.PI * 2); ctx.stroke(); }
       // alvéole qui vient de recevoir : anneau blanc qui s'élargit
@@ -1802,10 +1802,8 @@
     }
     // compteur de remplissage sur une pastille d'or
     const filledN = b.slots.filter(x => x && x.state === 'box').length;
-    if (!b.art) {   // pas de compteur sur l'icône
     ctx.fillStyle = gold(0, -BOX_H / 2 - 16, 0, -BOX_H / 2 + 16); roundRect(BOX_W / 2 - 74, -BOX_H / 2 - 14, 64, 30, 15); ctx.fill();
     text(filledN + ' / 3', BOX_W / 2 - 42, -BOX_H / 2 + 1, { size: 21, color: '#3a2408', font: SERIF });
-    }
     ctx.restore();
     for (const s of b.slots) if (s && s.state === 'box') drawGem(s);
     if (b.lid > 0) {
@@ -1828,76 +1826,7 @@
     }
   }
 
-  // ICÔNE ET ÉCRAN DE DÉMARRAGE (engine/art.js, ?art=icon|splash&res=1) : dessinés dans le carré du haut (1080 × 1080) avec un vrai écrin
-  // de velours à liseré d'or, garni de ses trois rubis, et deux gemmes qui arrivent au-dessus, sur le velours bleu nuit du jeu.
-  function drawArtBox(x, y, k, color) {
-    const b = { x: 0, y: 0, s: 1, wob: 0, color, glow: 0, state: 'done', slots: [], slotFlash: 0, lid: 0, art: true };
-    b.slots = [0, 1, 2].map(i => { const p = slotPos(b, i); return { x: p.x, y: p.y, s: 1, lift: 0, rot: 0, reveal: 0, state: 'box', color }; });
-    ctx.save(); ctx.translate(x, y); ctx.scale(k, k); drawBox(b); ctx.restore();
-  }
-  function drawArtGem(x, y, k, color) { ctx.save(); ctx.translate(x, y); ctx.scale(k, k); drawGem({ x: 0, y: 0, s: 1, lift: 0, rot: 0, reveal: 0, state: 'fly', color }); ctx.restore(); }
-  function drawArtSparkle(x, y, r) {   // éclat d'or à quatre branches
-    ctx.save(); ctx.translate(x, y); ctx.fillStyle = GOLD_LIGHT; ctx.beginPath();
-    for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, d = i % 2 ? r * .22 : r; ctx.lineTo(Math.cos(a) * d, Math.sin(a) * d); }
-    ctx.closePath(); ctx.fill(); ctx.restore();
-  }
-  // ciel de nuit (contexte c, image de w × h, graine fixe : même ciel à chaque export) : dégradé bleu nuit → violet, voie lactée, poussière
-  // d'étoiles, grandes étoiles scintillantes (halo, quatre branches, aigrettes), croissant de lune doré
-  function artNightSky(c, w, h, seed = 7) {
-    let s = seed; const rnd = () => { s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
-    const area = w * h / 1080 / 1080;
-    let g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#04051a'); g.addColorStop(.5, '#141447'); g.addColorStop(1, '#3b1f6b'); c.fillStyle = g; c.fillRect(0, 0, w, h);
-    c.save(); c.translate(w / 2, h * .42); c.rotate(-.5);   // voie lactée : bande de lumière diffuse en diagonale
-    for (let i = 0; i < 7; i++) { const R = w * (.28 + i * .05), r = c.createRadialGradient(0, 0, 0, 0, 0, R); r.addColorStop(0, 'rgba(170,150,255,.07)'); r.addColorStop(1, 'rgba(170,150,255,0)'); c.fillStyle = r; c.save(); c.scale(2.6 * h / w, .42); c.beginPath(); c.arc((i - 3) * w * .04, 0, R, 0, Math.PI * 2); c.fill(); c.restore(); }
-    c.restore();
-    for (let i = 0; i < 420 * area; i++) { c.fillStyle = 'rgba(255,' + (235 + rnd() * 20 | 0) + ',' + (200 + rnd() * 55 | 0) + ',' + (.25 + rnd() * .7) + ')'; c.beginPath(); c.arc(rnd() * w, rnd() * h, .8 + rnd() * rnd() * 3.2, 0, Math.PI * 2); c.fill(); }
-    for (let i = 0; i < Math.round(13 * area); i++) artStar(c, rnd() * w, rnd() * h * .95, 10 + rnd() * 16, rnd() < .22);
-    // croissant de lune
-    const mx = w - 140, my = 140 * Math.max(1, h / w * .8), mr = 62;
-    const hg = c.createRadialGradient(mx, my, mr * .6, mx, my, mr * 3); hg.addColorStop(0, 'rgba(255,236,180,.35)'); hg.addColorStop(1, 'rgba(255,236,180,0)'); c.fillStyle = hg; c.beginPath(); c.arc(mx, my, mr * 3, 0, Math.PI * 2); c.fill();
-    c.save(); c.beginPath(); c.arc(mx, my, mr, 0, Math.PI * 2); c.clip(); c.beginPath(); c.arc(mx, my, mr, 0, Math.PI * 2); c.arc(mx + mr * .5, my - mr * .3, mr * .85, 0, Math.PI * 2); c.fillStyle = GOLD_LIGHT; c.fill('evenodd'); c.restore();   // croissant : le disque moins un disque décalé (limité au disque)
-  }
-  function artStar(c, x, y, r, flare) {   // étoile qui brille : halo, quatre branches fines, cœur blanc ; flare : longues aigrettes en croix
-    const hg = c.createRadialGradient(x, y, 0, x, y, r * 3.2); hg.addColorStop(0, 'rgba(255,245,220,.65)'); hg.addColorStop(.35, 'rgba(255,225,160,.22)'); hg.addColorStop(1, 'rgba(255,220,150,0)');
-    c.fillStyle = hg; c.beginPath(); c.arc(x, y, r * 3.2, 0, Math.PI * 2); c.fill();
-    if (flare) { c.save(); c.globalAlpha = .55; c.strokeStyle = '#fff6dc'; c.lineCap = 'round'; c.lineWidth = Math.max(1.5, r * .09); c.beginPath(); c.moveTo(x - r * 4.5, y); c.lineTo(x + r * 4.5, y); c.moveTo(x, y - r * 4.5); c.lineTo(x, y + r * 4.5); c.stroke(); c.restore(); }
-    c.fillStyle = '#fffaf0'; c.beginPath(); const t = .2; for (const [dx, dy] of [[0, -1], [t, -t], [1, 0], [t, t], [0, 1], [-t, t], [-1, 0], [-t, -t]]) c.lineTo(x + dx * r, y + dy * r); c.closePath(); c.fill();
-    c.fillStyle = '#fff'; c.beginPath(); c.arc(x, y, r * .22, 0, Math.PI * 2); c.fill();
-  }
-  function artConstellation(pts, k = 1) {   // grandes étoiles reliées par des fils d'or, comme au final d'un niveau
-    ctx.lineCap = 'round';
-    for (let i = 1; i < pts.length; i++) {
-      const [a, b] = [pts[i - 1], pts[i]];
-      ctx.strokeStyle = 'rgba(255,225,160,.28)'; ctx.lineWidth = 12 * k; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
-      ctx.strokeStyle = 'rgba(255,245,215,.85)'; ctx.lineWidth = 3 * k; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
-    }
-    pts.forEach(([x, y], i) => artStar(ctx, x, y, (i === 2 ? 30 : 22) * k, i === 2));
-  }
-  function artGlow(x, y, r) { const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(255,215,140,.5)'); g.addColorStop(.45, 'rgba(255,190,110,.16)'); g.addColorStop(1, 'rgba(255,190,110,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
-  function drawArt() {
-    ART.bg = '#141447';
-    ctx.save();
-    if (ART.kind === 'icon') {
-      ctx.beginPath(); ctx.rect(0, 0, 1080, 1080); ctx.clip();
-      artNightSky(ctx, 1080, 1080);
-      artConstellation([[120, 330], [290, 220], [500, 290], [700, 200], [860, 330]]);   // Cassiopée, en « W »
-      artGlow(540, 780, 560);
-      drawArtGem(330, 500, 1.8, COLORS[1]); drawArtGem(750, 490, 1.8, COLORS[2]);
-      drawArtBox(540, 820, 2.1, COLORS[0]);
-      drawArtSparkle(130, 620, 26); drawArtSparkle(960, 640, 30); drawArtSparkle(545, 470, 26);
-    } else {   // plein écran (portrait) : ciel de nuit, constellation, titre en or, l'écrin garni et ses deux gemmes au milieu
-      artNightSky(ctx, W, H, 11);
-      artConstellation([[150, 520], [320, 400], [540, 470], [760, 380], [930, 500]]);
-      text('JEWEL BOX', 540, 700, { size: 146, color: GOLD_LIGHT, stroke: GOLD_DARK, strokeW: 12, font: SERIF });
-      artGlow(540, 1230, 560);
-      drawArtGem(340, 980, 1.7, COLORS[1]); drawArtGem(740, 970, 1.7, COLORS[2]);
-      drawArtBox(540, 1270, 2.1, COLORS[0]);
-      drawArtSparkle(150, 1110, 26); drawArtSparkle(940, 1130, 30); drawArtSparkle(545, 950, 24);
-    }
-    ctx.restore();
-  }
   function draw() {
-    if (global.ART) return drawArt();
     // velours bleu nuit, halo central, étoiles
     if (!deco) buildDeco();
     // fond recopié autour du plateau seulement (le velours du plateau, opaque, le cache ; ses coins arrondis de rayon 40 restent dans les bandes) :
