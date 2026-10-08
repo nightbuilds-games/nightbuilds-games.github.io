@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" data-fr-title="Jewel Box — un casse-tête de gemmes et d’objets précieux pour iPhone">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jewel Box — a calm gem-sorting puzzle for iPhone</title>
+<meta name="description" content="Every level is a jewelled object held together by gems. Tap them out in the right order, fill each box with three of a color, and watch the piece come apart. A free puzzle game for iPhone: 300 objects, fifteen worlds, no timer.">
+<link rel="canonical" href="https://nightbuilds.app/jewelbox/">
+<link rel="alternate" hreflang="en" href="https://nightbuilds.app/jewelbox/">
+<link rel="alternate" hreflang="fr" href="https://nightbuilds.app/jewelbox/?lang=fr">
+<link rel="icon" href="../assets/img/favicon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Jewel Box">
+<meta property="og:description" content="Tap the gems out of 300 jewelled objects and sort them into their boxes. A calm puzzle for iPhone.">
+<meta property="og:url" content="https://nightbuilds.app/jewelbox/">
+<meta property="og:image" content="https://nightbuilds.app/jewelbox/share.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="../assets/site.css">
+<!-- Page du jeu Jewel Box (plan.md, section 13.1) : URL marketing de la fiche App Store. Thème de nuit : <body class="night"> (assets/site.css).
+     Captures et textes : les mêmes que la fiche (jeux/tools/captures-fiche.js ecrin, fiche-app-store-jewelbox.md) ; clip et image de partage :
+     jeux/tools/clip-site.js ecrin. Pas encore de démo jouable (bouton à ajouter quand elle existera, comme sur la page de Jellies).
+     Quand le jeu est sur l'App Store : renseigner STORE.jewelbox dans assets/site.js, et ajouter ici
+       <meta name="apple-itunes-app" content="app-id=…">  (bannière « Ouvrir dans l'App Store » de Safari). -->
+</head>
+<body class="night">
+<div class="nav"><div class="wrap">
+  <a class="brand" href="../"><i></i>nightbuilds</a>
+  <nav><a href="#how" data-fr="Comment jouer">How to play</a><a href="../privacy.html#support-en" data-fr-href="../privacy.html#support" data-fr="Support">Support</a><a class="lang" href="?lang=fr">Français</a></nav>
+</div></div>
+
+<header class="sky">
+  <div class="moon"></div>
+  <div class="wrap hero">
+    <div>
+      <img class="appicon" src="../assets/img/ecrin-icon.webp" alt="" width="92" height="92">
+      <h1>Jewel <em>Box</em></h1>
+      <p class="lead" data-fr="Chaque niveau est un objet précieux tenu par ses gemmes. Dessertis-les dans le bon ordre, range-les par trois dans leur écrin, et regarde l’objet se défaire.">Every level is a jewelled object held together by gems. Tap them out in the right order, fill each box with three of a color, and watch the piece come apart.</p>
+      <div class="cta">
+        <a class="btn store soon" data-store="jewelbox"><small data-fr="Bientôt sur l’">Coming soon on the</small><span>App Store</span></a>
+      </div>
+      <div class="badges"><span data-fr="Gratuit">Free</span><span data-fr="300 objets">300 objects</span><span data-fr="Quinze mondes">Fifteen worlds</span><span data-fr="Sans chrono">No timer</span><span data-fr="Hors ligne">Plays offline</span></div>
+    </div>
+    <div style="position: relative">
+      <div class="gem" style="--c: #E5173F; left: -30px; top: 60px"></div>
+      <div class="gem" style="--c: #2E6BFF; right: -34px; bottom: 90px; animation-delay: -2s"></div>
+      <div class="gem" style="--c: #22B83C; left: -14px; bottom: 30px; width: 56px; height: 56px; animation-delay: -3.4s"></div>
+      <div class="phone"><video src="clip.mp4" poster="clip.jpg" muted loop playsinline preload="none" data-auto width="540" height="960"></video></div>
+    </div>
+  </div>
+</header>
+
+<section class="light" id="how">
+  <div class="wrap">
+    <h2 class="title reveal"><span data-fr="Un doigt, pas de chrono">One finger, no timer</span><small data-fr="Dix secondes pour comprendre. Les trois étoiles, c’est une autre histoire.">Ten seconds to learn. Three stars is another story.</small></h2>
+    <div class="steps">
+      <div class="step reveal"><b>1</b><h3 data-fr="Dessertis">Tap</h3><p data-fr="Touche une gemme&nbsp;: elle file dans l’écrin de sa couleur. Pas d’écrin&nbsp;? Elle attend sur le présentoir.">Tap a gem: it flies to the box of its color. No box yet? It waits on the tray.</p></div>
+      <div class="step reveal"><b>2</b><h3 data-fr="Trie">Sort</h3><p data-fr="Trois gemmes pareilles referment l’écrin, et le suivant arrive. Tu vois les deux prochains&nbsp;: prévois tes coups.">Three of a kind close the box, and the next one comes in. You can see the next two: plan ahead.</p></div>
+      <div class="step reveal"><b>3</b><h3 data-fr="Démonte">Take apart</h3><p data-fr="Une pièce sans gemme tombe et dévoile ce qu’elle cachait. Démonte tout l’objet sans remplir le présentoir.">A piece with no gems left drops away and reveals what it was hiding. Empty the whole object without filling the tray.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="light" style="padding-top: 40px">
+  <div class="wrap"><h2 class="title reveal"><span data-fr="À quoi ça ressemble">What it looks like</span><small data-fr="Fais défiler les captures">Swipe through the screenshots</small></h2></div>
+  <div class="shots reveal">
+    <img src="img/en-1.webp" data-fr-src="img/fr-1.webp" width="660" height="1434" loading="lazy" alt="Tap a gem: it finds its jewel box" data-fr-alt="Touche une gemme : elle file dans son écrin">
+    <img src="img/en-2.webp" data-fr-src="img/fr-2.webp" width="660" height="1434" loading="lazy" alt="300 jewelled objects to take apart" data-fr-alt="300 objets précieux à démonter">
+    <img src="img/en-3.webp" data-fr-src="img/fr-3.webp" width="660" height="1434" loading="lazy" alt="Free the pieces, layer by layer" data-fr-alt="Libère les pièces, couche après couche">
+    <img src="img/en-4.webp" data-fr-src="img/fr-4.webp" width="660" height="1434" loading="lazy" alt="Locks, chains, mysteries: new twists all the way" data-fr-alt="Cadenas et chaînes : des surprises partout">
+    <img src="img/en-5.webp" data-fr-src="img/fr-5.webp" width="660" height="1434" loading="lazy" alt="Earn 3 stars on every level" data-fr-alt="Vise les 3 étoiles à chaque niveau">
+    <img src="img/en-6.webp" data-fr-src="img/fr-6.webp" width="660" height="1434" loading="lazy" alt="Fifteen jewelled worlds, hundreds of levels" data-fr-alt="Quinze mondes précieux, des centaines de niveaux">
+  </div>
+  <div class="wrap">
+    <div class="perks reveal">
+      <span data-fr="Joue à ton rythme">Play at your own pace</span><span data-fr="3 étoiles à décrocher partout">3 stars to earn everywhere</span><span data-fr="Aucun bandeau de pub">No banner ads</span>
+      <span data-fr="Un cadeau tous les 5 niveaux">A gift every 5 levels</span><span data-fr="Symboles pour les daltoniens">Color-blind symbols</span><span data-fr="Gratuit, pubs à ton rythme">Free, ads when you choose</span>
+    </div>
+  </div>
+</section>
+
+<section class="light" style="padding-top: 40px">
+  <div class="wrap">
+    <h2 class="title reveal"><span data-fr="Ça ne s’arrête pas là">It doesn’t stop there</span><small data-fr="Un nouvel objet à chaque niveau">A new object on every level</small></h2>
+    <div class="steps">
+      <div class="step reveal"><b>15</b><h3 data-fr="Quinze mondes précieux">Fifteen jewelled worlds</h3><p data-fr="La mer, le jardin, le palais, la campagne…&nbsp;: chaque monde a son décor de joaillerie, sa musique et ses vingt objets.">The sea, the garden, the palace, the countryside…: each world has its own jewelled scenery, its music and its twenty objects.</p></div>
+      <div class="step reveal"><b>?</b><h3 data-fr="Des gemmes pas commodes">Tricky gems</h3><p data-fr="Gemmes mystère dont la couleur est cachée, cadenas dont il faut trouver la clé, gemmes enchaînées deux par deux.">Mystery gems that hide their color, padlocks with a key to find, gems chained in pairs.</p></div>
+      <div class="step reveal"><b>+</b><h3 data-fr="Un coup de pouce">A helping hand</h3><p data-fr="Bloqué&nbsp;? Une place en plus, un plateau de réserve ou le marteau te tirent d’affaire. Les gros objets rapportent plus.">Stuck? An extra slot, a spare tray or the hammer get you out of trouble. Big objects pay more.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="picnic">
+  <div class="wrap reveal">
+    <h2 data-fr="Prêt à ouvrir l’écrin&nbsp;?">Ready to open the box?</h2>
+    <p data-fr="Gratuit sur iPhone. Version Android prévue.">Free on iPhone. Android version planned.</p>
+    <div class="cta"><a class="btn store soon" data-store="jewelbox"><small data-fr="Bientôt sur l’">Coming soon on the</small><span>App Store</span></a></div>
+  </div>
+</section>
+
+<footer class="grass">
+  <div class="wrap">
+    <nav><a href="../" data-fr="Les jeux nightbuilds">nightbuilds games</a><a href="../press.html" data-fr="Presse et contact">Press &amp; contact</a><a href="../privacy.html" data-fr="Confidentialité">Privacy</a><a href="../privacy.html#support-en" data-fr-href="../privacy.html#support" data-fr="Support">Support</a></nav>
+    <small>© 2026 nightbuilds</small><br>
+    <small data-fr="Musique&nbsp;: Kevin MacLeod (<a href=&quot;https://incompetech.com&quot; rel=&quot;noopener&quot;>incompetech.com</a>), «&nbsp;Aquarium&nbsp;» (Saint-Saëns), «&nbsp;Dance of the Sugar Plum Fairy&nbsp;» (Tchaïkovski), «&nbsp;Frost Waltz&nbsp;», «&nbsp;Fairytale Waltz&nbsp;», «&nbsp;Music Box Theme&nbsp;», «&nbsp;Garden Music&nbsp;», «&nbsp;Enchanted Valley&nbsp;», «&nbsp;Enchanted Journey&nbsp;», «&nbsp;Dreamy Flashback&nbsp;», «&nbsp;Atlantean Twilight&nbsp;», sous licence <a href=&quot;https://creativecommons.org/licenses/by/4.0/&quot; rel=&quot;noopener&quot;>Creative Commons Attribution 4.0</a>. Bruitages&nbsp;: Kenney (<a href=&quot;https://kenney.nl&quot; rel=&quot;noopener&quot;>kenney.nl</a>).">Music: Kevin MacLeod (<a href="https://incompetech.com" rel="noopener">incompetech.com</a>), “Aquarium” (Saint-Saëns), “Dance of the Sugar Plum Fairy” (Tchaikovsky), “Frost Waltz”, “Fairytale Waltz”, “Music Box Theme”, “Garden Music”, “Enchanted Valley”, “Enchanted Journey”, “Dreamy Flashback”, “Atlantean Twilight”, licensed under <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">Creative Commons Attribution 4.0</a>. Sound effects: Kenney (<a href="https://kenney.nl" rel="noopener">kenney.nl</a>).</small>
+  </div>
+</footer>
+<script src="../assets/site.js"></script>
+</body>
+</html>
