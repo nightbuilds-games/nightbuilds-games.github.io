@@ -252,11 +252,12 @@
 
   // ------------------------------------------------------------ audio synthétisé
   const FORCE_MUTE = /[?&#]mute/.test(String(window.location && window.location.href));   // ?mute dans l'URL : aucun son, quels que soient les réglages (tests de Claude)
-  let actx = null, master = null, muted = FORCE_MUTE;
+  let actx = null, master = null, gameBus = null, muted = FORCE_MUTE;   // gameBus : sortie donnée aux jeux (musique, sons propres), coupée pendant la pause
   function ensureAudio() {
     if (actx) { wake(); return; }
     try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
-    master = actx.createGain(); master.gain.value = muted ? 0 : 0.5; master.connect(actx.destination); decodeSamples();
+    master = actx.createGain(); master.gain.value = muted ? 0 : 0.5; master.connect(actx.destination);
+    gameBus = actx.createGain(); gameBus.gain.value = paused ? 0 : 1; gameBus.connect(master); decodeSamples();
   }
   // Reprise du son. Sur iPhone, une veille de l'écran, un appel ou une pub en plein écran font passer le contexte à l'état « interrupted »
   // (et non « suspended ») : on reprend donc depuis tout état autre que « running ».
@@ -588,9 +589,12 @@
   const CAP_MS = URLP.cap === '0' ? 0 : 12;
   // PAUSE (menus de la coquille) : ni logique ni dessin, la dernière image reste à l'écran (zéro travail graphique, batterie épargnée), le son
   // est suspendu. `C.pause(false)` reprend là où on en était ; l'horloge repart sans compter la pause.
+  // Un bouton de menu réveille le son pour son clic (unlockAudio) : la sortie des jeux reste donc coupée tant que dure la pause, sinon la
+  // musique repartait dès qu'on ouvrait la boutique ou la carte des niveaux depuis la pause.
   let paused = false;
   function pause(on) {
     on = !!on; if (on === paused) return; paused = on; last = 0;
+    if (gameBus) gameBus.gain.value = on ? 0 : 1;
     if (actx) { if (on && actx.state === 'running') actx.suspend().catch(() => { }); else if (!on) wake(); }
   }
   function frame(ts) {
@@ -681,7 +685,7 @@
 
   // HUD_CLEAR : largeur (unités du canevas) laissée libre à gauche et à droite du titre d'un jeu, pour le bouton pause de la coquille
   global.Core = { W, H, ctx, canvas, rand, randi, pick, lerp, clamp, dist, shuffle, ease, shade, rgba, roundRect, text, fitSize, emoji, bgGradient, blit, FONT, CONFETTI,
-    tween, killTweens, after, tick, tone, noise, audio: () => ({ ctx: actx, master }), burst, confetti, floatText, shake, flash, showBanner, sfx, pointer, bot, setBot, start, restart,
+    tween, killTweens, after, tick, tone, noise, audio: () => ({ ctx: actx, master: gameBus }), burst, confetti, floatText, shake, flash, showBanner, sfx, pointer, bot, setBot, start, restart,
     URLP, KIT, kit, seeded, updateLegend, FILM, lang: LANG, tr, i18n, byLang, get time() { return time; }, get film() { return film; },
     pause, get paused() { return paused; }, HUD_CLEAR: 170, setSound, loadSamples, fetchBytes, playSample, haptic, setHaptics(on) { hapticsOn = !!on; }, unlockAudio: ensureAudio, native, DEV };
 })(window);

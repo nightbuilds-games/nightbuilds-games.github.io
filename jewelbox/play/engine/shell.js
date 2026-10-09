@@ -63,6 +63,7 @@
   });
   const ECONOMY = { start: 100, firstWin: 10, perStar: 5, replayWin: 5, rescue: 60, freeCoins: 25, freePerDay: 5, interFrom: 8, interGap: 150,
     hardBonus: 10, gift: { every: 5, coins: 30 }, reviewFrom: 8 };   // bonus de première victoire d'un niveau difficile (×2 si très difficile) ; cadeau tous les 5 niveaux (première victoire)
+  // Un jeu peut régler sa propre économie : Shell.register({ economy: { firstWin, perStar, … } }) remplace les valeurs ci-dessus pour ce jeu seulement.
 
   // ------------------------------------------------------------ stockage
   const cap = () => C.native('Preferences');
@@ -478,7 +479,7 @@
       document.addEventListener('visibilitychange', () => { if (document.hidden && !current && game) show('pause'); });
       Shell.ready = true; if (game) boot();
     },
-    register(g) { game = g; if (Shell.ready) boot(); },
+    register(g) { game = g; if (g.economy) Object.assign(ECONOMY, g.economy); if (Shell.ready) boot(); },
     levelWon({ level, stars: st, time }) {
       time = Math.round(time * 10) / 10;   // même arrondi pour le temps affiché et le record
       const first = !save.wins[level]; save.wins[level] = (save.wins[level] || 0) + 1;

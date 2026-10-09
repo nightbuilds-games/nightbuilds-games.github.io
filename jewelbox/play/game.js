@@ -325,9 +325,24 @@
     const CURVE = [[3, 5, 0], [3, 5, 1], [3, 4, 2], [2, 4, 3], [2, 4, 4], [2, 4, 5]];
     const sl = slotAt(level); let [K, T, target] = CURVE[Math.min(level - 1, CURVE.length - 1)];
     if (sl.fin) { K = 2; T = sl.fin === 1 ? 5 : 4; target = T + 2; }   // fin de zone : deux écrins ouverts, difficulté maximale (une place de plus au présentoir en fin de zone 1)
-    const fs = featsAt(level);
-    return { K, T, target, obj: sl.obj, v: sl.v, want: sl.want || 0, colorsMax: 7, feats: fs.set ? fs : null };
+    const fs = featsAt(level), prm = { K, T, target, obj: sl.obj, v: sl.v, want: sl.want || 0, colorsMax: 7, feats: fs.set ? fs : null };
+    const tn = tuneAt(level); if (tn) { prm.tune = tn; prm.T = clamp(prm.T + tn.T, 3, 5); prm.colorsPlus = tn.c; }   // jamais plus de cinq places au départ : les aides et le secours en ajoutent
+    return paramsHook ? paramsHook(prm, level, sl) || prm : prm;
   }
+  // RÉGLAGE PAR NIVEAU (9 oct. 2026). Le score du solveur (le glouton échoue, pic du présentoir) ne dit pas ce qu'un joueur vit : à réglages égaux, un
+  // niveau se gagnait à tous les coups et le suivant presque jamais. Chaque niveau porte donc un réglage choisi hors du jeu par tools/ecrin-difficulte.js,
+  // qui fait jouer des joueurs simulés et retient le tirage dont le taux d'échec suit la courbe voulue (vagues, niveaux durs, répits). niveaux.js :
+  // ECRIN_NIVEAUX, un mot par niveau : « 7 » = septième tirage du niveau (les couleurs des gemmes et la file des écrins changent d'un tirage à l'autre,
+  // la règle de construction reste la même) ; « f » : facile, le premier candidat faisable au lieu du plus exigeant ; « + » une place de plus au
+  // présentoir, « - » une de moins ; « c » une couleur de plus. Niveau sans réglage (au-delà de la table) : tirage 0.
+  const TUNE = String(global.ECRIN_NIVEAUX || '').split(/\s+/).filter(x => x);
+  let tuneForce;   // mise au point : Core.test.reglage('7+')
+  function tuneAt(lv) {
+    if (clip) return null;
+    const m = /^(\d+)([+\-cf]*)$/.exec(tuneForce !== undefined ? tuneForce : TUNE[lv - 1] || ''); if (!m) return null;
+    const n = ch => m[2].split(ch).length - 1; return { s: +m[1], T: n('+') - n('-'), c: n('c'), f: n('f') > 0 };
+  }
+  let paramsHook = null;   // mise au point : Core.test.regle(fn) change les réglages d'un niveau avant sa construction (jeux/tools/ecrin-difficulte.js)
   // ------------------------------------------------------------ pièces de forme libre (6 oct. 2026)
   // Une pièce garde sa boîte englobante (x, y, w, h : chute, sillage, centre de rotation) et porte sa forme, centrée sur cette boîte :
   //   { t: 'r', w, h, r, a } rectangle arrondi · { t: 'c', r } disque · { t: 'e', rx, ry, a } ellipse · { t: 'p', pts, r } polygone aux coins adoucis.
@@ -580,7 +595,7 @@
     const G = objGeom(prm.obj, prm.want, prm.v || 0), plates = G.P.map(p => mkPlate({ x: p.x, y: p.y, w: p.w, h: p.h, z: p.z, color: p.color, shape: p.shape, skey: p.skey })), screws = [];
     G.SUR.forEach((h, i) => { if (h >= 0) plates[i].support = plates[h]; });
     // couleurs : une pour 7 gemmes environ, chacune en multiple de 3
-    const tri = Math.floor(G.total / 3), nc = clamp(Math.round(G.total / Math.max(5, 7 - (prm.v || 0))), Math.min(4, tri), Math.min(prm.colorsMax, tri, COLORS.length)), cols = shuffle(COLORS.slice()).slice(0, nc);
+    const tri = Math.floor(G.total / 3), nc = Math.min(clamp(Math.round(G.total / Math.max(5, 7 - (prm.v || 0))), Math.min(4, tri), Math.min(prm.colorsMax, tri, COLORS.length)) + (prm.colorsPlus || 0), tri, COLORS.length), cols = shuffle(COLORS.slice()).slice(0, nc);
     const counts = cols.map((c, i) => Math.floor(tri / nc) + (i < tri % nc ? 1 : 0)), pool = shuffle(cols.flatMap((c, i) => new Array(counts[i] * 3).fill(c)));
     G.picks.forEach((a, i) => a.forEach(([x, y]) => { if (!pool.length) return; const sc = { x, y, color: pool.pop(), plate: plates[i], state: 'on', s: 1, rot: 0, lift: 0 }; plates[i].screws.push(sc); screws.push(sc); }));
     const feats = prm.feats ? addFeats(plates, screws, prm.feats, geo) : null;
@@ -732,10 +747,10 @@
     let best = null, k = 0; const t0ms = Date.now(), geo = {};
     // NIVEAU FIXE (7 oct. 2026) : le hasard du niveau (couleurs des gemmes, file des écrins, nouveautés) est tiré de son numéro. Le niveau 87 est donc le même
     // à chaque essai et pour tous les joueurs : on peut l'apprendre, et « je bloque au 87 » veut dire la même chose pour tout le monde. Pas en mode clip.
-    const hasard = Math.random; if (!clip && !loopMode) Math.random = C.seeded(level * 7919 + OBJETS.indexOf(objet) * 104729 + (prm.v || 0) * 31 + 17);
+    const hasard = Math.random; if (!clip && !loopMode) Math.random = C.seeded(level * 7919 + OBJETS.indexOf(objet) * 104729 + (prm.v || 0) * 31 + 17 + (prm.tune ? prm.tune.s * 1000003 : 0));
     const specKey = [level, clip, botStyle].join(), reuse = loopMode && loopSpec && loopSpec.key === specKey ? loopSpec : null;
     if (reuse) best = fromSpec(reuse);
-    for (; !reuse && k < GEN_TRIES && !(best && best.score >= prm.target); k++) {
+    for (; !reuse && k < GEN_TRIES && !(best && (best.score >= prm.target || (prm.tune && prm.tune.f))); k++) {   // réglage « f » : le premier candidat faisable
       const g = generate(prm, geo), q = makeQueue(g.cols, g.counts, prm.K), qc = q.map(c => COLORS.indexOf(c));
       const L = solverLevel(g.plates, g.screws, geo), sol = solve(L, qc, prm.T, solverStart(L, qc, prm.K, prm.T)); if (!sol) continue;
       const greedy = greedySolves(L, qc, prm.T, solverStart(L, qc, prm.K, prm.T)), score = (greedy ? 0 : 2) + sol.peak;
@@ -1991,6 +2006,11 @@
     nouv(set) { featsForce = set === null ? undefined : set; C.restart(); return levelDiff && levelDiff.nouv; },   // Core.test.nouv('mlc') : impose les nouveautés (null : comme le niveau le prévoit)
     zone(lv) { const J = journey(lv), sl = slotAt(lv); return { zone: ZONES[J.zi] && ZONES[J.zi].key, tour: J.tour, pos: J.pos, objet: sl.obj.name.fr, fin: sl.fin, want: sl.want, nouv: featsAt(lv).set }; },
     voir(n, v = 0) { OBJ_URL = n; voirV = v; C.restart(); return n ? OBJETS[(n - 1) % OBJETS.length].name.fr + ' v' + v + ' : ' + total + ' gemmes' : 'niveau'; },   // Core.test.voir(17) : montre le 17e objet de objets.js (0 : retour au niveau)
+    // Core.test.solveur() : le niveau en cours au format du solveur, pour mesurer sa difficulté hors du jeu ; Core.test.regle(fn) : essayer d'autres
+    // réglages (fn(prm, niveau) renvoie les réglages changés, null pour revenir à ceux du jeu). Outil : jeux/tools/ecrin-difficulte.js
+    solveur() { const L = solverLevel(plates, screws); return { L, queue: queueC.slice(), T: bufN, K: openN, start: solverStart(L, queueC, openN, bufN), moves: solverMoves, apply: solverApply, solve, cle: solverKey, mystere: screws.map(s => !!s.mystery), couleurs: colorsN }; },
+    regle(fn) { paramsHook = fn || null; },
+    reglage(t) { tuneForce = t === null ? undefined : t; C.restart(); return levelDiff; },   // Core.test.reglage('7+') : impose le réglage du niveau (null : celui de niveaux.js)
     // Core.test.level(n) : saute directement au niveau n
     level(n = 1) { level = Math.max(1, n | 0); C.restart(); return level; },
     // Core.test.stuck() : affiche la proposition de secours (le bot ou un tap sur le bouton l'accepte)
@@ -2018,6 +2038,10 @@
     level: () => level,
     hard: n => { const fin = slotAt(n).fin; return fin === 2 ? 2 : fin ? 1 : 0; },   // gros objets de la zone : annoncés sur la carte et mieux payés (le dernier davantage)
     chapter: chapterOf, useBoost, symbols: true,
+    // ÉCONOMIE (9 oct. 2026), plus serrée que celle de la coquille : un joueur qui ne se bloque jamais gagne environ 15 pièces par niveau (11 pour trois
+    // étoiles, 20 tous les cinq niveaux) au lieu de 31, soit une « Place en plus » tous les dix niveaux. Les pièces gratuites par pub (25, cinq fois par
+    // jour) et la boutique pèsent donc davantage. On pourra desserrer après la sortie ; resserrer fâcherait les joueurs.
+    economy: { firstWin: 5, perStar: 2, replayWin: 2, gift: { every: 5, coins: 20 } },
     boosts: [
       { key: 'slot', level: 8, cost: 150, icon: BOOST_ICONS.slot, title: { fr: 'Place en plus', en: 'Extra slot' },
         text: { fr: 'Une place de plus sur le présentoir, jusqu’à la fin du niveau.', en: 'One more slot on the tray, until the end of the level.' } },
