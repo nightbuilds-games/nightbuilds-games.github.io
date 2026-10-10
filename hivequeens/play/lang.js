@@ -5,7 +5,7 @@
   C.i18n({
     'Une reine par ligne, par colonne et par zone de couleur.': 'Una reina en cada fila, columna y zona de color.',
     'Deux reines ne se touchent jamais, même en coin.': 'Dos reinas nunca se tocan, ni en diagonal.',
-    'ANNULER': 'DESHACER', 'CROIX AUTO': 'X AUTO', 'OUI': 'SÍ', 'NON': 'NO', 'DIFFICILE': 'DIFÍCIL', 'RÉSOLU !': '¡RESUELTO!',
+    'ANNULER': 'DESHACER', 'CROIX AUTO': 'X AUTO', 'OUI': 'SÍ', 'NON': 'NO', 'DIFFICILE': 'DIFÍCIL', 'RÉSOLU !': '¡RESUELTO!', 'FAUX !': '¡MAL!',
     'Il ne reste qu’une case libre dans cette ligne : c’est une reine.': 'Solo queda una casilla libre en esta fila: es una reina.',
     'Il ne reste qu’une case libre dans cette colonne : c’est une reine.': 'Solo queda una casilla libre en esta columna: es una reina.',
     'Il ne reste qu’une case libre dans cette zone : c’est une reine.': 'Solo queda una casilla libre en esta zona: es una reina.',
@@ -34,7 +34,7 @@
   C.i18n({
     'Une reine par ligne, par colonne et par zone de couleur.': 'Uma rainha em cada linha, coluna e zona de cor.',
     'Deux reines ne se touchent jamais, même en coin.': 'Duas rainhas nunca se tocam, nem na diagonal.',
-    'ANNULER': 'DESFAZER', 'CROIX AUTO': 'X AUTO', 'OUI': 'SIM', 'NON': 'NÃO', 'DIFFICILE': 'DIFÍCIL', 'RÉSOLU !': 'RESOLVIDO!',
+    'ANNULER': 'DESFAZER', 'CROIX AUTO': 'X AUTO', 'OUI': 'SIM', 'NON': 'NÃO', 'DIFFICILE': 'DIFÍCIL', 'RÉSOLU !': 'RESOLVIDO!', 'FAUX !': 'ERRADO!',
     'Il ne reste qu’une case libre dans cette ligne : c’est une reine.': 'Só resta uma casa livre nesta linha: é uma rainha.',
     'Il ne reste qu’une case libre dans cette colonne : c’est une reine.': 'Só resta uma casa livre nesta coluna: é uma rainha.',
     'Il ne reste qu’une case libre dans cette zone : c’est une reine.': 'Só resta uma casa livre nesta zona: é uma rainha.',

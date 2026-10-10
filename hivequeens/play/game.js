@@ -83,21 +83,44 @@
   const jour = () => { const d = new Date(); return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(); };
   function grilleDuJour(j) { const k = 7 + j % 3, x = L.choisir(k, j * 31 + k, L.scoreVise(DEC[k], .65), 4); return { n: k, z: x.z, d: x.score, r: x.rang, h: 0 }; }
   function startDaily() { lance = true; const j = jour(); daily = { j, lv: daily && daily.j === j ? daily.lv : grilleDuJour(j) }; C.restart(); }
+  let defiVu = false, cacheX = false, defiT = -1, fauxEtape = 0, fauxFx = null, carte = '', mielT = -1, mielVu = false;   // clips « défi » et « faux coup », carte de fin (voir le robot, plus bas)
+  // EFFETS (10 oct. 2026) : la reine arrive en volant et s'écrase un peu (T_POSE : durée du vol), ses croix automatiques partent d'elle en vague
+  // (autoT : instant où chaque croix apparaît) avec un tic qui monte, chaque reine joue la note suivante d'une gamme (GAMME, demi-tons), sa zone
+  // s'illumine (eclats), et à la victoire les reines sautent en vague sous un reflet de miel, avec un léger zoom.
+  const T_POSE = .16, GAMME = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21]; let autoT = null, eclats = [], pose = -1;
+  // la note est fabriquée ici (le « ding » enregistré est un bruit de jeton, sans hauteur) : une lame douce, sol majeur pentatonique à partir du sol 4
+  function note(k, o = {}) {
+    const a = C.audio(); if (!a.ctx) return false;
+    const f = 392 * Math.pow(2, GAMME[k % GAMME.length] / 12), t = a.ctx.currentTime + (o.delay || 0), v = .3 * (o.vol === undefined ? 1 : o.vol);
+    for (const [m, g, d] of [[1, 1, .75], [2, .28, .4], [3, .08, .22]]) {
+      const os = a.ctx.createOscillator(), ga = a.ctx.createGain(); os.type = 'sine'; os.frequency.value = f * m;
+      ga.gain.setValueAtTime(.0001, t); ga.gain.exponentialRampToValueAtTime(v * g, t + .006); ga.gain.exponentialRampToValueAtTime(.0001, t + d);
+      os.connect(ga); ga.connect(a.master); os.start(t); os.stop(t + d + .05);
+    }
+    return true;
+  }
   function init() {
     tuto = !daily && tutoDu() ? { phase: 'pose', cell: -1 } : null;
     lv = tuto ? TUTO : daily ? daily.lv : level <= NIV.length ? NIV[level - 1] : niveauAuDela(level); n = lv.n; G = L.grille(n, 1, lv.z); cell = BOARD.s / n;
-    p = new Uint8Array(G.N); auto = new Uint8Array(G.N); bad = new Uint8Array(G.N); anim = new Float32Array(G.N).fill(-9);
+    p = new Uint8Array(G.N); auto = new Uint8Array(G.N); bad = new Uint8Array(G.N); anim = new Float32Array(G.N).fill(-9); autoT = new Float32Array(G.N).fill(-9); eclats = []; pose = -1;
     sol = L.resoudre(G).s; hist = []; state = 'play'; elapsed = 0; hintsUsed = 0; hint = null; drag = null; wonT = 0; fondKey = '';
     if (tuto) tutoCible();
+    mielT = MIEL ? C.time : -1; mielVu = false; defiVu = false; defiT = -1; fauxEtape = 0; fauxFx = null; carte = ''; cacheX = DEFI > 0 && !tuto; if (cacheX) { for (let g = 0; g < 400 && Array.from(p).filter(v => v === REINE).length < n - DEFI; g++) { const e = prochaine(); for (const i of e.place || []) p[i] = REINE; for (const i of e.out || []) p[i] = CROIX; ranger(); } }
   }
   const centre = i => ({ x: BOARD.x + (i % n + .5) * cell, y: BOARD.y + ((i / n | 0) + .5) * cell });
   const cellAt = (x, y) => { const c = Math.floor((x - BOARD.x) / cell), r = Math.floor((y - BOARD.y) / cell); return c >= 0 && c < n && r >= 0 && r < n ? r * n + c : -1; };
-  const vu = i => p[i] === REINE ? REINE : p[i] === CROIX || (ax() && auto[i]) ? CROIX : VIDE;   // ce que le joueur voit dans la case
+  const vu = i => p[i] === REINE ? REINE : cacheX ? VIDE : p[i] === CROIX || (ax() && auto[i]) ? CROIX : VIDE;   // ce que le joueur voit dans la case
   // croix automatiques (voisines d'une reine, reste de sa ligne, de sa colonne et de sa zone) et reines en conflit
   function ranger() {
-    auto.fill(0); bad.fill(0);
+    const avant = auto.slice(), src = pose; pose = -1; auto.fill(0); bad.fill(0);
     const q = []; for (let i = 0; i < G.N; i++) if (p[i] === REINE) q.push(i);
     for (const i of q) { for (const j of G.nb[i]) { if (p[j] === REINE) bad[i] = 1; else auto[j] = 1; } for (const ui of G.of[i]) for (const j of G.units[ui].cells) if (j !== i) { if (p[j] === REINE) bad[i] = 1; else auto[j] = 1; } }
+    const vol = src >= 0 && p[src] === REINE, t0 = C.time + (vol ? T_POSE : 0); let loin = 0;
+    for (let j = 0; j < G.N; j++) if (auto[j] && !avant[j]) { const d = vol ? Math.max(Math.abs(j % n - src % n), Math.abs((j / n | 0) - (src / n | 0))) : 0; autoT[j] = t0 + d * .045; if (d > loin) loin = d; }
+    if (vol && !bad[src]) {
+      eclats.push({ reg: G.reg[src], t: t0 });
+      if (ax() && !cacheX) for (let d = 1; d <= loin; d++) C.playSample('croix', { rate: .85 + d * .06, vol: .4, delay: T_POSE + d * .045 });
+    }
     if (state === 'play' && q.length === n && !bad.includes(1)) gagner();
   }
   // état du joueur vu par le raisonnement (seulement si rien n'est faux) : reines posées et rangées, croix du joueur
@@ -138,7 +161,8 @@
   function toucher(i) {
     const was = p[i]; p[i] = was === REINE ? VIDE : was === CROIX || (ax() && auto[i]) ? REINE : CROIX; anim[i] = C.time;
     if (p[i] === REINE) {
-      snd.reine(i); C.haptic('light');
+      pose = i; snd.reine(i); note(p.filter(v => v === REINE).length - 1, { delay: T_POSE }); C.haptic('light');
+      C.after(T_POSE, () => { if (p[i] === REINE && state === 'play') { const c = centre(i); C.burst(c.x, c.y + cell * .3, { colors: ['#FFE38A', '#fff', '#FFC933'], count: 8, speed: 380, size: 10, life: .45 }); } });
     } else if (p[i] === CROIX) snd.croix(); else snd.retire();
   }
   function annuler() { if (!hist.length) return; p = hist.pop(); hint = null; snd.annule(); ranger(); }
@@ -166,7 +190,7 @@
     if (e.unit) for (const i of e.unit.cells) hl[i] = 1;
     if (e.t === 'confine') { for (let i = 0; i < G.N; i++) if (e.zones.includes(G.reg[i])) hl[i] = 1; band = { o: e.o, a: e.a, b: e.b }; }
     if (e.t === 'don' || e.t === 'essai') hl.fill(1);
-    for (const i of e.place || []) { p[i] = REINE; anim[i] = C.time; hl[i] = 1; }
+    for (const i of e.place || []) { p[i] = REINE; anim[i] = C.time; hl[i] = 1; pose = i; }
     for (const i of e.out || []) { p[i] = CROIX; anim[i] = C.time; hl[i] = 1; }
     hint = { text: texteIndice(e), cells: (e.place || []).concat(e.out || []), hl, band };
     snd.indice(); C.haptic('light'); ranger();
@@ -186,14 +210,14 @@
 
   // ------------------------------------------------------------ victoire
   function gagner() {
-    state = 'won'; wonT = C.time; hint = null;
+    state = 'won'; wonT = C.time; hint = null; fauxFx = null; if (C.KIT.hook >= 0) carte = C.byLang(CARTES)[DEFI > 0 ? 0 : FAUX ? 1 : 2];
     const q = []; for (let i = 0; i < G.N; i++) if (p[i] === REINE) q.push(i);
-    q.forEach((i, a) => C.after(a * .07, () => { anim[i] = C.time; C.sfx.ding(a * 2 - 4); const c = centre(i); C.burst(c.x, c.y, { colors: ['#FFC933', '#fff', '#3a2408'], count: 10, speed: 520, size: 14, life: .6 }); }));
-    C.after(q.length * .07 + .15, () => { snd.gagne(); C.confetti(W / 2, BOARD.y + BOARD.s / 2); });
-    if (tuto) { C.after(q.length * .07 + 1.6, tutoFini); return; }
+    q.forEach((i, a) => C.after(.35 + a * .09, () => { anim[i] = C.time; note(a) || C.sfx.ding(GAMME[a % GAMME.length] - 9); const c = centre(i); C.burst(c.x, c.y, { colors: ['#FFC933', '#fff', '#3a2408'], count: 10, speed: 520, size: 14, life: .6 }); }));
+    C.after(.35 + q.length * .09 + .15, () => { snd.gagne(); C.confetti(W / 2, BOARD.y + BOARD.s / 2); });
+    if (tuto) { C.after(q.length * .09 + 2, tutoFini); return; }
     const stars = hintsUsed === 0 ? 3 : hintsUsed === 1 ? 2 : 1, t = elapsed, lvl = level;
-    if (daily && global.Shell && Shell.dailyWon) { C.after(q.length * .07 + 1.3, () => Shell.dailyWon({ stars, time: t })); return; }
-    C.after(q.length * .07 + 1.3, () => { if (global.Shell) Shell.levelWon({ level: lvl, stars, time: t }); else { level++; C.restart(); } });
+    if (daily && global.Shell && Shell.dailyWon) { C.after(q.length * .09 + 1.9, () => Shell.dailyWon({ stars, time: t })); return; }
+    C.after(q.length * .09 + 1.9, () => { if (global.Shell) Shell.levelWon({ level: lvl, stars, time: t }); else { level++; C.restart(); } });
   }
 
   // ------------------------------------------------------------ sons et musique enregistrés (audio/manifest.js → window.GAME_AUDIO)
@@ -202,7 +226,7 @@
   const AUDIO = global.GAME_AUDIO || null, MUSIQUE_URL = (String(location.href).match(/[?&]musique=([\w-]+)/) || [])[1];
   if (AUDIO && AUDIO.sfx) C.loadSamples(AUDIO.base || 'audio/', AUDIO.sfx);
   const snd = {
-    croix: () => C.playSample('croix') || C.sfx.click(), reine: i => C.playSample('reine', { rate: 1 + (i % n) * .025 }) || C.sfx.pop(1 + (i % n) * .03),
+    croix: () => C.playSample('croix') || C.sfx.click(), reine: i => C.playSample('reine') || C.sfx.pop(1 + (i % n) * .03),
     retire: () => C.playSample('retire') || C.sfx.plop(), conflit: () => C.playSample('conflit') || C.sfx.fail(), indice: () => C.playSample('indice') || C.sfx.pop(),
     annule: () => C.playSample('annule') || C.sfx.click(), gagne: () => C.playSample('gagne') || C.sfx.win(),
   };
@@ -320,7 +344,25 @@
     ctx.drawImage(artImg[1], W / 2 - 300, 800 - 300, 600, 600);
     C.text('HIVE QUEENS', W / 2, 1300, { size: C.fitSize('HIVE QUEENS', 170, 720), color: '#FFE38A', stroke: INK, strokeW: 26, shadow: 18, cache: false });
   }
-  function draw() {
+  function draw() {   // à la victoire, toute l'image se rapproche un peu du plateau
+    const u = state === 'won' && !tuto && !global.ART ? C.clamp((C.time - wonT) / .7, 0, 1) : 0, z = 1 + .03 * (1 - (1 - u) * (1 - u) * (1 - u)), cy = BOARD.y + BOARD.s / 2;
+    ctx.save(); if (u > 0) { ctx.translate(W / 2, cy); ctx.scale(z, z); ctx.translate(-W / 2, -cy); }
+    if (fauxFx && fauxFx.t >= 0 && C.time - fauxFx.t < .45) { const a = (C.time - fauxFx.t) / .45; ctx.translate(Math.sin(a * 38) * 16 * (1 - a), 0); }   // faux coup : secousse
+    dessiner(); ctx.restore();
+    if (mielT >= 0 && C.time - mielT < 1.6) voileDeMiel(C.time - mielT);
+  }
+  // voile de miel du début d'un clip : il couvre tout, puis son bord du haut descend (bord ondulé, coulures à la traîne, reflet)
+  function voileDeMiel(t) {
+    const r = C.clamp((t - .2) / 1.2, 0, 1), e = r * r * (3 - 2 * r), y0 = -160 + e * (H + 420);
+    const bord = x => y0 + Math.sin(x * .011 + t * 4) * 22 + Math.sin(x * .027 + 1.3) * 14;
+    const g = ctx.createLinearGradient(0, y0, 0, y0 + 900); g.addColorStop(0, '#FFD75E'); g.addColorStop(.25, '#F7B21C'); g.addColorStop(1, '#D8860A');
+    ctx.save(); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-200, H + 400); ctx.lineTo(-200, bord(-200)); for (let x = -200; x <= W + 200; x += 24) ctx.lineTo(x, bord(x)); ctx.lineTo(W + 200, H + 400); ctx.closePath(); ctx.fill();
+    // coulures : des filets qui restent en arrière du bord et s'amincissent
+    for (let k = 0; k < 9; k++) { const x = 70 + k * 118 + Math.sin(k * 7.3) * 30, len = (120 + (k * 53 % 160)) * (1 - r * .6) * Math.min(1, r * 6), w = 26 + (k * 17 % 22); ctx.beginPath(); ctx.roundRect(x - w / 2, bord(x) - len, w, len + 30, w / 2); ctx.fill(); }
+    ctx.strokeStyle = 'rgba(255,250,215,.75)'; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.beginPath(); for (let x = -200; x <= W + 200; x += 24) ctx.lineTo(x, bord(x) + 20); ctx.stroke();
+    ctx.restore();
+  }
+  function dessiner() {
     if (global.ART) return drawArt();
     if (!C.canvas.width || !C.canvas.height) return;   // fenêtre pas encore mesurée
     const key = level + '|' + C.canvas.width + '|' + C.canvas.height; if (key !== fondKey) { fond = faireFond(); fondKey = key; }
@@ -328,8 +370,9 @@
     const B = BOARD, now = C.time;
     // en-tête (rien tant qu'aucun niveau n'est lancé : le plateau sert de fond à l'écran titre)
     if (lance) {
-    C.text(tuto ? tr('COMMENT JOUER') : daily ? tr('GRILLE DU JOUR') : tr('NIVEAU {n}', { n: level }), W / 2, 92, { size: C.fitSize(daily ? tr('GRILLE DU JOUR') : '', 68, W - 2 * C.HUD_CLEAR), color: '#fff', stroke: INK, strokeW: surDecor ? 12 : 0.01, shadow: surDecor ? 10 : 0 });
-    if (!tuto) C.text(n + ' × ' + n + (lv.h ? '  ·  ' + tr('DIFFICILE') : ''), W / 2, 172, { size: 38, color: lv.h ? '#FFB3A8' : surDecor ? '#fff' : 'rgba(255,255,255,.6)', stroke: surDecor ? INK : null, strokeW: 8 });
+    const accroche = !tuto && C.kit.drawHook(level, { y: 96, size: 56, gap: 60, color: '#fff', stroke: INK, strokeW: 12 });   // clips : accroche à la place du numéro de niveau
+    if (!accroche) C.text(tuto ? tr('COMMENT JOUER') : daily ? tr('GRILLE DU JOUR') : tr('NIVEAU {n}', { n: level }), W / 2, 92, { size: C.fitSize(daily ? tr('GRILLE DU JOUR') : '', 68, W - 2 * C.HUD_CLEAR), color: '#fff', stroke: INK, strokeW: surDecor ? 12 : 0.01, shadow: surDecor ? 10 : 0 });
+    if (!tuto && !accroche) C.text(n + ' × ' + n + (lv.h ? '  ·  ' + tr('DIFFICILE') : ''), W / 2, 172, { size: 38, color: lv.h ? '#FFB3A8' : surDecor ? '#fff' : 'rgba(255,255,255,.6)', stroke: surDecor ? INK : null, strokeW: 8 });
     if (!tuto) C.text(temps(elapsed), W - 60, 172, { size: 38, color: surDecor ? '#fff' : 'rgba(255,255,255,.6)', stroke: surDecor ? INK : null, strokeW: 8, align: 'right' });
     if (tuto || (!daily && level <= 3)) {
       C.text(tr('Une reine par ligne, par colonne et par zone de couleur.'), W / 2, 238, { size: C.fitSize(tr('Une reine par ligne, par colonne et par zone de couleur.'), 36, W - 80), color: '#FFE38A', stroke: surDecor ? INK : null, strokeW: 8 });
@@ -342,6 +385,13 @@
       for (let i = 0; i < G.N; i++) if (!hint.hl[i]) ctx.fillRect(B.x + (i % n) * cell, B.y + (i / n | 0) * cell, cell + .5, cell + .5);
       ctx.restore();
     }
+    // zone qui vient de recevoir sa reine : un éclat doré qui s'éteint
+    if (eclats.length) {
+      eclats = eclats.filter(e => now - e.t < .7);
+      ctx.save(); ctx.beginPath(); ctx.roundRect(B.x, B.y, B.s, B.s, 26); ctx.clip();
+      for (const e of eclats) { const a = (now - e.t) / .7; if (a < 0) continue; ctx.fillStyle = 'rgba(255,240,170,' + (.6 * (1 - a) * (1 - a)).toFixed(3) + ')'; for (let i = 0; i < G.N; i++) if (G.reg[i] === e.reg) ctx.fillRect(B.x + (i % n) * cell, B.y + (i / n | 0) * cell, cell + .5, cell + .5); }
+      ctx.restore();
+    }
     // croix et reines
     const cs = cell * .17;
     ctx.save(); ctx.lineCap = 'round'; ctx.lineWidth = Math.max(5, cell * .065);
@@ -349,13 +399,22 @@
       const v = vu(i); if (v === VIDE) continue;
       const x = B.x + (i % n + .5) * cell, y = B.y + ((i / n | 0) + .5) * cell, a = C.clamp((now - anim[i]) / .18, 0, 1);
       if (v === CROIX) {
-        const s = cs * (p[i] === CROIX ? C.ease.outBack(a) : 1);
+        const av = p[i] === CROIX ? a : C.clamp((now - autoT[i]) / .16, 0, 1); if (av <= 0) continue;   // croix automatique : elle attend son tour dans la vague
+        const s = cs * C.ease.outBack(av);
         ctx.strokeStyle = p[i] === CROIX ? 'rgba(58,36,8,.62)' : 'rgba(58,36,8,.26)';
         ctx.beginPath(); ctx.moveTo(x - s, y - s); ctx.lineTo(x + s, y + s); ctx.moveTo(x + s, y - s); ctx.lineTo(x - s, y + s); ctx.stroke();
       } else {
         if (bad[i]) { ctx.fillStyle = 'rgba(229,23,63,.55)'; C.roundRect(x - cell * .42, y - cell * .42, cell * .84, cell * .84, cell * .16); ctx.fill(); }
-        const s = cell * .92 * (state === 'won' ? 1 + .25 * Math.sin(Math.PI * C.clamp((now - anim[i]) / .35, 0, 1)) : C.ease.outBack(a));
-        ctx.drawImage(crown, x - s / 2, y - s / 2, s, s);
+        const S = cell * .92, t = now - anim[i];
+        if (state === 'won') {   // saut à son tour, puis un petit balancement en vague
+          const j = Math.sin(Math.PI * C.clamp(t / .42, 0, 1)), s = S * (1 + .18 * j), bob = now - wonT > 1.4 ? Math.abs(Math.sin(now * 5 - (i % n) * .7)) * cell * .06 : 0;
+          ctx.drawImage(crown, x - s / 2, y - s / 2 - j * cell * .36 - bob, s, s);
+        } else {   // vol d'arrivée, puis écrasement amorti, pieds posés ; un anneau de miel part de l'atterrissage
+          const f = C.clamp(t / T_POSE, 0, 1), l = C.clamp((t - T_POSE) / .34, 0, 1), sq = f < 1 ? -.08 : Math.sin(l * Math.PI * 2.5) * (1 - l) * .2;
+          if (f >= 1 && t < T_POSE + .45) { const r = (t - T_POSE) / .45; ctx.save(); ctx.strokeStyle = 'rgba(255,215,94,' + (.75 * (1 - r)).toFixed(3) + ')'; ctx.lineWidth = cell * .08 * (1 - r) + 1; ctx.beginPath(); ctx.arc(x, y + cell * .12, cell * (.28 + .6 * r), 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
+          const w = S * (1 + sq), h = S * (1 - sq);
+          ctx.globalAlpha = Math.min(1, f * 2.5 + .15); ctx.drawImage(crown, x - w / 2 + (1 - f) * cell * .3, y + S / 2 - h - (1 - f * f) * cell * 1.05, w, h); ctx.globalAlpha = 1;
+        }
       }
     }
     ctx.restore();
@@ -370,21 +429,72 @@
       ls.forEach((s, a) => C.text(s, W / 2, y0 + a * 52, { size: 40, color: '#fff' }));
     }
     if (lance && !hint && !tuto && !daily && level <= 2 && state === 'play') { const ls = lignes(tr('Astuce : touche une fois pour barrer une case, glisse pour en barrer plusieurs.'), 36, PANEL.w - 70); ls.forEach((t, k) => C.text(t, W / 2, PANEL.y + PANEL.h / 2 - (ls.length - 1) * 24 + k * 48, { size: 36, color: surDecor ? '#fff' : 'rgba(255,255,255,.7)', stroke: surDecor ? INK : null, strokeW: 8 })); }
+    if (defiT >= 0 && state === 'play') {   // défi : compte à rebours et barre qui se vide
+      const r = Math.max(0, ATTENTE - (now - defiT)), fr = r - Math.floor(r), y = PANEL.y + PANEL.h / 2 - 30;
+      C.text(String(Math.max(1, Math.ceil(r))), W / 2, y, { size: 170 * (1 + .3 * fr * fr * fr), color: '#FFE38A', stroke: INK, strokeW: 16, shadow: 12, cache: false });
+      ctx.save(); ctx.fillStyle = 'rgba(58,36,8,.7)'; C.roundRect(W / 2 - 300, y + 128, 600, 22, 11); ctx.fill(); ctx.fillStyle = '#FFC933'; C.roundRect(W / 2 - 300, y + 128, Math.max(22, 600 * r / ATTENTE), 22, 11); ctx.fill(); ctx.restore();
+    }
+    if (fauxFx && fauxFx.t >= 0) {   // faux coup : l'unité condamnée en rouge, le mot et la raison
+      const a = now - fauxFx.t;
+      ctx.save(); ctx.beginPath(); ctx.roundRect(B.x, B.y, B.s, B.s, 26); ctx.clip(); ctx.fillStyle = 'rgba(229,23,63,' + (.38 + .14 * Math.sin(now * 9)).toFixed(3) + ')';
+      for (const i of fauxFx.cells) ctx.fillRect(B.x + (i % n) * cell, B.y + (i / n | 0) * cell, cell + .5, cell + .5); ctx.restore();
+      C.text(C.byLang(FAUXMOT), W / 2, PANEL.y + PANEL.h / 2 - 50, { size: 120 * C.ease.outBack(C.clamp(a / .25, 0, 1)), color: '#FF5470', stroke: INK, strokeW: 16, shadow: 12, cache: false });
+      if (a > .5) C.text(C.byLang(RAISON)[fauxFx.type], W / 2, PANEL.y + PANEL.h / 2 + 60, { size: 46, color: '#fff', stroke: INK, strokeW: 10, alpha: C.clamp((a - .5) / .25, 0, 1) });
+    }
+    if (state === 'won' && carte) C.text(carte, W / 2, PANEL.y + PANEL.h / 2 + 100, { size: 54, color: '#fff', stroke: INK, strokeW: 10, alpha: C.clamp((now - wonT - .7) / .3, 0, 1) });
+    if (state === 'won') {   // reflet de miel qui traverse le plateau en diagonale
+      const r = (now - wonT - .1) / .85;
+      if (r > 0 && r < 1) { const x0 = B.x - B.s * .7 + r * B.s * 2.1, g = ctx.createLinearGradient(x0, B.y, x0 + B.s * .45, B.y + B.s * .45); g.addColorStop(0, 'rgba(255,244,190,0)'); g.addColorStop(.5, 'rgba(255,244,190,.6)'); g.addColorStop(1, 'rgba(255,244,190,0)'); ctx.save(); ctx.beginPath(); ctx.roundRect(B.x, B.y, B.s, B.s, 26); ctx.clip(); ctx.fillStyle = g; ctx.fillRect(B.x, B.y, B.s, B.s); ctx.restore(); }
+    }
     if (state === 'won') C.text(tr(tuto ? 'À TOI DE JOUER !' : 'RÉSOLU !'), W / 2, PANEL.y + PANEL.h / 2, { size: 96, color: '#FFE38A', stroke: INK, strokeW: 14, shadow: 12, alpha: C.clamp((now - wonT) / .3, 0, 1) });
     if (!lance) return;
     if (tuto) { pilule(BTN.auto, tr('PASSER'), true); return; }
+    if (C.KIT.hook >= 0) return;   // clip avec accroche : pas de boutons dans l'image
     pilule(BTN.undo, '↶  ' + tr('ANNULER'), hist.length > 0 && state === 'play');
     pilule(BTN.auto, tr('CROIX AUTO') + ' : ' + tr(autoX ? 'OUI' : 'NON'), autoX);
   }
 
   // ------------------------------------------------------------ robot (mode développeur, clips) : joue le raisonnement, coup par coup
+  // Clips (10 oct. 2026), par l'URL : ?hook=N accroche en haut à la place du numéro de niveau ; ?defi=K la grille s'ouvre déjà remplie par le
+  // raisonnement (croix cachées pendant l'attente), il manque K reines, le robot attend ?attente=S secondes (4) puis finit ; ?astuce : le robot demande l'indice, le laisse lire, puis joue ;
+  // pendant l'attente du défi, un compte à rebours ; ?faux : le robot commence par un coup faux, expliqué puis retiré ; avec une accroche, une question
+  // s'affiche sous « RÉSOLU ! » (CARTES) ; ?miel : le clip s'ouvre sur un voile de miel qui s'écoule et découvre la grille (1,4 s).
+  // ?pas=S : pause entre deux déductions du robot (0,25).
+  const UP = new URLSearchParams(global.location ? location.search : ''), DEFI = +UP.get('defi') || 0, ASTUCE = UP.has('astuce'), FAUX = UP.has('faux'), MIEL = UP.has('miel'), ATTENTE = +UP.get('attente') || 4, PAS = UP.has('pas') ? +UP.get('pas') : .25; 
+  C.kit.setup({ hooks: {
+    fr: ['Où va la dernière reine ?', 'Tu places les 3 dernières reines ?', 'Une reine par ligne, colonne et couleur.|Jamais deux côte à côte.', 'Ça a l’air facile.|Ça ne l’est pas.', 'L’astuce que presque tout le monde rate', 'Regarde cette grille tomber|sans rien deviner', 'Ce coup a l’air bon.|Il est faux.'],
+    en: ['Where does the last queen go?', 'Can you place the last 3 queens?', 'One queen per row, column and color.|Never two side by side.', 'Looks easy.|It is not.', 'The trick almost everyone misses', 'Watch this grid fall|without a single guess', 'This move looks fine.|It is wrong.'],
+  } });
+  const CARTES = { fr: ['Tu l’avais ?', 'Tu l’avais vu venir ?', 'Ton temps ?'], en: ['Did you get it?', 'Did you see it coming?', 'Your time?'] };
+  const RAISON = { fr: { zone: 'Plus de place dans cette zone', ligne: 'Plus de place dans cette ligne', colonne: 'Plus de place dans cette colonne' }, en: { zone: 'No room left in this zone', ligne: 'No room left in this row', colonne: 'No room left in this column' } };
+  const FAUXMOT = { fr: 'FAUX !', en: 'WRONG!' };
+  // une case libre, hors solution, dont la reine condamne d'un coup une zone (de préférence), une ligne ou une colonne
+  function coupFaux() {
+    let best = null;
+    for (let i = 0; i < G.N; i++) {
+      if (p[i] !== VIDE || auto[i] || sol[i] === REINE) continue;
+      const e = etatLogique(); if (e[i] !== VIDE) continue; L.poser(G, e, i);
+      for (const u of G.units) if (!u.cells.some(j => e[j] === REINE || e[j] === VIDE)) { const sc = (u.type === 'zone' ? 100 : 0) + u.cells.length; if (!best || sc > best.sc) best = { i, cells: u.cells, type: u.type, sc }; }
+    }
+    return best;
+  }
   function autoplay() {
     if (state !== 'play') return; const f = faux();
+    if (MIEL && !mielVu) { mielVu = true; C.bot.wait(1.5); return; }
+    if (!defiVu && (DEFI > 0 || ASTUCE)) {
+      defiVu = true;
+      if (ASTUCE) donnerIndice(); else { defiT = C.time; for (let k = 0; k < ATTENTE; k++) C.playSample('croix', { rate: k >= ATTENTE - 1 ? 1.5 : 1.1, vol: .9, delay: k }); }   // compte à rebours : un tic par seconde, le dernier plus aigu
+      C.bot.wait(ATTENTE); return;
+    }
+    cacheX = false; defiT = -1;   // fin de l'attente du défi : les croix reviennent, le robot finit   // clips « défi » et « astuce » : le temps de chercher, ou de lire l'indice
     const taps = (i, want) => { let v = p[i], k = 0; while (v !== want && k < 3) { v = v === REINE ? VIDE : v === CROIX || (ax() && auto[i]) ? REINE : CROIX; k++; } return k; };
     const go = (i, want) => { const c = centre(i); for (let k = taps(i, want); k > 0; k--) C.bot.tap(c.x, c.y); };
-    if (f.length) { go(f[0], VIDE); return; }
+    // clip « faux coup » : une reine qui a l'air possible, la secousse et la raison (une ligne, une colonne ou une zone n'a plus de place), puis on la retire
+    if (FAUX && fauxEtape === 0) { fauxEtape = 1; const w = coupFaux(); if (w) { fauxFx = { cells: w.cells, type: w.type, t: -1 }; go(w.i, REINE); C.bot.wait(.75); return; } }
+    if (fauxEtape === 1) { fauxEtape = 2; if (fauxFx) { fauxFx.t = C.time; snd.conflit(); C.bot.wait(2.4); return; } }
+    if (f.length) { fauxFx = null; go(f[0], VIDE); C.bot.wait(.35); return; }
     const e = prochaine(); for (const i of e.place || []) go(i, REINE); for (const i of e.out || []) go(i, CROIX);
-    C.bot.wait(.25);
+    C.bot.wait(PAS);
   }
 
   // console : Core.test.level(12), Core.test.gagner() (pose la solution), Core.test.indice()
