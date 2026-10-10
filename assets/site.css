@@ -221,3 +221,14 @@ body.night .gem::after { content: ""; position: absolute; inset: 13%; background
   clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); }
 @keyframes bob { 50% { translate: 0 -10px; rotate: 6deg; } }
 @media (prefers-reduced-motion: reduce) { body.night .gem { animation: none; } }
+
+/* Hive Queens (page hivequeens/, 10 oct. 2026) : thème miel, posé par-dessus le thème de nuit (<body class="night hive">) */
+body.hive { --sky: #2f1a07; --sky-light: #8a4a0c; --pink: #F5A300; --pink-dark: #8a5a00; --grass: #5a3a12; --grass-dark: #1d1205; --ink: #3a2408; --ink-soft: #7a6040; }
+body.hive .sky { background: radial-gradient(700px 420px at 78% 0%, rgba(255, 200, 80, .38), transparent 65%), linear-gradient(180deg, var(--sky) 0%, var(--sky-light) 100%); }
+body.hive .step b { background: #F5A300; box-shadow: 0 5px 0 #8a5a00; }
+body.hive .step:nth-child(2) b { background: #7FB069; box-shadow: 0 5px 0 #3f6b2e; } body.hive .step:nth-child(3) b { background: #9C7BD6; box-shadow: 0 5px 0 #5a3f96; }
+body.hive .picnic { background: linear-gradient(180deg, #8a4a0c, #3a2408); }
+body.hive .picnic::before { background: radial-gradient(600px 260px at 50% 0%, rgba(255, 216, 107, .3), transparent 70%); }
+.bee { position: absolute; height: auto; animation: bob 5s ease-in-out infinite; filter: drop-shadow(0 6px 0 rgba(0, 0, 0, .18)); }
+@media (prefers-reduced-motion: reduce) { .bee { animation: none; } }
+.game.g-reines { background: linear-gradient(150deg, #F5A300, #6b4210); }

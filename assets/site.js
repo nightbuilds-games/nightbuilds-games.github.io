@@ -9,7 +9,7 @@
    - boutons de téléchargement : STORE (plus bas), vide tant que le jeu n'est pas sur l'App Store ;
    - adresse de contact : CONTACT (plus bas), posée dans les liens a.contact. */
 (function () {
-  const STORE = { jellies: '', jewelbox: '' };   // lien App Store par jeu : précommande puis téléchargement
+  const STORE = { jellies: '', jewelbox: '', hivequeens: '' };   // lien App Store par jeu : précommande puis téléchargement
   const CONTACT = 'contact@nightbuilds.app';   // adresse de contact (liens a.contact) : la même que dans privacy.html
 
   // ------------------------------------------------------------ langue

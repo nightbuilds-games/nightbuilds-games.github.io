@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hive Queens — play the demo in your browser</title>
+<meta name="description" content="Play the first levels of Hive Queens in your browser: place one queen bee in every row, column and color zone, and never two side by side. No install, no sign-up.">
+<link rel="canonical" href="https://nightbuilds.app/hivequeens/play/">
+<link rel="icon" href="../../assets/img/favicon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Hive Queens — playable demo">
+<meta property="og:description" content="Play the first levels of Hive Queens in your browser: place one queen bee in every row, column and color zone, and never two side by side. No install, no sign-up.">
+<meta property="og:url" content="https://nightbuilds.app/hivequeens/play/">
+<meta property="og:image" content="https://nightbuilds.app/hivequeens/share.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#6b4210">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="engine/shell.css">
+</head>
+<body>
+<canvas id="game"></canvas>
+<script>
+  // DÉMO du site, fabriquée par `node jeux/build.js reines --demo` : ne pas modifier à la main.
+  // Les paramètres d'URL de développement (?level, ?zone, ?dev, ?bot…) sont ignorés : seuls la langue (?lang) et ?mute sont gardés.
+  (function () { var keep = (location.search.match(/[?&](lang=(fr|en|es|pt)|mute)(?=&|$)/g) || []).map(function (s) { return s.slice(1); }), q = keep.length ? "?" + keep.join("&") : ""; try { if (location.search !== q || location.hash) history.replaceState(null, "", location.pathname + q); } catch (e) { } })();
+  window.GAME_DEMO = {"levels":12,"url":"","label":"preorder","stats":{"key":"783f7b8a2d4dd36adb5b7a6b04b88203","secret":"85022b839de89520302e2c6782595a110e0366b2"}};
+</script>
+<script src="engine/core.js"></script>
+<script src="engine/stats.js"></script>   <!-- statistiques GameAnalytics (rien n est envoyé en développement) -->
+<script src="engine/house.js"></script>   <!-- pubs maison : les autres jeux du studio, aux emplacements des pubs -->
+<script src="engine/monet.js"></script>   <!-- pubs et achats (simulés en développement) -->
+<script src="engine/lang.js"></script>   <!-- coquille en espagnol et en portugais -->
+<script src="engine/shell.js"></script>
+<script src="audio/manifest.js"></script>   <!-- musiques et bruitages enregistrés (facultatifs : sans eux, tout est synthétisé) -->
+<script src="lang.js"></script>   <!-- jeu en espagnol et en portugais -->
+<script src="logique.js"></script>   <!-- règles et raisonnements (indices expliqués) -->
+<script src="niveaux.js"></script>   <!-- les grilles, fabriquées par tools/reines-niveaux.js -->
+<script src="game.js"></script>
+<script>
+  // configuration de la coquille pour ce jeu : nom, couleurs des menus (miel, brun) et du fond de page (ruche sombre, comme le jeu)
+  Shell.init({
+    id: 'reines',
+    version: '0.1.0',
+    title: { fr: 'Hive Queens', en: 'Hive Queens' },   // un seul nom dans toutes les langues (décidé le 10 oct. 2026)
+    maxShown: 24,
+    splash: { bg: '#8a4a0c' },   // écran de démarrage repris au lancement (splash.webp, node jeux/tools/splash-web.js reines) ; bg : couleur de ses bords
+    privacyUrl: 'https://nightbuilds.app/privacy.html',   // site des jeux (dossier site/ du dépôt)
+    colors: {
+      'bg-top': '#6b4210', 'bg-bottom': '#1d1205',
+      primary: '#F5A300', 'primary-dark': '#8a5a00', secondary: '#9a6a2c', 'secondary-dark': '#5a3a12',
+      panel: '#FFF8E7', ink: '#3a2408',
+    },
+  });
+</script>
+</body>
+</html>
