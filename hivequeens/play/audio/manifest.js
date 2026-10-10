@@ -20,7 +20,7 @@ window.GAME_AUDIO = {
     conflit: { file: 'conflit.mp3', vol: .45 },  // Interface Sounds, error_004 (comme le présentoir plein de Jewel Box)
     indice: { file: 'indice.mp3', vol: .6 },     // Interface Sounds, question_002
     annule: { file: 'annule.mp3', vol: .5 },     // Interface Sounds, back_003
-    gagne: { file: 'gagne.mp3', vol: .7 },       // Music Jingles, Pizzicato jingles, jingles_PIZZI07
+    gagne: { file: 'gagne.mp3', vol: .6 },       // Interface Sounds, confirmation_002 (10 oct. : le jingle pizzicato ne plaisait pas ; autres candidats à écouter : /art/sons-victoire.html)
     click: { file: 'click.mp3', vol: .25 },      // Interface Sounds, click_001 (comme Jellies)
     ding: { file: 'ding.mp3', vol: .4 },         // Casino Audio, chips-collide-1 (pièce, comme Jellies)
   },

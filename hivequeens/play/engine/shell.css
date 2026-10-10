@@ -233,7 +233,7 @@ h1.logo { margin-bottom: 4vh; }
 .demo-note { margin: 4px 0 0; max-width: min(80vw, 340px); text-align: center; font-size: 13px; color: #fff; opacity: .85; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
 
 /* grille du jour (écran titre) : bouton sous JOUER, série de jours en petit */
-.title .btn.daily { width: min(70vw, 320px); flex-direction: column; line-height: 1.15; font-size: 17px; white-space: nowrap; }
-.btn.daily small { display: block; font-size: 13px; opacity: .9; margin-top: 2px; }
+.title .btn.daily { width: min(70vw, 320px); flex-direction: column; line-height: 1.15; font-size: 17px; white-space: nowrap; padding-left: 10px; padding-right: 10px; }
+.btn.daily small { display: block; font-size: 12px; opacity: .9; margin-top: 2px; white-space: normal; text-wrap: balance; }   /* la ligne du dessous passe à la ligne plutôt que de dépasser du bouton (iPhone étroit) */
 .btn.daily > svg { width: 1em; height: 1em; fill: currentColor; vertical-align: -.12em; margin-right: .3em; display: inline-block; }
 .btn.daily.done { filter: saturate(.55); }

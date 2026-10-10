@@ -316,8 +316,9 @@
     ctx.imageSmoothingQuality = 'high'; ctx.drawImage(artImg[0], (W - H) / 2, 0, H, H);
     const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(58,26,2,.55)'); g.addColorStop(.3, 'rgba(58,26,2,0)'); g.addColorStop(.62, 'rgba(58,26,2,0)'); g.addColorStop(1, 'rgba(40,18,2,.8)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     const halo = ctx.createRadialGradient(W / 2, 800, 60, W / 2, 800, 560); halo.addColorStop(0, 'rgba(255,244,200,.75)'); halo.addColorStop(1, 'rgba(255,244,200,0)'); ctx.fillStyle = halo; ctx.fillRect(0, 200, W, 1200);
-    ctx.drawImage(artImg[1], W / 2 - 330, 800 - 330, 660, 660);
-    C.text('HIVE QUEENS', W / 2, 1345, { size: C.fitSize('HIVE QUEENS', 170, W - 150), color: '#FFE38A', stroke: INK, strokeW: 26, shadow: 18, cache: false });
+    // un iPhone ne montre que la bande centrale de l'image (environ 880 des 1080 unités de large) : la reine et le titre tiennent dans 720
+    ctx.drawImage(artImg[1], W / 2 - 300, 800 - 300, 600, 600);
+    C.text('HIVE QUEENS', W / 2, 1300, { size: C.fitSize('HIVE QUEENS', 170, 720), color: '#FFE38A', stroke: INK, strokeW: 26, shadow: 18, cache: false });
   }
   function draw() {
     if (global.ART) return drawArt();
