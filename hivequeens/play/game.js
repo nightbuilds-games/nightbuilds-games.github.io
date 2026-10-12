@@ -77,12 +77,17 @@
     auDela = { k, lv: { n: 10, z: x.z, d: x.score, r: x.rang, h: c.h } }; return auDela.lv;
   }
   const difficile = k => k <= NIV.length ? (NIV[k - 1].h ? 1 : 0) : L.vague(k).h;
-  // GRILLE DU JOUR (10 oct. 2026) : une grille par date, la même pour tous les joueurs (graine = la date du téléphone), de 7 × 7 à 9 × 9, assez relevée.
-  // La coquille tient la série de jours et la récompense (Shell.dailyWon) ; ici, seulement la grille et le mode de jeu.
-  let daily = null;
+  // GRILLE DU JOUR (10 oct. 2026) : une grille par date (graine = la date du téléphone). La coquille tient la série de jours et la récompense
+  // (Shell.dailyWon) ; ici, seulement la grille et le mode de jeu.
+  // À LA MESURE DU JOUEUR (12 oct. 2026) : la grille a la taille des grilles de son niveau le plus haut (de 5 × 5 à 10 × 10) et sa difficulté monte avec
+  // cette taille (un débutant reçoit une grille facile) ; le décor et la musique sont ceux de la zone de ce niveau. Deux joueurs de la même zone ont
+  // la même grille ; `haut` : ce niveau, donné par la coquille (daily.start).
+  let daily = null, haut = 1;
+  const zoneDe = () => daily ? haut : level;   // niveau dont on montre la zone (décor, musique)
   const jour = () => { const d = new Date(); return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(); };
-  function grilleDuJour(j) { const k = 7 + j % 3, x = L.choisir(k, j * 31 + k, L.scoreVise(DEC[k], .65), 4); return { n: k, z: x.z, d: x.score, r: x.rang, h: 0 }; }
-  function startDaily() { lance = true; const j = jour(); daily = { j, lv: daily && daily.j === j ? daily.lv : grilleDuJour(j) }; C.restart(); }
+  const tailleDuJour = () => Math.max(5, Math.min(10, haut <= NIV.length ? NIV[haut - 1].n : 10));
+  function grilleDuJour(j, k) { const x = L.choisir(k, j * 31 + k, L.scoreVise(DEC[k], k <= 6 ? .4 : k === 7 ? .55 : .65), k < 10 ? 4 : 3); return { n: k, z: x.z, d: x.score, r: x.rang, h: 0 }; }
+  function startDaily(top) { lance = true; haut = Math.max(1, top | 0 || haut); const j = jour(), k = tailleDuJour(); daily = { j, k, lv: daily && daily.j === j && daily.k === k ? daily.lv : grilleDuJour(j, k) }; C.restart(); }
   let defiVu = false, cacheX = false, defiT = -1, fauxEtape = 0, fauxFx = null, carte = '', mielT = -1, mielVu = false;   // clips « défi » et « faux coup », carte de fin (voir le robot, plus bas)
   // EFFETS (10 oct. 2026) : la reine arrive en volant et s'écrase un peu (T_POSE : durée du vol), ses croix automatiques partent d'elle en vague
   // (autoT : instant où chaque croix apparaît) avec un tic qui monte, chaque reine joue la note suivante d'une gamme (GAMME, demi-tons), sa zone
@@ -119,7 +124,7 @@
     for (let j = 0; j < G.N; j++) if (auto[j] && !avant[j]) { const d = vol ? Math.max(Math.abs(j % n - src % n), Math.abs((j / n | 0) - (src / n | 0))) : 0; autoT[j] = t0 + d * .045; if (d > loin) loin = d; }
     if (vol && !bad[src]) {
       eclats.push({ reg: G.reg[src], t: t0 });
-      if (ax() && !cacheX) for (let d = 1; d <= loin; d++) C.playSample('croix', { rate: .85 + d * .06, vol: .4, delay: T_POSE + d * .045 });
+      if (ax() && !cacheX) for (let d = 1; d <= loin; d++) C.playSample('croix', { rate: .85 + d * .06, vol: C.KIT.hook >= 0 ? .12 : .4, delay: T_POSE + d * .045 });
     }
     if (state === 'play' && q.length === n && !bad.includes(1)) gagner();
   }
@@ -225,14 +230,15 @@
   // dans le manifeste = pas de musique.
   const AUDIO = global.GAME_AUDIO || null, MUSIQUE_URL = (String(location.href).match(/[?&]musique=([\w-]+)/) || [])[1];
   if (AUDIO && AUDIO.sfx) C.loadSamples(AUDIO.base || 'audio/', AUDIO.sfx);
+  // dans un clip (accroche affichée), le tic des croix est très adouci : répété par le robot, il agaçait (11 oct. 2026)
   const snd = {
-    croix: () => C.playSample('croix') || C.sfx.click(), reine: i => C.playSample('reine') || C.sfx.pop(1 + (i % n) * .03),
+    croix: () => C.playSample('croix', { vol: C.KIT.hook >= 0 ? .25 : 1 }) || C.sfx.click(), reine: i => C.playSample('reine') || C.sfx.pop(1 + (i % n) * .03),
     retire: () => C.playSample('retire') || C.sfx.plop(), conflit: () => C.playSample('conflit') || C.sfx.fail(), indice: () => C.playSample('indice') || C.sfx.pop(),
     annule: () => C.playSample('annule') || C.sfx.click(), gagne: () => C.playSample('gagne') || C.sfx.win(),
   };
   let musGain = null, trackSrc = null, trackName = null;
   function musique() {
-    const M = AUDIO && AUDIO.music, name = MUSIQUE_URL || (M && M.length ? M[chapterOf(daily ? 1 : level).index % M.length] : null), a = C.audio();
+    const M = AUDIO && AUDIO.music, name = MUSIQUE_URL || (M && M.length ? M[chapterOf(zoneDe()).index % M.length] : null), a = C.audio();
     if (!name || !a.ctx) return;
     if (!musGain) { musGain = a.ctx.createGain(); musGain.connect(a.master); }
     musGain.gain.value = musicOn ? (AUDIO && AUDIO.musicVol !== undefined ? AUDIO.musicVol : .5) : 0;
@@ -284,7 +290,7 @@
     const k = C.canvas.width / W, cv = document.createElement('canvas'); cv.width = C.canvas.width; cv.height = C.canvas.height;
     const c = cv.getContext('2d'); c.scale(k, k);
     const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#6b4210'); g.addColorStop(1, '#1d1205'); c.fillStyle = g; c.fillRect(0, 0, W, H);
-    const decor = decorDe(daily ? 1 : level); surDecor = !!decor;
+    const decor = decorDe(zoneDe()); surDecor = !!decor;
     if (decor) { c.imageSmoothingQuality = 'high'; c.drawImage(decor, 0, 0, W, H); const v = c.createLinearGradient(0, 0, 0, H); v.addColorStop(0, 'rgba(29,18,5,.42)'); v.addColorStop(.14, 'rgba(29,18,5,.12)'); v.addColorStop(.24, 'rgba(29,18,5,0)'); v.addColorStop(.72, 'rgba(29,18,5,0)'); v.addColorStop(.86, 'rgba(29,18,5,.18)'); v.addColorStop(1, 'rgba(29,18,5,.4)'); c.fillStyle = v; c.fillRect(0, 0, W, H); }
     else { c.strokeStyle = 'rgba(255,200,90,.07)'; c.lineWidth = 4; for (let r = 0, R = 62; r * R * 1.5 < H + R; r++) for (let q = -1; q * R * 1.732 < W + R; q++) hexa(c, q * R * 1.732 + (r % 2 ? R * .866 : 0), r * R * 1.5, R, true); }
     // les bandes de la page, au-dessus et au-dessous du canevas sur un téléphone allongé, prennent la couleur moyenne des bords du fond
@@ -483,7 +489,7 @@
     if (MIEL && !mielVu) { mielVu = true; C.bot.wait(1.5); return; }
     if (!defiVu && (DEFI > 0 || ASTUCE)) {
       defiVu = true;
-      if (ASTUCE) donnerIndice(); else { defiT = C.time; for (let k = 0; k < ATTENTE; k++) C.playSample('croix', { rate: k >= ATTENTE - 1 ? 1.5 : 1.1, vol: .9, delay: k }); }   // compte à rebours : un tic par seconde, le dernier plus aigu
+      if (ASTUCE) donnerIndice(); else { defiT = C.time; for (let k = 0; k < ATTENTE; k++) note(k >= ATTENTE - 1 ? 5 : k >= ATTENTE - 3 ? 2 : 0, { vol: k >= ATTENTE - 3 ? .5 : .28, delay: k }); }   // compte à rebours : une note douce par seconde, plus haute sur les trois dernières
       C.bot.wait(ATTENTE); return;
     }
     cacheX = false; defiT = -1;   // fin de l'attente du défi : les croix reviennent, le robot finit   // clips « défi » et « astuce » : le temps de chercher, ou de lire l'indice
@@ -503,7 +509,7 @@
     gagner() { for (let i = 0; i < G.N; i++) p[i] = sol[i] === REINE ? REINE : VIDE; ranger(); return state; },
     indice() { donnerIndice(); return hint.text; },
     tuto() { sansTuto = false; if (global.Shell) delete Shell.save.tuto['reines.tuto']; level = 1; C.restart(); return !!tuto; },   // Core.test.tuto() : rejoue le tutoriel
-    jour() { startDaily(); return lv.n + '×' + lv.n + ' score ' + lv.d; },   // Core.test.jour() : lance la grille du jour
+    jour(top) { startDaily(top); return lv.n + '×' + lv.n + ' score ' + lv.d; },   // Core.test.jour() : lance la grille du jour
     auDela: k => { const x = niveauAuDela(k || NIV.length + 1); return x.z.slice(0, 12) + '…' + x.d; },   // à comparer avec `reines-niveaux.js verify`
     etat: () => ({ jour: !!daily, tuto: tuto && tuto.phase, level, n, state, reines: Array.from(p).filter(v => v === REINE).length, indices: hintsUsed, faux: faux().length }),
   };

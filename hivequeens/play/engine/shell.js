@@ -42,7 +42,7 @@
    AIDES ILLIMITÉES (10 oct. 2026, facultatif) : un jeu qui déclare  unlimited: true  propose en boutique l'achat « Sans pubs + aides illimitées »
      (produit no_ads_plus) ; une fois acheté (`plus` dans la sauvegarde, qui vaut aussi « Sans pubs »), les aides ne se décomptent plus et affichent « ∞ ».
 
-   GRILLE DU JOUR (10 oct. 2026, facultative) : le jeu déclare  daily: { start(), active() }  ; la coquille pose le bouton « GRILLE DU JOUR » sur l'écran
+   GRILLE DU JOUR (10 oct. 2026, facultative) : le jeu déclare  daily: { start(niveau le plus haut du joueur), active() }  ; la coquille pose le bouton « GRILLE DU JOUR » sur l'écran
      titre (série de jours, « faite aujourd'hui »), lance  daily.start()  et tient la série dans la sauvegarde (`daily` : dernier jour réussi, série, record).
      Le jeu appelle  Shell.dailyWon({ stars, time })  à la victoire : série, pièces (ECONOMY.daily, une fois par jour), écran de résultat. Pas dans la démo.
 
@@ -152,7 +152,7 @@
   const today = () => { const d = new Date(); return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5); };
   const streakNow = () => save.daily.last >= today() - 1 ? save.daily.streak : 0;
   const streakTxt = n => tr(n > 1 ? 'Série : {n} jours' : 'Série : {n} jour', { n });
-  function startDaily() { show(null); hint = null; S.event('daily:start'); game.daily.start(); }
+  function startDaily() { show(null); hint = null; S.event('daily:start'); game.daily.start(save.unlocked); }
   function buildTitle() {
     const s = el('section', 'screen title');
     const t = el('h1', 'logo'); s.appendChild(t);

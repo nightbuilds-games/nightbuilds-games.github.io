@@ -183,7 +183,7 @@ h1.logo { margin-bottom: 4vh; }
 .shop header { width: min(92vw, 460px); display: flex; align-items: center; gap: 14px; }
 .shop header h2 { color: #fff; text-shadow: 0 3px 0 rgba(0,0,0,.35); flex: 1; text-align: left; }
 #shell.open .screen.shop { background: rgba(20, 10, 5, .55); }
-.btn.item { display: flex; align-items: center; gap: 12px; justify-content: space-between; text-transform: none; background: #fff; color: var(--ink); box-shadow: 0 4px 0 rgba(0,0,0,.12); font-size: 22px; }
+.btn.item { border-radius: 26px; display: flex; align-items: center; gap: 12px; justify-content: space-between; text-transform: none; background: #fff; color: var(--ink); box-shadow: 0 4px 0 rgba(0,0,0,.12); font-size: 22px; }
 .btn.item small { display: block; font-size: 13px; opacity: .7; }
 .btn.item > span { text-align: left; }
 .btn.item b { background: var(--primary); color: #fff; border-radius: 999px; padding: 6px 14px; font-size: 17px; white-space: nowrap; }
