@@ -106,7 +106,7 @@
   const starLeft = () => { const st = starsNow(); return st > 1 ? par + starMargin(st) - trayUses : -1; };   // passages encore permis avant de perdre une étoile
   let sky = null;   // les lumières du décor de la zone : { name, stars: [{x, y, out, lit, litAt}], edges }
   const starGlow = i => clamp(boxed / total * sky.stars.length - i, 0, 1);   // chaque gemme rangée fait grandir l'étoile suivante
-  // DÉCORS DE ZONE (7 oct. 2026) : une zone qui a son décor (jeux/ecrin/decors/<img>.webp, généré d'après jeux/art/prompts-decors-ecrin.md) le montre à
+  // DÉCORS DE ZONE (7 oct. 2026) : une zone qui a son décor (jeux/ecrin/decors/<img>.webp, généré d'après jeux/art/ecrin/prompts/decors.md) le montre à
   // la place du velours, du lambrequin et du comptoir de marbre, : ce sont les joyaux du décor qui s'allument un à un à
   // mesure que les gemmes sont rangées (lights, du premier allumé au dernier), puis flamboient au final, où s'écrit le nom de l'objet.
   //   cut, top : l'image est posée en deux bandes. Sa partie haute (jusqu'à la fraction cut de sa hauteur : l'eau, le ciel…) est étirée de 0 à top, le

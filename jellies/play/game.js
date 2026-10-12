@@ -179,7 +179,7 @@
       ground: ['#E39A5B', '#A8562A', 'rgba(110,50,15,.5)', 'rgba(255,200,150,.6)', '#A8562A', '#C9743D', '#F0A870'], music: { shift: 7, prog: 0, rev: true, bpm: [110, 154] } },
   ];
   // Décors illustrés (4 oct. 2026) : une image par zone dans gelees/decors/, chargée à la demande ; tant qu'elle manque ou charge, le décor dessiné
-  // par le code reste affiché. `?decor=0` pour revenir au décor dessiné. Prompts de génération : jeux/art/prompts-decors.md.
+  // par le code reste affiché. `?decor=0` pour revenir au décor dessiné. Prompts de génération : jeux/art/gelees/prompts/decors.md.
   const DECORS = ['decor-fraise.webp', 'decor-myrtille.webp', 'decor-pomme.webp', 'decor-citron.webp', 'decor-cassis.webp', 'decor-orange.webp'], DECOR_IMG = {};   // dans l'ordre des zones ; une zone sans image garde le décor dessiné
   function decorImage() {
     const f = URLP.decor === '0' || typeof Image === 'undefined' ? null : DECORS[CHAPTERS.indexOf(theme())]; if (!f) return null;

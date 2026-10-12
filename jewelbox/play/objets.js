@@ -15,7 +15,7 @@
    Les gemmes sont placées par le jeu (game.js, objGeom) : bien à l'intérieur de leur pièce, et soit nettement cachées par une pièce du
    dessus, soit entièrement visibles (jamais à cheval sur un bord). `node jeux/tools/ecrin-objets.js` contrôle chaque objet.
    Nouveaux objets : les écrire dans un fichier à part et les mettre au point avec `node jeux/tools/ecrin-lot.js` (contrôle, robot, planche d'images),
-   puis les verser ici ; règles de dessin dans jeux/art/ecrin-lots/CONSIGNES.md. */
+   puis les verser ici ; règles de dessin dans jeux/art/ecrin/sources/lots/CONSIGNES.md. */
 (function (global) {
   const IVOIRE = '#F6EEDD', OR = '#F2CF73', OR_FONCE = '#E6B54A', ROSE = '#F5A9BC', MENTHE = '#93DDBD', CIEL = '#96BDF5', LILAS = '#C7ABF2',
     PECHE = '#F8BC93', NUIT = '#3B4388', GRENAT = '#C9485F', LAGON = '#7FD6D0', ARGENT = '#DCE3EE', CUIR = '#B9794A', CUIR_FONCE = '#9A623B';

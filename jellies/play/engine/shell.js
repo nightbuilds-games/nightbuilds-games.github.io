@@ -39,6 +39,13 @@
      boutique ; bouton de téléchargement (`url` du store, `label` : 'preorder' ou 'download' ; sans `url`, « Bientôt sur l'App Store ») sur
      l'écran titre, l'écran de résultat et l'écran de fin ; sauvegarde à part (« <id>.demo.save »), dans le navigateur seulement.
 
+   AIDES ILLIMITÉES (10 oct. 2026, facultatif) : un jeu qui déclare  unlimited: true  propose en boutique l'achat « Sans pubs + aides illimitées »
+     (produit no_ads_plus) ; une fois acheté (`plus` dans la sauvegarde, qui vaut aussi « Sans pubs »), les aides ne se décomptent plus et affichent « ∞ ».
+
+   GRILLE DU JOUR (10 oct. 2026, facultative) : le jeu déclare  daily: { start(niveau le plus haut du joueur), active() }  ; la coquille pose le bouton « GRILLE DU JOUR » sur l'écran
+     titre (série de jours, « faite aujourd'hui »), lance  daily.start()  et tient la série dans la sauvegarde (`daily` : dernier jour réussi, série, record).
+     Le jeu appelle  Shell.dailyWon({ stars, time })  à la victoire : série, pièces (ECONOMY.daily, une fois par jour), écran de résultat. Pas dans la démo.
+
    TUTORIEL (30 sept. 2026) : Shell.hint(clé, { path, text }) / Shell.hintDone(clé), une main animée qui montre le geste jusqu'au premier succès. */
 (function (global) {
   const C = global.Core;
@@ -59,10 +66,14 @@
     'LA SUITE DANS L’APPLI': 'MORE IN THE APP', 'BRAVO !': 'WELL DONE!', 'Tu as fini la démo. Dans l’appli : six mondes, des centaines de niveaux et de nouvelles surprises.': 'You finished the demo. In the app: six worlds, hundreds of levels and new surprises.',
     'Télécharger': 'Download', 'Précommander': 'Pre-order', 'Bientôt': 'Coming soon', 'sur l’App Store': 'on the App Store', 'Gratuit sur iPhone': 'Free on iPhone',
     'Démo : {n} niveaux. Ta progression reste dans ce navigateur.': 'Demo: {n} levels. Your progress stays in this browser.',
+    'Sans pubs + aides illimitées': 'No ads + unlimited helpers', 'Plus de pubs entre les niveaux, indices et vérifications à volonté': 'No ads between levels, unlimited hints and checks', 'Aides illimitées': 'Unlimited helpers',
+    'GRILLE DU JOUR': 'DAILY PUZZLE', 'GRILLE DU JOUR RÉUSSIE !': 'DAILY PUZZLE SOLVED!', 'Série : {n} jours': 'Streak: {n} days', 'Série : {n} jour': 'Streak: {n} day',
+    'Faite aujourd’hui': 'Done today', 'Une nouvelle grille chaque jour': 'A new puzzle every day', 'Reviens demain pour continuer ta série': 'Come back tomorrow to keep your streak',
     'Cadeau au niveau {n}': 'Gift at level {n}', 'Cadeau du niveau {n}': 'Level {n} gift', 'Bonus niveau difficile': 'Hard level bonus', 'Nouveauté': 'New', 'Prochaine nouveauté': 'Coming up', 'Prochaine aide': 'Next booster', 'Encore {n} niveaux': '{n} levels to go', 'Encore {n} niveau': '{n} level to go', 'Au prochain niveau !': 'Next level!',
   });
   const ECONOMY = { start: 100, firstWin: 10, perStar: 5, replayWin: 5, rescue: 60, freeCoins: 25, freePerDay: 5, interFrom: 8, interGap: 150,
-    hardBonus: 10, gift: { every: 5, coins: 30 }, reviewFrom: 8 };   // bonus de première victoire d'un niveau difficile (×2 si très difficile) ; cadeau tous les 5 niveaux (première victoire)
+    hardBonus: 10, gift: { every: 5, coins: 30 }, reviewFrom: 8, daily: 20 };   // daily : pièces de la grille du jour (une fois par jour)
+   // bonus de première victoire d'un niveau difficile (×2 si très difficile) ; cadeau tous les 5 niveaux (première victoire)
   // Un jeu peut régler sa propre économie : Shell.register({ economy: { firstWin, perStar, … } }) remplace les valeurs ci-dessus pour ce jeu seulement.
 
   // ------------------------------------------------------------ stockage
@@ -72,8 +83,8 @@
     async set(k, v) { const p = cap(); if (p) return p.set({ key: k, value: v }); try { localStorage.setItem(k, v); } catch (_) { } },
   };
   const DEFAULT = () => ({ v: 1, unlocked: 1, stars: {}, best: {}, wins: {}, fails: {}, settings: { sound: true, music: true, haptics: true, stats: true, symbols: false },
-    coins: ECONOMY.start, noAds: false, free: { day: '', n: 0 }, spent: 0, earned: 0, rescues: 0, tuto: {}, seen: {}, boosts: {}, asked: 0 });   // seen : nouveautés déjà présentées
-  function migrate(s) { const d = DEFAULT(); if (!s || typeof s !== 'object') return d; s = Object.assign(d, s); s.settings = Object.assign(DEFAULT().settings, s.settings); return s; }
+    coins: ECONOMY.start, noAds: false, plus: false, free: { day: '', n: 0 }, spent: 0, earned: 0, rescues: 0, tuto: {}, seen: {}, boosts: {}, asked: 0, daily: { last: 0, streak: 0, best: 0 } });   // seen : nouveautés déjà présentées
+  function migrate(s) { const d = DEFAULT(); if (!s || typeof s !== 'object') return d; s = Object.assign(d, s); s.settings = Object.assign(DEFAULT().settings, s.settings); s.daily = Object.assign(DEFAULT().daily, s.daily); return s; }
   let cfg = null, save = DEFAULT(), game = null, key = '';
   const demo = () => (cfg && cfg.demo) || null;   // démo du site : niveaux limités, ni pubs, ni achats, ni boutique
   const inDemo = n => !demo() || n <= demo().levels;
@@ -123,6 +134,7 @@
   const hardOf = n => game && game.hard ? game.hard(n) : 0;
   const chapterOf = n => game && game.chapter ? game.chapter(n) : null;
   const boostList = () => (game && game.boosts) || [];
+  const illimite = () => !!(save.plus && game && game.unlimited);   // aides illimitées achetées
   // nouveautés du jeu, plus une par aide (présentée à son niveau de déblocage, avec un exemplaire offert)
   const newsList = () => ((game && game.news) || []).concat(boostList().map(b => ({ level: b.level, key: 'boost:' + b.key, icon: b.icon, title: b.title, text: b.text, boost: b.key })));
   const hardLabel = h => tr(h > 1 ? 'TRÈS DIFFICILE' : 'DIFFICILE');
@@ -136,6 +148,11 @@
     hudPause.classList.toggle('on', !name); if (boostBar) { boostBar.classList.toggle('on', !name && boostList().length > 0); if (!name) paintBoosts(); } wallet.classList.toggle('on', !!name && name !== 'pause' && name !== 'settings'); paintWallet();
     if (name) { if (screens[name].refresh) screens[name].refresh(); C.pause(true); } else C.pause(false);
   }
+  // grille du jour : numéro du jour (date du téléphone), série en cours (perdue si un jour entier a été sauté)
+  const today = () => { const d = new Date(); return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5); };
+  const streakNow = () => save.daily.last >= today() - 1 ? save.daily.streak : 0;
+  const streakTxt = n => tr(n > 1 ? 'Série : {n} jours' : 'Série : {n} jour', { n });
+  function startDaily() { show(null); hint = null; S.event('daily:start'); game.daily.start(save.unlocked); }
   function buildTitle() {
     const s = el('section', 'screen title');
     const t = el('h1', 'logo'); s.appendChild(t);
@@ -147,12 +164,16 @@
     row.appendChild(button(tr('NIVEAUX'), 'secondary', () => { levelsBack = 'title'; show('levels'); }));
     if (!D) row.appendChild(button(ICON.shop, 'icon', () => toShop('title')));
     row.appendChild(button(ICON.gear, 'icon', () => { settingsBack = 'title'; show('settings'); }));
-    s.appendChild(play); s.appendChild(row); s.appendChild(teasers);
+    const dailyBtn = button('', 'secondary daily', startDaily);
+    s.appendChild(play); if (!D) s.appendChild(dailyBtn); s.appendChild(row); s.appendChild(teasers);
     if (D) { s.appendChild(storeButton('title')); s.appendChild(el('p', 'demo-note', tr('Démo : {n} niveaux. Ta progression reste dans ce navigateur.', { n: D.levels }))); }
     s.refresh = () => {
       const n = save.unlocked, h = hardOf(n), ch = chapterOf(n);
       t.textContent = C.byLang(cfg.title);
       play.innerHTML = tr('JOUER') + '<small>' + (inDemo(n) ? tr('NIVEAU {n}', { n }) + (h ? ' · ' + hardLabel(h) : '') : tr('LA SUITE DANS L’APPLI')) + '</small>'; play.classList.toggle('hard', !!h && inDemo(n));
+      dailyBtn.style.display = game && game.daily ? '' : 'none';
+      if (game && game.daily) { const done = save.daily.last === today(), st = streakNow(); dailyBtn.classList.toggle('done', done);
+        dailyBtn.innerHTML = ICON.flame + tr('GRILLE DU JOUR') + '<small>' + (done ? tr('Faite aujourd’hui') + (st ? ' · ' : '') : '') + (st ? streakTxt(st) : done ? '' : tr('Une nouvelle grille chaque jour')) + '</small>'; }
       zone.style.display = ch ? '' : 'none';
       if (ch) { const len = ch.to - ch.from + 1, done = n - ch.from; zone.innerHTML = '<b>' + tr('Zone {z}', { z: ch.name }) + '</b><i><u style="width:' + Math.round(100 * done / len) + '%;background:' + ch.color + '"></u></i><span>' + done + ' / ' + len + '</span>'; }
       const nw = newsList().filter(x => x.level >= n && !save.seen[x.key] && inDemo(x.level)).sort((a, b) => a.level - b.level)[0];
@@ -211,7 +232,7 @@
     const s = el('section', 'screen pause'); const p = el('div', 'panel');
     p.appendChild(el('h2', '', tr('PAUSE')));
     p.appendChild(button(tr('REPRENDRE'), 'big primary', () => show(null)));
-    p.appendChild(button(tr('RECOMMENCER'), 'secondary', () => startLevel(game.level())));
+    p.appendChild(button(tr('RECOMMENCER'), 'secondary', () => game.daily && game.daily.active() ? startDaily() : startLevel(game.level())));
     p.appendChild(button(tr('NIVEAUX'), 'secondary', () => { levelsBack = 'pause'; show('levels'); }));
     if (!demo()) p.appendChild(button(tr('BOUTIQUE'), 'secondary', () => toShop('pause')));
     const tg = [soundToggle(), musicToggle()]; const row = el('div', 'row'); tg.forEach(x => row.appendChild(x));
@@ -229,9 +250,9 @@
       else resultEl.dbl.disabled = false;
     });
     p.appendChild(resultEl.h); p.appendChild(resultEl.st); p.appendChild(resultEl.time); p.appendChild(resultEl.best); p.appendChild(resultEl.gain); p.appendChild(resultEl.extra); p.appendChild(resultEl.next); p.appendChild(resultEl.dbl);
-    p.appendChild(button(tr('SUIVANT'), 'big primary', () => nextLevel(resultEl.level + 1)));
+    p.appendChild(button(tr('SUIVANT'), 'big primary', () => resultEl.daily ? startLevel(save.unlocked) : nextLevel(resultEl.level + 1)));   // après la grille du jour : retour au niveau en cours
     const row = el('div', 'row');
-    row.appendChild(button(tr('REJOUER'), 'secondary', () => startLevel(resultEl.level)));
+    row.appendChild(button(tr('REJOUER'), 'secondary', () => resultEl.daily ? startDaily() : startLevel(resultEl.level)));
     row.appendChild(button(tr('NIVEAUX'), 'secondary', () => { levelsBack = 'result'; show('levels'); }));
     p.appendChild(row); if (demo()) p.appendChild(storeButton('result', 'small')); s.appendChild(p); return s;
   }
@@ -264,13 +285,13 @@
     for (const b of list) {
       const k = 'boost:' + b.key, open = save.unlocked >= b.level;
       if (save.unlocked > b.level && !save.seen[k]) { save.seen[k] = true; save.boosts[b.key] = (save.boosts[b.key] || 0) + 1; changed = true; }   // sauvegarde d'avant les aides : l'exemplaire offert n'est pas perdu
-      const n = save.boosts[b.key] || 0;
+      const n = illimite() ? '∞' : save.boosts[b.key] || 0;
       const el2 = el('button', 'boost' + (open ? '' : ' locked') + (aimKey === b.key ? ' aim' : ''), '<span class="ic">' + (b.icon || '') + '</span>' +
         (open ? '<b class="' + (n ? '' : 'plus') + '">' + (n || '+') + '</b>' : '<i>' + ICON.lock + '</i><small>' + tr('Niv. {n}', { n: b.level }) + '</small>'));
       el2.setAttribute('aria-label', C.byLang(b.title));
       el2.addEventListener('click', e => {
         e.stopPropagation(); C.unlockAudio(); C.sfx.click(); C.haptic('light'); if (!open || current) return;
-        if ((save.boosts[b.key] || 0) > 0) game.useBoost(b.key); else { buyKey = b.key; show('buy'); }
+        if (illimite() || (save.boosts[b.key] || 0) > 0) game.useBoost(b.key); else { buyKey = b.key; show('buy'); }
       });
       boostBar.appendChild(el2);
     }
@@ -287,6 +308,7 @@
         addCoins(-b.cost, 'boost:' + b.key); save.boosts[b.key] = (save.boosts[b.key] || 0) + 1; persist(); S.event('boost:buy:' + b.key); show(null); game.useBoost(b.key);
       }));
       if (!enough) p.appendChild(el('p', 'best', tr('Pas assez de pièces')));
+      if (game.unlimited && !demo() && Monet.store.available) p.appendChild(button(tr('Aides illimitées'), 'secondary', () => toShop('buy')));
       p.appendChild(button(tr('Non merci'), 'danger', () => show(null)));
     };
     return s;
@@ -323,19 +345,20 @@
       // prix lus depuis le store : la boutique se redessine quand ils arrivent ; un produit sans prix n'est pas proposé
       if (Monet.store.available && !Monet.store.loaded) Monet.store.load().then(() => { if (Monet.store.loaded && current === 'shop') s.refresh(); });
       if (Monet.store.available) for (const pr of Monet.store.products) {
-        if (!pr.price) continue;
-        const owned = pr.kind === 'noads' && save.noAds;
-        const label = pr.kind === 'coins' ? coinTxt(pr.amount) : '<span>' + tr('Sans pubs') + '<small>' + tr('Plus de pubs entre les niveaux') + '</small></span>';
+        if (!pr.price || (pr.kind === 'plus' && !(game && game.unlimited))) continue;
+        const owned = (pr.kind === 'noads' && save.noAds) || (pr.kind === 'plus' && save.plus);
+        const label = pr.kind === 'coins' ? coinTxt(pr.amount) : pr.kind === 'plus' ? '<span>' + tr('Sans pubs + aides illimitées') + '<small>' + tr('Plus de pubs entre les niveaux, indices et vérifications à volonté') + '</small></span>'
+          : '<span>' + tr('Sans pubs') + '<small>' + tr('Plus de pubs entre les niveaux') + '</small></span>';
         const b = button(label + '<b>' + (owned ? tr('Acheté') : pr.price) + '</b>', 'item', async () => {
           if (owned) return; b.disabled = true;
-          if (await Monet.store.buy(pr.id)) { S.purchase(pr); if (pr.kind === 'coins') addCoins(pr.amount, 'buy'); else { save.noAds = true; persist(); } C.haptic('success'); }
+          if (await Monet.store.buy(pr.id)) { S.purchase(pr); if (pr.kind === 'coins') addCoins(pr.amount, 'buy'); else { save.noAds = true; if (pr.kind === 'plus') save.plus = true; persist(); } C.haptic('success'); }
           s.refresh();
         });
         if (owned) b.disabled = true;
         p.appendChild(b);
       }
       if (Monet.store.available) p.appendChild(button(tr('Restaurer les achats'), 'danger', async e => {
-        e.currentTarget.disabled = true; const ids = await Monet.store.restore(), ok = ids.includes('no_ads'); if (ok) { save.noAds = true; persist(); }
+        e.currentTarget.disabled = true; const ids = await Monet.store.restore(), ok = ids.includes('no_ads'); if (ok) { save.noAds = true; if (ids.includes('no_ads_plus')) save.plus = true; persist(); }
         shopMsg = tr(ok ? 'Achats restaurés' : 'Aucun achat à restaurer'); s.refresh();
       }));
       if (shopMsg) { p.appendChild(el('p', 'best', shopMsg)); shopMsg = ''; }
@@ -375,11 +398,11 @@
     // développement seulement (page servie en http par le PC : navigateur et client de dev) ; ni dans la version store, ni sur le site
     if (location.protocol === 'http:') p.appendChild(button(tr('Effacer la progression'), 'danger', () => {
       if (!global.confirm(tr('Effacer toute la progression ? Les étoiles et les niveaux débloqués seront perdus.'))) return;
-      const keep = save.settings, noAds = save.noAds; save = DEFAULT(); save.settings = keep; save.noAds = noAds; persist(); show(settingsBack);   // « Sans pubs » est un achat : il survit à l'effacement
+      const keep = save.settings, noAds = save.noAds, plus = save.plus; save = DEFAULT(); save.settings = keep; save.noAds = noAds; save.plus = plus; persist(); show(settingsBack);   // « Sans pubs » est un achat : il survit à l'effacement
     }));
     if (Monet.devTools) {   // client de dev seulement : refaire le parcours de consentement, retester les pubs entre niveaux
       p.appendChild(button('Dev : redemander le consentement', 'danger', () => Monet.resetConsent().then(() => setTimeout(() => location.reload(), 500))));
-      p.appendChild(button('Dev : annuler « Sans pubs »', 'danger', () => { save.noAds = false; persist(); show(settingsBack); }));
+      p.appendChild(button('Dev : annuler « Sans pubs »', 'danger', () => { save.noAds = false; save.plus = false; persist(); show(settingsBack); }));
     }
     const version = el('p', 'version'); p.appendChild(version);
     const credits = (global.GAME_AUDIO && global.GAME_AUDIO.credits) || []; if (credits.length) p.appendChild(el('p', 'version credits', credits.map(c => typeof c === 'string' ? c : C.byLang(c)).join('<br>')));   // crédits des musiques (licences avec attribution)
@@ -487,7 +510,7 @@
       const record = save.best[level] === undefined || time < save.best[level]; if (record) save.best[level] = time;
       save.unlocked = Math.max(save.unlocked, level + 1); persist();
       S.level('Complete', level, { attempt: save.wins[level] + (save.fails[level] || 0), score: st });
-      resultEl.level = level; resultEl.h.textContent = tr('NIVEAU {n} RÉUSSI !', { n: level });
+      resultEl.daily = false; resultEl.level = level; resultEl.h.textContent = tr('NIVEAU {n} RÉUSSI !', { n: level });
       resultEl.st.innerHTML = stars(st, 'big'); resultEl.time.textContent = tr('Temps : {t}', { t: fmt(time) });
       resultEl.best.textContent = first ? '' : record ? tr('NOUVEAU RECORD !') : tr('Record : {t}', { t: fmt(save.best[level]) }); resultEl.best.classList.toggle('record', record && !first);   // premier passage : pas de record à comparer
       // pièces : première victoire 10 + 5 par étoile, victoire rejouée 5 ; « ×2 » par pub récompensée
@@ -513,10 +536,23 @@
       const rv = C.native('InAppReview');
       if (rv && !save.asked && st === 3 && level >= ECONOMY.reviewFrom) { save.asked = level; persist(); S.event('review:asked'); setTimeout(() => { if (current === 'result') { try { rv.requestReview(); } catch (_) { } } }, 1800); }
     },
+    // grille du jour réussie : série de jours, pièces une fois par jour, écran de résultat (« suivant » ramène au niveau en cours)
+    dailyWon({ stars: st, time }) {
+      const t = today(), d = save.daily, first = d.last !== t;
+      if (first) { d.streak = d.last === t - 1 ? d.streak + 1 : 1; d.last = t; d.best = Math.max(d.best, d.streak); }
+      persist(); S.event('daily:win'); if (first) S.event('daily:streak:' + Math.min(d.streak, 30));
+      resultEl.daily = true; resultEl.level = save.unlocked - 1; resultEl.h.textContent = tr('GRILLE DU JOUR RÉUSSIE !');
+      resultEl.st.innerHTML = stars(st, 'big'); resultEl.time.textContent = tr('Temps : {t}', { t: fmt(Math.round(time * 10) / 10) });
+      resultEl.best.textContent = streakTxt(d.streak); resultEl.best.classList.add('record');
+      resultEl.coins = first ? ECONOMY.daily : 0; resultEl.doubled = false; resultEl.gain.innerHTML = resultEl.coins ? '+' + coinTxt(resultEl.coins) : '';
+      resultEl.extra.innerHTML = '<span class="tag gift">' + ICON.flame + tr('Reviens demain pour continuer ta série') + '</span>'; resultEl.next.style.display = 'none';
+      resultEl.dbl.innerHTML = ICON.ad + '<span>' + tr('×2 avec une pub') + '</span>'; resultEl.dbl.disabled = false; resultEl.dbl.style.display = resultEl.coins && Monet.ads.available ? '' : 'none';
+      C.haptic('success'); show('result'); if (resultEl.coins) { addCoins(resultEl.coins, 'daily'); flyCoins(resultEl.gain, 5); }
+    },
     // le joueur touche le bouton de secours du jeu : 60 pièces, pub récompensée ou « non merci » (onDecline facultatif)
     requestRescue(cb) { rescueCb = cb; S.event('rescue:offered'); show('rescue'); },
     // aides : le jeu signale qu'une aide a servi (le compte baisse), ou qu'elle attend sa cible (bouton allumé)
-    boostUsed(key) { save.boosts[key] = Math.max(0, (save.boosts[key] || 0) - 1); aimKey = null; persist(); S.event('boost:use:' + key); paintBoosts(); },
+    boostUsed(key) { if (!illimite()) save.boosts[key] = Math.max(0, (save.boosts[key] || 0) - 1); aimKey = null; persist(); S.event('boost:use:' + key); paintBoosts(); },
     boostAim(key) { if (aimKey === key) return; aimKey = key; paintBoosts(); },
     // tutoriel : voir hintFrame ; renvoie false si ce geste a déjà été appris
     hint(key, spec) {

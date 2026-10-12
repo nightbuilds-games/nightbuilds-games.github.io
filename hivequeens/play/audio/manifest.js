@@ -9,10 +9,10 @@ window.GAME_AUDIO = {
   base: 'audio/',
   musicVol: .5,
   // morceaux de Kevin MacLeod (incompetech.com, CC BY 4.0), choisis calmes et dépouillés (10 oct. 2026, à écouter) : 110 premières secondes, mono,
-  // volume égalisé à −19 LUFS, fondus au début et à la fin. Sources : jeux/art/sons-reines-sources/musique.
+  // volume égalisé à −19 LUFS, fondus au début et à la fin. Sources : jeux/art/reines/sons/musique.
   //   gymnopedie : Gymnopédie n° 1 (Satie, piano) ; meditation-1, meditation-2 : Meditation Impromptu 01 et 02 (piano seul) ; evening-harp : Evening Fall (harpe)
   music: ['gymnopedie', 'meditation-1', 'evening-harp', 'meditation-2'],
-  // bruitages de Kenney (kenney.nl, domaine public CC0), convertis en MP3 (sources : jeux/art/sons-ecrin-sources/kenney). Choisis sur leur nom : à écouter.
+  // bruitages de Kenney (kenney.nl, domaine public CC0), convertis en MP3 (sources : jeux/art/commun/sons/kenney). Choisis sur leur nom : à écouter.
   sfx: {
     croix: { file: 'croix.mp3', vol: .5 },       // Interface Sounds, tick_002
     reine: { file: 'reine.mp3', vol: .7 },       // Interface Sounds, drop_002
@@ -20,7 +20,7 @@ window.GAME_AUDIO = {
     conflit: { file: 'conflit.mp3', vol: .45 },  // Interface Sounds, error_004 (comme le présentoir plein de Jewel Box)
     indice: { file: 'indice.mp3', vol: .6 },     // Interface Sounds, question_002
     annule: { file: 'annule.mp3', vol: .5 },     // Interface Sounds, back_003
-    gagne: { file: 'gagne.mp3', vol: .6 },       // Interface Sounds, confirmation_002 (10 oct. : le jingle pizzicato ne plaisait pas ; autres candidats à écouter : /art/sons-victoire.html)
+    gagne: { file: 'gagne.mp3', vol: .6 },       // Interface Sounds, confirmation_002 (10 oct. : le jingle pizzicato ne plaisait pas ; autres candidats à écouter : /art/reines/sons/sons-victoire.html)
     click: { file: 'click.mp3', vol: .25 },      // Interface Sounds, click_001 (comme Jellies)
     ding: { file: 'ding.mp3', vol: .4 },         // Casino Audio, chips-collide-1 (pièce, comme Jellies)
   },

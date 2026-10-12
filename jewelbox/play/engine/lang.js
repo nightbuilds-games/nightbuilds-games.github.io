@@ -5,6 +5,9 @@
    Les textes de la simulation des pubs et des achats (développement seulement) ne sont pas traduits. */
 (function (C) {
   C.i18n({
+    'Sans pubs + aides illimitées': 'Sin anuncios + ayudas ilimitadas', 'Plus de pubs entre les niveaux, indices et vérifications à volonté': 'Sin anuncios entre niveles, pistas y comprobaciones ilimitadas', 'Aides illimitées': 'Ayudas ilimitadas',
+    'GRILLE DU JOUR': 'RETO DIARIO', 'GRILLE DU JOUR RÉUSSIE !': '¡RETO DIARIO SUPERADO!', 'Série : {n} jours': 'Racha: {n} días', 'Série : {n} jour': 'Racha: {n} día',
+    'Faite aujourd’hui': 'Hecho hoy', 'Une nouvelle grille chaque jour': 'Un tablero nuevo cada día', 'Reviens demain pour continuer ta série': 'Vuelve mañana para seguir tu racha',
     'JOUER': 'JUGAR', 'NIVEAU {n}': 'NIVEL {n}', 'NIVEAUX': 'NIVELES', 'RÉGLAGES': 'AJUSTES', 'PAUSE': 'PAUSA', 'REPRENDRE': 'REANUDAR',
     'RECOMMENCER': 'REINICIAR', 'SUIVANT': 'SIGUIENTE', 'REJOUER': 'REPETIR', 'Son': 'Sonido', 'Musique': 'Música', 'Vibrations': 'Vibración',
     'NIVEAU {n} RÉUSSI !': '¡NIVEL {n} SUPERADO!', 'Temps : {t}': 'Tiempo: {t}', 'Record : {t}': 'Récord: {t}', 'NOUVEAU RECORD !': '¡NUEVO RÉCORD!',
@@ -22,6 +25,9 @@
     'Cadeau au niveau {n}': 'Regalo en el nivel {n}', 'Cadeau du niveau {n}': 'Regalo del nivel {n}', 'Bonus niveau difficile': 'Bonus por nivel difícil', 'Nouveauté': 'Novedad', 'Pub': 'Anuncio', 'OBTENIR': 'OBTENER', 'Récompense dans {s} s': 'Recompensa en {s} s', 'Fermer dans {s} s': 'Cerrar en {s} s', 'Fermer': 'Cerrar', 'Prochaine nouveauté': 'Próxima novedad', 'Prochaine aide': 'Próxima ayuda', 'Encore {n} niveaux': 'Faltan {n} niveles', 'Encore {n} niveau': 'Falta {n} nivel', 'Au prochain niveau !': '¡En el próximo nivel!',
   }, 'es');
   C.i18n({
+    'Sans pubs + aides illimitées': 'Sem anúncios + ajudas ilimitadas', 'Plus de pubs entre les niveaux, indices et vérifications à volonté': 'Sem anúncios entre níveis, dicas e verificações à vontade', 'Aides illimitées': 'Ajudas ilimitadas',
+    'GRILLE DU JOUR': 'DESAFIO DIÁRIO', 'GRILLE DU JOUR RÉUSSIE !': 'DESAFIO DIÁRIO CONCLUÍDO!', 'Série : {n} jours': 'Sequência: {n} dias', 'Série : {n} jour': 'Sequência: {n} dia',
+    'Faite aujourd’hui': 'Feito hoje', 'Une nouvelle grille chaque jour': 'Uma grade nova todo dia', 'Reviens demain pour continuer ta série': 'Volte amanhã para manter sua sequência',
     'JOUER': 'JOGAR', 'NIVEAU {n}': 'NÍVEL {n}', 'NIVEAUX': 'NÍVEIS', 'RÉGLAGES': 'AJUSTES', 'PAUSE': 'PAUSA', 'REPRENDRE': 'RETOMAR',
     'RECOMMENCER': 'REINICIAR', 'SUIVANT': 'PRÓXIMO', 'REJOUER': 'REPETIR', 'Son': 'Som', 'Musique': 'Música', 'Vibrations': 'Vibração',
     'NIVEAU {n} RÉUSSI !': 'NÍVEL {n} CONCLUÍDO!', 'Temps : {t}': 'Tempo: {t}', 'Record : {t}': 'Recorde: {t}', 'NOUVEAU RECORD !': 'NOVO RECORDE!',

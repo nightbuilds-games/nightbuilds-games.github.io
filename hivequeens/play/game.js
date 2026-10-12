@@ -336,12 +336,12 @@
     if (cur) out.push(cur); ctx.restore(); return out;
   }
   const temps = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
-  // ÉCRAN DE DÉMARRAGE (développement) : /reines/?art=splash&res=1.423 puis ART.save() → jeux/art/reines-splash.png, puis `node jeux/tools/splash-web.js reines`.
-  // Rayon de miel et reine de Gemini (jeux/art/reines-sources/), titre dans la police du jeu. L'icône, elle, est composée par tools/art-reines.js.
+  // ÉCRAN DE DÉMARRAGE (développement) : /reines/?art=splash&res=1.423 puis ART.save() → jeux/art/reines/appli/reines-splash.png, puis `node jeux/tools/splash-web.js reines`.
+  // Rayon de miel et reine de Gemini (jeux/art/reines/sources/), titre dans la police du jeu. L'icône, elle, est composée par tools/art-reines.js.
   let artImg = null;
   function drawArt() {
     ART.bg = '#8a4a0c';
-    if (!artImg) { artImg = ['rayon.jpg', 'reine-detouree.png'].map(n => { const i = new Image(); i.src = '../art/reines-sources/' + n; return i; }); }
+    if (!artImg) { artImg = ['rayon.jpg', 'reine-detouree.png'].map(n => { const i = new Image(); i.src = '../art/reines/sources/icone/' + n; return i; }); }
     if (ART.kind !== 'splash' || !artImg.every(i => i.complete && i.naturalWidth)) { ctx.fillStyle = ART.bg; ctx.fillRect(0, 0, W, H); return; }
     ctx.imageSmoothingQuality = 'high'; ctx.drawImage(artImg[0], (W - H) / 2, 0, H, H);
     const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(58,26,2,.55)'); g.addColorStop(.3, 'rgba(58,26,2,0)'); g.addColorStop(.62, 'rgba(58,26,2,0)'); g.addColorStop(1, 'rgba(40,18,2,.8)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);

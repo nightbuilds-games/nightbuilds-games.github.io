@@ -39,8 +39,9 @@
     { id: 'coins_500', kind: 'coins', amount: 500, price: null, value: 0, currency: '' },
     { id: 'coins_1500', kind: 'coins', amount: 1500, price: null, value: 0, currency: '' },
     { id: 'no_ads', kind: 'noads', price: null, value: 0, currency: '' },
+    { id: 'no_ads_plus', kind: 'plus', price: null, value: 0, currency: '' },   // « Sans pubs + aides illimitées » : proposé seulement par un jeu qui déclare unlimited (10 oct. 2026)
   ];
-  const SIM_PRICES = { coins_500: 1.99, coins_1500: 4.99, no_ads: 3.99 };
+  const SIM_PRICES = { coins_500: 1.99, coins_1500: 4.99, no_ads: 3.99, no_ads_plus: 6.99 };
   function setPrice(id, value, currency, text) { const p = PRODUCTS.find(x => x.id === id); if (p) { p.value = value; p.currency = currency; p.price = text; } }
   function simPrices() {
     const fr = C.lang === 'fr', cur = fr ? 'EUR' : 'USD';
@@ -72,7 +73,7 @@
   }
   function simBuy(p) {
     return new Promise(resolve => {
-      const what = p.kind === 'coins' ? p.amount + ' 🪙' : 'Sans pubs / No ads';
+      const what = p.kind === 'coins' ? p.amount + ' 🪙' : p.kind === 'plus' ? 'Sans pubs + aides illimitées / No ads + unlimited helpers' : 'Sans pubs / No ads';
       const o = overlay('<div style="font-size:14px;opacity:.7">' + C.tr('Achat simulé') + '</div><div style="font-size:30px">' + what + '</div><div>' + p.price + '</div>' +
         '<div style="display:flex;gap:12px">' + btn(C.tr('Acheter'), '#16a34a') + btn(C.tr('Annuler'), '#475569') + '</div><div style="font-size:13px;opacity:.6">' + C.tr('Aucun paiement réel (développement)') + '</div>');
       const [yes, no] = o.querySelectorAll('button');
@@ -128,11 +129,12 @@
   }
 
   // RevenueCat (@revenuecat/purchases-capacitor). Le jeu achète par identifiant de PACKAGE de l'offre « default » (no_ads, coins_500,
-  // coins_1500 : ceux de PRODUCTS) ; RevenueCat fait le lien avec les identifiants du store. « Sans pubs » = droit « no_ads ».
+  // coins_1500, no_ads_plus : ceux de PRODUCTS) ; RevenueCat fait le lien avec les identifiants du store. « Sans pubs » = droit « no_ads » ;
+  // « Sans pubs + aides illimitées » = droit « plus », qui vaut aussi « Sans pubs ».
   function startStore(c) {
     const P = C.native('Purchases'); dbg('RevenueCat : module', !!P, 'clé', !!(c && c.revenuecat)); if (!P || !c || !c.revenuecat) return;
     const pk = {}, ready = P.configure({ apiKey: c.revenuecat }); ready.then(() => dbg('RevenueCat configuré'), e => dbg('RevenueCat : configuration en échec', err(e)));
-    const noAds = info => !!(info && info.entitlements && info.entitlements.active && info.entitlements.active.no_ads);
+    const droits = info => { const a = (info && info.entitlements && info.entitlements.active) || {}, ids = []; if (a.no_ads || a.plus) ids.push('no_ads'); if (a.plus) ids.push('no_ads_plus'); return ids; };
     shop = {
       async load() {
         await ready; let o; try { o = await P.getOfferings(); } catch (e) { dbg('offres : échec', err(e)); throw e; }
@@ -142,7 +144,7 @@
         for (const p of off.availablePackages) { pk[p.identifier] = p; setPrice(p.identifier, p.product.price, p.product.currencyCode, p.product.priceString); }
       },
       async buy(p) { if (!pk[p.id]) return false; try { await P.purchasePackage({ aPackage: pk[p.id] }); return true; } catch (e) { dbg('achat : échec', err(e)); return false; } },   // achat annulé ou refusé : rejet
-      async restore() { try { await ready; const r = await P.restorePurchases(); return noAds(r.customerInfo) ? ['no_ads'] : []; } catch (_) { return []; } },
+      async restore() { try { await ready; const r = await P.restorePurchases(); return droits(r.customerInfo); } catch (_) { return []; } },
     };
   }
 
