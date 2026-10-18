@@ -232,3 +232,14 @@ body.hive .picnic::before { background: radial-gradient(600px 260px at 50% 0%, r
 .bee { position: absolute; height: auto; animation: bob 5s ease-in-out infinite; filter: drop-shadow(0 6px 0 rgba(0, 0, 0, .18)); }
 @media (prefers-reduced-motion: reduce) { .bee { animation: none; } }
 .game.g-reines { background: linear-gradient(150deg, #F5A300, #6b4210); }
+
+/* ------------------------------------------------------------ bandeau de consentement de Google Analytics (assets/analytics.js) :
+   en bas de page, Accepter et Refuser du même poids */
+.consent { position: fixed; z-index: 100; left: 50%; bottom: 16px; transform: translateX(-50%); width: min(640px, 100% - 32px); display: flex; align-items: center; gap: 16px;
+  padding: 14px 18px; border-radius: 18px; background: var(--cream); color: var(--ink); box-shadow: var(--shadow), inset 0 0 0 2px rgba(91, 42, 14, .12); font-size: 15px; line-height: 1.4; }
+.consent p { flex: 1; }
+.consent p a { white-space: nowrap; }
+.consent-btns { display: flex; gap: 8px; flex: none; }
+.consent button { font: inherit; font-weight: 900; font-size: 15px; cursor: pointer; border: 0; border-radius: 999px; padding: 9px 18px; color: #fff; background: var(--blue); box-shadow: 0 4px 0 var(--blue-dark); }
+.consent button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--blue-dark); }
+@media (max-width: 560px) { .consent { flex-direction: column; align-items: stretch; text-align: center; } .consent-btns { justify-content: center; } .consent button { flex: 1; } }

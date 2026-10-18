@@ -38,7 +38,7 @@
 <!-- ======================================================== FRANÇAIS -->
 <section data-l="fr">
 <h1>Politique de confidentialité et support</h1>
-<p class="muted">Jeux concernés : Jellies on the Run, Jewel Box, Hive Queens et P’tit Glouton (Lil’ Gobbler).<br>Dernière mise à jour : 10 octobre 2026.</p>
+<p class="muted">Jeux concernés : Jellies on the Run, Jewel Box, Hive Queens et P’tit Glouton (Lil’ Gobbler).<br>Dernière mise à jour : 18 octobre 2026.</p>
 
 <div class="card">
   <strong>En bref</strong>
@@ -67,6 +67,7 @@
 <p>Nous ne vendons pas vos données et nous ne les utilisons pas à d’autres fins que celles ci-dessus.</p>
 <p><strong>Démo jouable sur ce site.</strong> La démo de Jellies on the Run qui se joue dans le navigateur n’affiche ni publicité ni achat. Votre progression y est enregistrée dans votre navigateur et ne nous est pas envoyée. Elle envoie à GameAnalytics des statistiques de jeu (niveaux commencés, réussis ou ratés, clics vers l’App Store, système d’exploitation), rattachées à un identifiant tiré au hasard à chaque visite et jamais enregistré sur votre appareil : nous ne pouvons pas vous reconnaître d’une visite à l’autre. Vous pouvez couper ces statistiques dans les réglages de la démo.</p>
 <p><strong>Nos autres jeux.</strong> À la place d’une publicité, un jeu peut vous présenter un autre de nos jeux, avec la mention « Pub ». Cette présentation (une courte vidéo et un bouton vers l’App Store) est chargée depuis ce site, qui reçoit alors votre adresse IP comme tout site web. Elle n’utilise ni identifiant publicitaire ni suivi et ne dépend pas de ce que vous faites dans le jeu. Si les statistiques sont activées, GameAnalytics compte ses affichages et ses touches, comme les autres événements de jeu.</p>
+<p id="site"><strong>Ce site.</strong> Avec votre accord seulement, ce site utilise Google Analytics (Google Ireland Ltd / Google LLC) pour mesurer son audience : pages vues, site ou réseau d’où vous venez (par exemple TikTok, Instagram ou YouTube), clics vers l’App Store, pays, langue, type d’appareil et de navigateur. Google Analytics dépose pour cela des cookies (_ga) valables au plus 13 mois. Un bandeau vous demande votre accord à la première visite ; sans accord, rien n’est envoyé à Google. Votre choix est gardé six mois dans votre navigateur. <a href="#" class="consent-open">Changer mon choix</a>.</p>
 
 <h2>4. Votre consentement</h2>
 <ul>
@@ -105,7 +106,7 @@
 <!-- ======================================================== ENGLISH -->
 <section data-l="en">
 <h1>Privacy policy and support</h1>
-<p class="muted">Games covered: Jellies on the Run, Jewel Box, Hive Queens and Lil’ Gobbler.<br>Last updated: October 10, 2026.</p>
+<p class="muted">Games covered: Jellies on the Run, Jewel Box, Hive Queens and Lil’ Gobbler.<br>Last updated: October 18, 2026.</p>
 
 <div class="card">
   <strong>In short</strong>
@@ -134,6 +135,7 @@
 <p>We do not sell your data and we do not use it for any purpose other than those above.</p>
 <p><strong>Playable demo on this site.</strong> The Jellies on the Run demo that runs in your browser shows no ads and offers no purchases. Your progress is stored in your browser and is not sent to us. The demo sends game statistics to GameAnalytics (levels started, won or failed, clicks to the App Store, operating system), tied to an identifier drawn at random on each visit and never stored on your device: we cannot recognize you from one visit to the next. You can turn these statistics off in the demo’s settings.</p>
 <p><strong>Our other games.</strong> In place of an ad, a game may show you another one of our games, marked “Ad”. This presentation (a short video and a button to the App Store) is loaded from this site, which then receives your IP address like any website. It uses no advertising identifier and no tracking, and does not depend on what you do in the game. If statistics are turned on, GameAnalytics counts how often it is shown and tapped, like other game events.</p>
+<p id="site-en"><strong>This website.</strong> Only with your consent, this website uses Google Analytics (Google Ireland Ltd / Google LLC) to measure its audience: pages viewed, the site or network you came from (for example TikTok, Instagram or YouTube), clicks to the App Store, country, language, device and browser type. To do so, Google Analytics sets cookies (_ga) that last at most 13 months. A banner asks for your consent on your first visit; without it, nothing is sent to Google. Your choice is kept in your browser for six months. <a href="#" class="consent-open">Change my choice</a>.</p>
 
 <h2>4. Your consent</h2>
 <ul>
@@ -187,5 +189,6 @@
   setLang(q === 'fr' || q === 'en' ? q : /^fr/i.test(navigator.language || '') ? 'fr' : 'en');
   document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.set)));
 </script>
+<script src="assets/analytics.js"></script>
 </body>
 </html>
