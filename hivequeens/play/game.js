@@ -88,7 +88,7 @@
   const tailleDuJour = () => Math.max(5, Math.min(10, haut <= NIV.length ? NIV[haut - 1].n : 10));
   function grilleDuJour(j, k) { const x = L.choisir(k, j * 31 + k, L.scoreVise(DEC[k], k <= 6 ? .4 : k === 7 ? .55 : .65), k < 10 ? 4 : 3); return { n: k, z: x.z, d: x.score, r: x.rang, h: 0 }; }
   function startDaily(top) { lance = true; haut = Math.max(1, top | 0 || haut); const j = jour(), k = tailleDuJour(); daily = { j, k, lv: daily && daily.j === j && daily.k === k ? daily.lv : grilleDuJour(j, k) }; C.restart(); }
-  let defiVu = false, cacheX = false, defiT = -1, fauxEtape = 0, fauxFx = null, carte = '', mielT = -1, mielVu = false;   // clips « défi » et « faux coup », carte de fin (voir le robot, plus bas)
+  let defiVu = false, cacheX = false, defiT = -1, fauxEtape = 0, fauxFx = null, carte = '', mielT = -1, mielVu = false, geste = 0;   // clips « défi » et « faux coup », carte de fin (voir le robot, plus bas)
   // EFFETS (10 oct. 2026) : la reine arrive en volant et s'écrase un peu (T_POSE : durée du vol), ses croix automatiques partent d'elle en vague
   // (autoT : instant où chaque croix apparaît) avec un tic qui monte, chaque reine joue la note suivante d'une gamme (GAMME, demi-tons), sa zone
   // s'illumine (eclats), et à la victoire les reines sautent en vague sous un reflet de miel, avec un léger zoom.
@@ -110,7 +110,7 @@
     p = new Uint8Array(G.N); auto = new Uint8Array(G.N); bad = new Uint8Array(G.N); anim = new Float32Array(G.N).fill(-9); autoT = new Float32Array(G.N).fill(-9); eclats = []; pose = -1;
     sol = L.resoudre(G).s; hist = []; state = 'play'; elapsed = 0; hintsUsed = 0; hint = null; drag = null; wonT = 0; fondKey = '';
     if (tuto) tutoCible();
-    mielT = MIEL ? C.time : -1; mielVu = false; defiVu = false; defiT = -1; fauxEtape = 0; fauxFx = null; carte = ''; cacheX = DEFI > 0 && !tuto; if (cacheX) { for (let g = 0; g < 400 && Array.from(p).filter(v => v === REINE).length < n - DEFI; g++) { const e = prochaine(); for (const i of e.place || []) p[i] = REINE; for (const i of e.out || []) p[i] = CROIX; ranger(); } }
+    mielT = MIEL ? C.time : -1; mielVu = false; geste = 0; defiVu = false; defiT = -1; fauxEtape = 0; fauxFx = null; carte = ''; cacheX = DEFI > 0 && !tuto; if (cacheX) { for (let g = 0; g < 400 && Array.from(p).filter(v => v === REINE).length < n - DEFI; g++) { const e = prochaine(); for (const i of e.place || []) p[i] = REINE; for (const i of e.out || []) p[i] = CROIX; ranger(); } }
   }
   const centre = i => ({ x: BOARD.x + (i % n + .5) * cell, y: BOARD.y + ((i / n | 0) + .5) * cell });
   const cellAt = (x, y) => { const c = Math.floor((x - BOARD.x) / cell), r = Math.floor((y - BOARD.y) / cell); return c >= 0 && c < n && r >= 0 && r < n ? r * n + c : -1; };
@@ -230,9 +230,11 @@
   // dans le manifeste = pas de musique.
   const AUDIO = global.GAME_AUDIO || null, MUSIQUE_URL = (String(location.href).match(/[?&]musique=([\w-]+)/) || [])[1];
   if (AUDIO && AUDIO.sfx) C.loadSamples(AUDIO.base || 'audio/', AUDIO.sfx);
-  // dans un clip (accroche affichée), le tic des croix est très adouci : répété par le robot, il agaçait (11 oct. 2026)
+  // dans un clip (accroche affichée), le tic des croix est très adouci : répété par le robot, il agaçait (11 oct. 2026) ; ?sanscroix le coupe tout
+  // à fait (vidéos C, 14 oct. 2026)
+  const SANS_CROIX = /[?&]sanscroix\b/.test(location.href);
   const snd = {
-    croix: () => C.playSample('croix', { vol: C.KIT.hook >= 0 ? .25 : 1 }) || C.sfx.click(), reine: i => C.playSample('reine') || C.sfx.pop(1 + (i % n) * .03),
+    croix: () => SANS_CROIX || C.playSample('croix', { vol: C.KIT.hook >= 0 ? .25 : 1 }) || C.sfx.click(), reine: i => C.playSample('reine') || C.sfx.pop(1 + (i % n) * .03),
     retire: () => C.playSample('retire') || C.sfx.plop(), conflit: () => C.playSample('conflit') || C.sfx.fail(), indice: () => C.playSample('indice') || C.sfx.pop(),
     annule: () => C.playSample('annule') || C.sfx.click(), gagne: () => C.playSample('gagne') || C.sfx.win(),
   };
@@ -466,7 +468,10 @@
   // pendant l'attente du défi, un compte à rebours ; ?faux : le robot commence par un coup faux, expliqué puis retiré ; avec une accroche, une question
   // s'affiche sous « RÉSOLU ! » (CARTES) ; ?miel : le clip s'ouvre sur un voile de miel qui s'écoule et découvre la grille (1,4 s).
   // ?pas=S : pause entre deux déductions du robot (0,25).
-  const UP = new URLSearchParams(global.location ? location.search : ''), DEFI = +UP.get('defi') || 0, ASTUCE = UP.has('astuce'), FAUX = UP.has('faux'), MIEL = UP.has('miel'), ATTENTE = +UP.get('attente') || 4, PAS = UP.has('pas') ? +UP.get('pas') : .25; 
+  // ?gestes=t:i,t:i,… (14 oct. 2026) : le robot rejoue une partie relevée sur une vidéo filmée, touche par touche : à t secondes du chrono du niveau,
+  // une touche sur la case i (ligne × n + colonne). Sert à tourner la version « capture propre » d'un défi filmé, avec les mêmes coups aux mêmes instants.
+  const UP = new URLSearchParams(global.location ? location.search : ''), DEFI = +UP.get('defi') || 0, ASTUCE = UP.has('astuce'), FAUX = UP.has('faux'), MIEL = UP.has('miel'), ATTENTE = +UP.get('attente') || 4, PAS = UP.has('pas') ? +UP.get('pas') : .25;
+  const GESTES = (UP.get('gestes') || '').split(',').filter(Boolean).map(x => x.split(':').map(Number));
   C.kit.setup({ hooks: {
     fr: ['Où va la dernière reine ?', 'Tu places les 3 dernières reines ?', 'Une reine par ligne, colonne et couleur.|Jamais deux côte à côte.', 'Ça a l’air facile.|Ça ne l’est pas.', 'L’astuce que presque tout le monde rate', 'Regarde cette grille tomber|sans rien deviner', 'Ce coup a l’air bon.|Il est faux.'],
     en: ['Where does the last queen go?', 'Can you place the last 3 queens?', 'One queen per row, column and color.|Never two side by side.', 'Looks easy.|It is not.', 'The trick almost everyone misses', 'Watch this grid fall|without a single guess', 'This move looks fine.|It is wrong.'],
@@ -486,6 +491,11 @@
   }
   function autoplay() {
     if (state !== 'play') return; const f = faux();
+    if (GESTES.length) {   // partie rejouée (?gestes) : rien d'autre
+      if (geste >= GESTES.length) { C.bot.wait(.5); return; }
+      const [t, i] = GESTES[geste]; if (elapsed < t) { C.bot.wait(t - elapsed); return; }
+      geste++; const c = centre(i); C.bot.tap(c.x, c.y); C.bot.wait(.02); return;
+    }
     if (MIEL && !mielVu) { mielVu = true; C.bot.wait(1.5); return; }
     if (!defiVu && (DEFI > 0 || ASTUCE)) {
       defiVu = true;

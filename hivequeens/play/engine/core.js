@@ -591,11 +591,22 @@
   // est suspendu. `C.pause(false)` reprend là où on en était ; l'horloge repart sans compter la pause.
   // Un bouton de menu réveille le son pour son clic (unlockAudio) : la sortie des jeux reste donc coupée tant que dure la pause, sinon la
   // musique repartait dès qu'on ouvrait la boutique ou la carte des niveaux depuis la pause.
-  let paused = false;
+  // Fondu de 80 ms à l'entrée et à la sortie : couper la musique net en plein milieu d'une onde fait un petit grésillement. Le contexte n'est
+  // suspendu qu'une fois le fondu fini (sinon il gèle le son à mi-chemin) ; à la reprise, le son remonte depuis zéro.
+  let paused = false, pauseTimer = 0;
+  const PAUSE_FADE = .08;
+  function fadeBus(to) {
+    const g = gameBus.gain, t = actx.currentTime;
+    g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(to, t + PAUSE_FADE);
+  }
   function pause(on) {
     on = !!on; if (on === paused) return; paused = on; last = 0;
-    if (gameBus) gameBus.gain.value = on ? 0 : 1;
-    if (actx) { if (on && actx.state === 'running') actx.suspend().catch(() => { }); else if (!on) wake(); }
+    clearTimeout(pauseTimer);
+    if (!actx) return;
+    if (on) {
+      fadeBus(0);
+      pauseTimer = setTimeout(() => { if (paused && actx.state === 'running') actx.suspend().catch(() => { }); }, PAUSE_FADE * 1000 + 40);
+    } else { wake(); fadeBus(1); }
   }
   function frame(ts) {
     requestAnimationFrame(frame);

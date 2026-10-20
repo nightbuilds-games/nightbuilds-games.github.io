@@ -1,6 +1,6 @@
 {
   "_": "Catalogue des pubs maison (engine/house.js) : les jeux du studio que chaque jeu peut présenter aux joueurs des autres. Source de vérité ; `node jeux/tools/pubs-maison.js` le contrôle et le copie dans site/promo/catalog.json, d'où les applis déjà publiées le relisent (un jeu ajouté ici apparaît donc sans mise à jour des applis). id = identifiant du jeu dans la coquille (Shell.init). store : lien du store par plateforme ; vide = jeu pas encore sorti, jamais présenté. clip : vidéo verticale muette (celle de la page du site) ; poster : son image d'attente. share : part des pubs entre niveaux données à une pub maison quand une pub payante est prête (0.25 = une sur quatre) ; quand aucune pub payante n'est prête, la pub maison prend la place. pt : jeton de campagne App Store Connect (facultatif, pour mesurer les téléchargements venus des pubs maison).",
-  "version": 3,
+  "version": 4,
   "share": 0.25,
   "pt": "",
   "games": [
@@ -32,7 +32,7 @@
       "clip": "https://nightbuilds.app/hivequeens/clip.mp4",
       "poster": "https://nightbuilds.app/hivequeens/clip.jpg",
       "color": "#F5A300",
-      "store": { "ios": "", "android": "" }
+      "store": { "ios": "", "android": "https://play.google.com/store/apps/details?id=com.nightbuilds.hivequeens" }
     }
   ]
 }
