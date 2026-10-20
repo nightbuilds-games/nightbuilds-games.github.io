@@ -20,7 +20,7 @@
     'DIFFICILE': 'DIFÍCIL', 'TRÈS DIFFICILE': 'MUY DIFÍCIL', 'Zone {z}': 'Zona {z}', 'NOUVEAU !': '¡NUEVO!', 'C’EST PARTI': '¡VAMOS!', 'niveau {n}': 'nivel {n}',
     'NOUVELLE AIDE !': '¡NUEVA AYUDA!', 'Une offerte pour l’essayer': 'Una gratis para probarla', 'Acheter · {c}': 'Comprar · {c}', 'Symboles des couleurs': 'Símbolos de colores', 'Niv. {n}': 'Niv. {n}',
     'LA SUITE DANS L’APPLI': 'SIGUE EN LA APP', 'BRAVO !': '¡BRAVO!', 'Tu as fini la démo. Dans l’appli : six mondes, des centaines de niveaux et de nouvelles surprises.': 'Terminaste la demo. En la app: seis mundos, cientos de niveles y nuevas sorpresas.',
-    'Télécharger': 'Descargar', 'Précommander': 'Reservar', 'Bientôt': 'Próximamente', 'sur l’App Store': 'en el App Store', 'Gratuit sur iPhone': 'Gratis en iPhone',
+    'Télécharger': 'Descargar', 'Précommander': 'Reservar', 'Bientôt': 'Próximamente', 'sur l’App Store': 'en el App Store', 'Gratuit sur iPhone': 'Gratis en iPhone', 'Disponible sur': 'Disponible en', 'Gratuit sur Android': 'Gratis en Android',
     'Démo : {n} niveaux. Ta progression reste dans ce navigateur.': 'Demo: {n} niveles. Tu progreso se queda en este navegador.',
     'Cadeau au niveau {n}': 'Regalo en el nivel {n}', 'Cadeau du niveau {n}': 'Regalo del nivel {n}', 'Bonus niveau difficile': 'Bonus por nivel difícil', 'Nouveauté': 'Novedad', 'Pub': 'Anuncio', 'OBTENIR': 'OBTENER', 'Récompense dans {s} s': 'Recompensa en {s} s', 'Fermer dans {s} s': 'Cerrar en {s} s', 'Fermer': 'Cerrar', 'Prochaine nouveauté': 'Próxima novedad', 'Prochaine aide': 'Próxima ayuda', 'Encore {n} niveaux': 'Faltan {n} niveles', 'Encore {n} niveau': 'Falta {n} nivel', 'Au prochain niveau !': '¡En el próximo nivel!',
   }, 'es');
@@ -40,7 +40,7 @@
     'DIFFICILE': 'DIFÍCIL', 'TRÈS DIFFICILE': 'MUITO DIFÍCIL', 'Zone {z}': 'Zona {z}', 'NOUVEAU !': 'NOVIDADE!', 'C’EST PARTI': 'VAMOS LÁ', 'niveau {n}': 'nível {n}',
     'NOUVELLE AIDE !': 'NOVA AJUDA!', 'Une offerte pour l’essayer': 'Uma grátis para experimentar', 'Acheter · {c}': 'Comprar · {c}', 'Symboles des couleurs': 'Símbolos das cores', 'Niv. {n}': 'Nív. {n}',
     'LA SUITE DANS L’APPLI': 'CONTINUA NO APP', 'BRAVO !': 'PARABÉNS!', 'Tu as fini la démo. Dans l’appli : six mondes, des centaines de niveaux et de nouvelles surprises.': 'Você terminou a demo. No app: seis mundos, centenas de níveis e novas surpresas.',
-    'Télécharger': 'Baixar', 'Précommander': 'Pré-venda', 'Bientôt': 'Em breve', 'sur l’App Store': 'na App Store', 'Gratuit sur iPhone': 'Grátis no iPhone',
+    'Télécharger': 'Baixar', 'Précommander': 'Pré-venda', 'Bientôt': 'Em breve', 'sur l’App Store': 'na App Store', 'Gratuit sur iPhone': 'Grátis no iPhone', 'Disponible sur': 'Disponível no', 'Gratuit sur Android': 'Grátis no Android',
     'Démo : {n} niveaux. Ta progression reste dans ce navigateur.': 'Demo: {n} níveis. Seu progresso fica neste navegador.',
     'Cadeau au niveau {n}': 'Presente no nível {n}', 'Cadeau du niveau {n}': 'Presente do nível {n}', 'Bonus niveau difficile': 'Bônus de nível difícil', 'Nouveauté': 'Novidade', 'Pub': 'Anúncio', 'OBTENIR': 'OBTER', 'Récompense dans {s} s': 'Recompensa em {s} s', 'Fermer dans {s} s': 'Fechar em {s} s', 'Fermer': 'Fechar', 'Prochaine nouveauté': 'Próxima novidade', 'Prochaine aide': 'Próxima ajuda', 'Encore {n} niveaux': 'Faltam {n} níveis', 'Encore {n} niveau': 'Falta {n} nível', 'Au prochain niveau !': 'No próximo nível!',
   }, 'pt');

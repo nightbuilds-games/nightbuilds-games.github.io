@@ -64,7 +64,7 @@
     'DIFFICILE': 'HARD', 'TRÈS DIFFICILE': 'VERY HARD', 'Zone {z}': '{z} zone', 'NOUVEAU !': 'NEW!', 'C’EST PARTI': 'LET’S GO', 'niveau {n}': 'level {n}',
     'NOUVELLE AIDE !': 'NEW HELPER!', 'Une offerte pour l’essayer': 'One free to try it', 'Acheter · {c}': 'Buy · {c}', 'Symboles des couleurs': 'Color symbols', 'Niv. {n}': 'Lv. {n}',
     'LA SUITE DANS L’APPLI': 'MORE IN THE APP', 'BRAVO !': 'WELL DONE!', 'Tu as fini la démo. Dans l’appli : six mondes, des centaines de niveaux et de nouvelles surprises.': 'You finished the demo. In the app: six worlds, hundreds of levels and new surprises.',
-    'Télécharger': 'Download', 'Précommander': 'Pre-order', 'Bientôt': 'Coming soon', 'sur l’App Store': 'on the App Store', 'Gratuit sur iPhone': 'Free on iPhone',
+    'Télécharger': 'Download', 'Précommander': 'Pre-order', 'Bientôt': 'Coming soon', 'sur l’App Store': 'on the App Store', 'Gratuit sur iPhone': 'Free on iPhone', 'Disponible sur': 'Get it on', 'Gratuit sur Android': 'Free on Android',
     'Démo : {n} niveaux. Ta progression reste dans ce navigateur.': 'Demo: {n} levels. Your progress stays in this browser.',
     'Sans pubs + aides illimitées': 'No ads + unlimited helpers', 'Plus de pubs entre les niveaux, indices et vérifications à volonté': 'No ads between levels, unlimited hints and checks', 'Aides illimitées': 'Unlimited helpers',
     'GRILLE DU JOUR': 'DAILY PUZZLE', 'GRILLE DU JOUR RÉUSSIE !': 'DAILY PUZZLE SOLVED!', 'Série : {n} jours': 'Streak: {n} days', 'Série : {n} jour': 'Streak: {n} day',
@@ -116,9 +116,18 @@
     b.addEventListener('click', e => { e.stopPropagation(); C.unlockAudio(); C.sfx.click(); C.haptic('light'); onTap(e); });
     return b;
   }
-  // démo : bouton vers l'App Store (précommande puis téléchargement) ; sans adresse, simple annonce
+  // démo : bouton vers l'App Store (précommande puis téléchargement) ; sans adresse, simple annonce. Google Play (`android`, 20 oct. 2026) :
+  // sur un téléphone Android, et sur ordinateur tant que le jeu n'est pas sur l'App Store ; jamais sur iPhone.
+  const onIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+  const onPlay = () => { const D = demo(); return !!(D && D.android) && !onIOS() && (/Android/i.test(navigator.userAgent) || !D.url); };
   function storeButton(place, cls) {
-    const D = demo(), b = el(D.url ? 'a' : 'span', 'btn store ' + (cls || '') + (D.url ? '' : ' soon'), '<small>' + tr(!D.url ? 'Bientôt' : D.label === 'preorder' ? 'Précommander' : 'Télécharger') + '</small>' + tr('sur l’App Store'));
+    const D = demo();
+    if (onPlay()) {
+      const b = el('a', 'btn store ' + (cls || ''), '<small>' + tr('Disponible sur') + '</small>Google Play');
+      b.href = D.android; b.target = '_blank'; b.rel = 'noopener'; b.addEventListener('click', e => { e.stopPropagation(); S.event('demo:play:' + place); });
+      return b;
+    }
+    const b = el(D.url ? 'a' : 'span', 'btn store ' + (cls || '') + (D.url ? '' : ' soon'), '<small>' + tr(!D.url ? 'Bientôt' : D.label === 'preorder' ? 'Précommander' : 'Télécharger') + '</small>' + tr('sur l’App Store'));
     if (D.url) { b.href = D.url; b.target = '_blank'; b.rel = 'noopener'; b.addEventListener('click', e => { e.stopPropagation(); S.event('demo:store:' + place); }); }
     return b;
   }
@@ -261,7 +270,7 @@
     const s = el('section', 'screen news demo-end'); const p = el('div', 'panel'); s.appendChild(p);
     p.appendChild(el('h2', '', tr('BRAVO !'))); p.appendChild(el('h3', '', tr('LA SUITE DANS L’APPLI')));
     p.appendChild(el('p', '', tr('Tu as fini la démo. Dans l’appli : six mondes, des centaines de niveaux et de nouvelles surprises.')));
-    p.appendChild(storeButton('end', 'big')); p.appendChild(el('p', 'best', tr('Gratuit sur iPhone')));
+    p.appendChild(storeButton('end', 'big')); p.appendChild(el('p', 'best', tr(onPlay() ? 'Gratuit sur Android' : 'Gratuit sur iPhone')));
     p.appendChild(button(tr('NIVEAUX'), 'secondary', () => { levelsBack = 'demo'; show('levels'); }));
     s.refresh = () => S.event('demo:end');
     return s;
@@ -463,19 +472,44 @@
     startLevel(n);
   }
   // ÉCRAN DE DÉMARRAGE (8 oct. 2026) : iOS n'affiche le sien que le temps de lancer l'appli, un éclair. La page le reprend à l'identique
-  // (splash.webp du jeu, fabriqué par tools/splash-web.js) et le garde SPLASH_MS après le début du chargement, puis fond vers le menu.
+  // (splash.webp du jeu, fabriqué par tools/splash-web.js) et le garde au moins SPLASH_MS une fois l'image affichée, puis fond vers le menu.
+  // Chaque jeu met aussi <div id="splash" style="background-color:<bg>;background-image:url(splash.webp)"></div> en tête de son <body> :
+  // l'image est alors là dès la première image de la page, avant le chargement des scripts (16 oct. 2026).
   // Dans l'appli seulement (ou ?splash dans le navigateur, pour l'essayer) ; image absente ou illisible : rien, le menu vient tout de suite.
-  const SPLASH_MS = 1500;
+  const SPLASH_MS = 2000;
   function splash(c) {
-    const native = global.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform();
-    if (!c.splash || c.demo || global.ART || !(native || C.URLP.splash)) return;
-    const d = el('div', ''), img = new Image(), off = () => { d.classList.add('out'); setTimeout(() => d.remove(), 400); };
-    d.id = 'splash'; d.style.backgroundColor = c.splash.bg || '#000'; document.body.appendChild(d);
-    img.onload = () => { d.style.backgroundImage = 'url(' + img.src + ')'; setTimeout(off, Math.max(300, SPLASH_MS - performance.now())); };
+    // La page peut déjà contenir <div id="splash"> (index.html du jeu, 16 oct. 2026) : il est là dès la première image, avant le chargement des
+    // scripts (sinon, sur un Android lent, on voyait le canevas du jeu puis le fond de l'appli avant l'écran de démarrage). Hors appli : retiré.
+    const native = global.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform(), pre = document.getElementById('splash');
+    if (!c.splash || c.demo || global.ART || !(native || C.URLP.splash)) { if (pre) pre.remove(); return; }
+    const d = pre || el('div', ''), img = new Image(), off = () => { d.classList.add('out'); setTimeout(() => d.remove(), 400); };
+    if (!pre) { d.id = 'splash'; d.style.backgroundColor = c.splash.bg || '#000'; document.body.appendChild(d); }
+    // durée à l'écran comptée depuis l'affichage de l'image, et non plus depuis le début du chargement (16 oct. 2026 : sur un Android lent, le
+    // chargement mangeait presque tout le temps prévu et l'image ne faisait qu'un éclair) ; c.splash.min (ms) la change pour un jeu.
+    img.onload = () => { d.style.backgroundImage = 'url(' + img.src + ')'; setTimeout(off, c.splash.min || SPLASH_MS); };
     img.onerror = off; img.src = c.splash.src || 'splash.webp';
   }
   const fmt = t => t < 60 ? t.toFixed(1) + ' s' : Math.floor(t / 60) + ' min ' + String(Math.round(t % 60)).padStart(2, '0');
+  // bouton retour d'Android (19 oct. 2026) : appelé par MainActivity à chaque appui. Sans lui, Android fermait l'appli d'un coup, même en pleine
+  // partie (vu par Pierre sur les trois jeux). Renvoie false quand l'appui doit sortir de l'appli (écran titre) : le natif la met alors de côté,
+  // comme le bouton accueil. Les choix obligatoires (secours, nouveauté, fin de démo) et les pubs ne réagissent pas.
+  let adOn = false;
+  function back() {
+    if (!root || adOn) return true;
+    if (!current) { if (game) show('pause'); return true; }
+    switch (current) {
+      case 'title': return false;
+      case 'pause': show(null); return true;
+      case 'levels': show(levelsBack); return true;
+      case 'settings': show(settingsBack); return true;
+      case 'shop': show(shopBack); return true;
+      case 'buy': show(null); return true;
+      case 'result': show('title'); return true;
+      default: return true;
+    }
+  }
   const Shell = {
+    back,
     async init(c) {
       cfg = c; if (!c.demo && global.GAME_DEMO) c.demo = global.GAME_DEMO;   // démo du site : réglée par la page (jeux/build.js --demo)
       splash(c);
@@ -487,7 +521,7 @@
       C.setSound(save.settings.sound); C.setHaptics(save.settings.haptics);
       S.init(Object.assign({ id: c.id, version: c.version || '0', enabled: save.settings.stats }, c.demo ? Object.assign({ web: true }, c.demo.stats) : c.stats));   // démo : ses propres clés (jeu GameAnalytics séparé), sans rien garder dans le navigateur ; sans clés, rien
       // pubs et achats : consentement puis pubs, achats configurés (sans effet hors de l'appli) ; le son du jeu se coupe pendant une pub
-      Monet.onAd = on => C.setSound(on ? false : save.settings.sound);
+      Monet.onAd = on => { adOn = on; C.setSound(on ? false : save.settings.sound); };
       Monet.init(c.demo ? { off: true } : { ads: c.ads, store: c.store, game: c.id });   // démo : ni pubs ni achats, pas même simulés
       if (c.colors) for (const k in c.colors) document.documentElement.style.setProperty('--' + k, c.colors[k]);
       root = el('div', ''); root.id = 'shell'; document.body.appendChild(root);
@@ -500,6 +534,8 @@
       placeHud(); window.addEventListener('resize', placeHud);
       // appli ou onglet mis de côté en pleine partie : on revient sur le menu pause
       document.addEventListener('visibilitychange', () => { if (document.hidden && !current && game) show('pause'); });
+      // Échap fait comme le bouton retour d'Android (navigateur, démo du site)
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') back(); });
       Shell.ready = true; if (game) boot();
     },
     register(g) { game = g; if (g.economy) Object.assign(ECONOMY, g.economy); if (Shell.ready) boot(); },

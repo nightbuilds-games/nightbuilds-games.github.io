@@ -121,7 +121,7 @@
       let info = null;
       try { info = await A.requestConsentInfo(); dbg('consentement', info); if (info.isConsentFormAvailable) { info = Object.assign(info, await A.showConsentForm()); dbg('après le message', info); } } catch (e) { dbg('consentement : échec', err(e)); }
       // filet : aucun message à afficher (hors EEE, message d'explication absent) et suivi jamais demandé → demande de suivi d'Apple directe
-      try { const t = await A.trackingAuthorizationStatus(); dbg('suivi', t); if (info && info.status === 'NOT_REQUIRED' && t.status === 'notDetermined') await A.requestTrackingAuthorization(); } catch (e) { dbg('suivi : échec', err(e)); }
+      if (!ANDROID) try { const t = await A.trackingAuthorizationStatus(); dbg('suivi', t); if (info && info.status === 'NOT_REQUIRED' && t.status === 'notDetermined') await A.requestTrackingAuthorization(); } catch (e) { dbg('suivi : échec', err(e)); }
       if (!info || !info.canRequestAds) return;   // pas de réponse (hors ligne) ou pubs non permises : aucune pub cette fois-ci
       st.privacy = info.privacyOptionsRequirementStatus === 'REQUIRED';
       loadRew(); loadInter();
@@ -151,11 +151,16 @@
   // PUBS MAISON (engine/house.js, 8 oct. 2026) : elles prennent la place d'une pub payante qui n'est pas prête, et une part des pubs entre
   // niveaux (catalogue). En développement la simulation reste la règle ; ?maison les montre à sa place.
   const H = () => global.House && House.ready ? House : null;
+  // ANDROID (16 oct. 2026) : les blocs d'annonces AdMob et la clé RevenueCat sont propres à chaque store. Le jeu donne ceux d'Android à part,
+  // ads: { rewarded, interstitial, testDevices, android: { rewarded, interstitial, testDevices } } et store: { revenuecat, android: { revenuecat } } ;
+  // sans eux, sur Android, ni vraies pubs ni achats (les identifiants iOS y seraient refusés), seulement les pubs maison.
+  const ANDROID = !!(global.Capacitor && Capacitor.getPlatform && Capacitor.getPlatform() === 'android');
+  const forPlatform = c => c && ANDROID ? c.android || null : c;
   const Monet = global.Monet = {
     init(c) {
       c = c || {}; if (c.off) { off = true; return; }
       if (global.House) House.init({ game: c.game });
-      if (!ads) startAds(c.ads); if (!shop) startStore(c.store);
+      if (!ads) startAds(forPlatform(c.ads)); if (!shop) startStore(forPlatform(c.store));
       if (realAds()) { let o = {}; try { o = Intl.DateTimeFormat().resolvedOptions(); } catch (_) { } dbg('réglages du téléphone', { langue: navigator.language, langues: navigator.languages, region: o.locale, fuseau: o.timeZone }); }   // mise au point
     },
     onAd: null,

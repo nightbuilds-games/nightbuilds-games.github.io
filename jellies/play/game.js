@@ -1119,7 +1119,7 @@
   const artBlocks = [];
   function artBlock(name, color, mood, look) {
     const sh = shapeOf(name), b = makeBlock({ cells: sh.cells, bw: sh.bw, bh: sh.bh, color }, 0, 0, artBlocks.length);
-    b.mood = mood; b.look = look; b.blink = 99; artBlocks.push(b); return b;
+    b.mood = mood; b.look = look; b.blink = 99; b.art = true; artBlocks.push(b); return b;
   }
   function drawArtBlock(b, cx, cy, k, rot = 0) {   // gelée centrée en (cx, cy), à l'échelle k
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.scale(k, k); ctx.translate(-(BOX.x + b.bw * S / 2), -(BOX.y + b.bh * S / 2)); drawBlock(b, 0); ctx.restore();
@@ -1783,7 +1783,10 @@
       if (worried) { ctx.strokeStyle = dark; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x + sx - 12, y + ey - rh - (sx < 0 ? 12 : 4)); ctx.lineTo(x + sx + 12, y + ey - rh - (sx < 0 ? 4 : 12)); ctx.stroke(); }
     }
     ctx.strokeStyle = dark; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.fillStyle = dark; ctx.beginPath();
-    if (b.mood === 2) { ctx.arc(x, y + 16, 14, 0, Math.PI); ctx.fill(); ctx.fillStyle = '#ff7a9a'; ctx.beginPath(); ctx.arc(x, y + 24, 7, 0, Math.PI * 2); ctx.fill(); }
+    if (b.mood === 2 && b.art) {   // écran de démarrage et bannière : bouche ouverte, la langue reste dedans (la langue ronde qui dépasse ne plaisait pas, 16 oct. 2026)
+      ctx.arc(x, y + 16, 14, 0, Math.PI); ctx.closePath(); ctx.fill(); ctx.save(); ctx.clip(); ctx.fillStyle = '#ff7a9a'; ctx.beginPath(); ctx.ellipse(x, y + 29, 9, 6, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    }
+    else if (b.mood === 2) { ctx.arc(x, y + 16, 14, 0, Math.PI); ctx.fill(); ctx.fillStyle = '#ff7a9a'; ctx.beginPath(); ctx.arc(x, y + 24, 7, 0, Math.PI * 2); ctx.fill(); }
     else if (worried) { ctx.moveTo(x - 12, y + 22); ctx.quadraticCurveTo(x - 6, y + 14, x, y + 22); ctx.quadraticCurveTo(x + 6, y + 30, x + 12, y + 22); ctx.stroke(); }
     else if (happy) { ctx.arc(x, y + 14, 12, .15 * Math.PI, .85 * Math.PI); ctx.stroke(); }
     else { ctx.arc(x, y + 14, 9, .2 * Math.PI, .8 * Math.PI); ctx.stroke(); }

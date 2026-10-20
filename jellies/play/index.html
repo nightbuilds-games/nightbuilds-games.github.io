@@ -7,13 +7,10 @@
 <link rel="canonical" href="https://nightbuilds.app/jellies/play/">
 <link rel="icon" href="../../assets/img/favicon.png">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="nightbuilds">
 <meta property="og:title" content="Jellies on the Run — playable demo">
 <meta property="og:description" content="Play the first levels of Jellies on the Run in your browser: slide each jelly to the gate of its color before it melts. No install, no sign-up.">
 <meta property="og:url" content="https://nightbuilds.app/jellies/play/">
 <meta property="og:image" content="https://nightbuilds.app/jellies/share.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#2F7BFF">
@@ -21,12 +18,13 @@
 <link rel="stylesheet" href="engine/shell.css">
 </head>
 <body>
+<div id="splash" style="background-color:#FF9A55;background-image:url(splash.webp)"></div>   <!-- écran de démarrage dès la première image (engine/shell.js, splash) ; retiré hors appli -->
 <canvas id="game"></canvas>
 <script>
   // DÉMO du site, fabriquée par `node jeux/build.js gelees --demo` : ne pas modifier à la main.
   // Les paramètres d'URL de développement (?level, ?zone, ?dev, ?bot…) sont ignorés : seuls la langue (?lang) et ?mute sont gardés.
   (function () { var keep = (location.search.match(/[?&](lang=(fr|en|es|pt)|mute)(?=&|$)/g) || []).map(function (s) { return s.slice(1); }), q = keep.length ? "?" + keep.join("&") : ""; try { if (location.search !== q || location.hash) history.replaceState(null, "", location.pathname + q); } catch (e) { } })();
-  window.GAME_DEMO = {"levels":12,"url":"","label":"preorder","stats":{"key":"0e8f8bd8f044c424a9d705d2940fca9f","secret":"b7e95af423f9935257e5bd6c1f719fb9a08f5407"}};
+  window.GAME_DEMO = {"levels":12,"url":"","label":"preorder","android":"https://play.google.com/store/apps/details?id=com.nightbuilds.jellies&referrer=utm_source%3Dsite%26utm_medium%3Ddemo","stats":{"key":"0e8f8bd8f044c424a9d705d2940fca9f","secret":"b7e95af423f9935257e5bd6c1f719fb9a08f5407"}};
 </script>
 <script src="engine/core.js"></script>
 <script src="engine/stats.js"></script>   <!-- statistiques GameAnalytics (rien n est envoyé en développement) -->

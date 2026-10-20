@@ -55,6 +55,7 @@
   function open(g) {
     let url = link(g); stat('click', g); if (!url) return;
     if (/apps\.apple\.com/.test(url)) url += (url.includes('?') ? '&' : '?') + (cat.pt ? 'pt=' + cat.pt + '&' : '') + 'ct=house-' + me;   // campagne App Store : d'où vient le téléchargement
+    else if (/play\.google\.com/.test(url) && !/[?&]referrer=/.test(url)) url += (url.includes('?') ? '&' : '?') + 'referrer=' + encodeURIComponent('utm_source=house-' + me + '&utm_medium=house');   // Google Play : même chose (Play Console, sources d'acquisition)
     try { global.open(url, '_system'); } catch (_) { location.href = url; }
   }
 
