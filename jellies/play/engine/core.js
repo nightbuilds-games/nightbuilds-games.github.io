@@ -7,7 +7,11 @@
 (function (global) {
   const W = 1080, H = 1920;
   const canvas = document.getElementById('game');
-  const ctx = canvas.getContext('2d');
+  // CANEVAS OPAQUE (21 oct. 2026) : <canvas id="game" data-opaque="#couleur"> pour un jeu qui peint tout son canevas à chaque image. Le navigateur
+  // n'a plus à mélanger le canevas avec la page derrière lui à chaque image (gain sensible sur les Android d'entrée de gamme). La couleur remplit
+  // le canevas avant la première image et après chaque changement de taille (sinon il serait noir).
+  const OPAQUE = canvas.dataset && canvas.dataset.opaque !== undefined ? canvas.dataset.opaque || '#000' : null;
+  const ctx = OPAQUE ? canvas.getContext('2d', { alpha: false }) : canvas.getContext('2d');
 
   // ------------------------------------------------------------ COMPTEUR DE SURFACE (?overdraw, 30 sept. 2026)
   // Sur téléphone, le coût graphique d'une image suit surtout la surface que la puce doit remplir. Le temps mesuré sur le PC de dev (portable
@@ -316,6 +320,9 @@
   function setSound(on) { muted = !on || FORCE_MUTE; if (master) master.gain.value = muted ? 0 : 0.5; }   // réglage « son » de la coquille (la musique, elle, est réglée par le jeu)
   // vibrations : l'API du navigateur quand elle existe (Android) ; dans l'appli, le module Haptics de Capacitor prendra le relais (iPhone compris)
   // module natif de Capacitor (Preferences, Haptics…) : seulement dans l'appli (engine/vendor/capacitor.js fait le pont) ; null dans un navigateur
+  // APP : la page tourne dans l'appli (iPhone ou Android). Ne pas se fier au protocole : l'appli Android sert la page en https://localhost,
+  // comme un serveur de développement ; elle demandait alors des pubs de test et n'envoyait pas de statistiques (corrigé le 21/10).
+  const APP = !!(global.androidBridge || (global.Capacitor && global.Capacitor.isNativePlatform && global.Capacitor.isNativePlatform()));
   const nativeCache = {};
   function native(name) {
     const Cap = global.Capacitor;
@@ -497,22 +504,42 @@
   // entre images dépasse 20 ms (< 50 i/s) sur une fenêtre de 2 s, la résolution du canevas baisse d'un cran (QUALITY), sans jamais descendre sous
   // 1 pixel réel par pixel CSS ; la médiane ignore les à-coups isolés (génération de niveau), qui ne se règlent pas en baissant la résolution.
   // Elle ne remonte pas (évite le yoyo). Coupée avec ?res (résolution imposée), en mode tournage (le PC d'OBS doit filmer net) et par ?adapt=0.
+  // CADENCE (21 oct. 2026) : sur un vieil Android d'entrée de gamme, c'est souvent le processeur qui freine (logique + ordres de dessin), et baisser
+  // la résolution n'y change rien. Chaque fenêtre de 2 s note aussi le temps médian de logique + dessin (work) : s'il dépasse 10 ms quand les images
+  // sont lentes, ou si la résolution est déjà au plancher, et cela deux fenêtres de suite, le jeu passe à 30 images/s (une image sur deux sautée,
+  // le temps du jeu reste juste) : moitié moins de travail, une cadence régulière au lieu d'images irrégulières, et le reste du téléphone respire.
+  // Une seule remontée à 60 est tentée si, 30 s plus tard, le travail médian est retombé sous 6 ms (téléphone occupé à autre chose au démarrage).
+  // À 30 images/s, la résolution peut encore baisser si même cette cadence n'est pas tenue (intervalle médian > 38 ms).
   const QUALITY = [1, .85, .7, .6];
-  const ADAPT = { on: !RES && URLP.adapt !== '0', level: 0, win: [], winT: 0 };
+  const ADAPT = { on: !RES && URLP.adapt !== '0', level: 0, win: [], winT: 0, work: [], slow: 0, half: false, halfT: 0, retried: false };
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const s = Math.min(window.innerWidth / W, window.innerHeight / H);
     canvas.style.width = Math.floor(W * s) + 'px'; canvas.style.height = Math.floor(H * s) + 'px';
     const k = RES || s * Math.max(Math.min(dpr, 1), dpr * QUALITY[ADAPT.level]);
     canvas.width = Math.floor(W * k); canvas.height = Math.floor(H * k);
+    if (OPAQUE) { ctx.fillStyle = OPAQUE; ctx.fillRect(0, 0, canvas.width, canvas.height); }
     ctx.setTransform(k, 0, 0, k, 0, 0);
+    if (OPAQUE && game && paused) render();   // jeu en pause derrière un menu : son image est redessinée plutôt que laissée en aplat
   }
   window.addEventListener('resize', resize); resize();
-  function adaptRecord(realMs) {
-    if (!ADAPT.on || film || ADAPT.level >= QUALITY.length - 1) return;
-    ADAPT.win.push(realMs); ADAPT.winT += realMs; if (ADAPT.winT < 2000) return;
-    const med = ADAPT.win.slice().sort((a, b) => a - b)[ADAPT.win.length >> 1]; ADAPT.win.length = 0; ADAPT.winT = 0;
-    if (med <= 20) return;
+  const median = a => a.slice().sort((x, y) => x - y)[a.length >> 1];
+  function adaptRecord(realMs, workMs) {
+    if (!ADAPT.on || film) return;
+    ADAPT.win.push(realMs); ADAPT.work.push(workMs); ADAPT.winT += realMs; if (ADAPT.winT < 2000) return;
+    const med = median(ADAPT.win), work = median(ADAPT.work); ADAPT.win.length = 0; ADAPT.work.length = 0; ADAPT.winT = 0;
+    const floor = ADAPT.level >= QUALITY.length - 1;
+    if (ADAPT.half) {
+      ADAPT.halfT += 2;
+      if (!ADAPT.retried && ADAPT.halfT >= 30 && work < 6) { ADAPT.retried = true; ADAPT.half = false; ADAPT.slow = 0; console.log('[cadence] retour à 60 i/s (travail médian ' + work.toFixed(1) + ' ms)'); return; }
+      if (med > 38 && !floor) lower(med);
+      return;
+    }
+    if (med <= 20) { ADAPT.slow = 0; return; }
+    if (work > 10 || floor) { if (++ADAPT.slow >= 2) { ADAPT.half = true; ADAPT.halfT = 0; console.log('[cadence] 30 i/s (intervalle médian ' + med.toFixed(1) + ' ms, travail médian ' + work.toFixed(1) + ' ms)'); } return; }
+    ADAPT.slow = 0; lower(med);
+  }
+  function lower(med) {
     const before = canvas.width; ADAPT.level++; resize();
     if (canvas.width === before) ADAPT.level = QUALITY.length - 1;   // déjà au plancher (écran de densité 1) : inutile de continuer
     console.log('[qualité] cran ' + ADAPT.level + ' (intervalle médian ' + med.toFixed(1) + ' ms) : canevas ' + canvas.width + '×' + canvas.height);
@@ -552,7 +579,7 @@
       intervalle_ms: { median: +pct(iv, .5).toFixed(1), p95: +pct(iv, .95).toFixed(1), p99: +pct(iv, .99).toFixed(1), max: +iv[iv.length - 1].toFixed(0) },
       images_lentes: slow, images_lentes_pct: +(slow / iv.length * 100).toFixed(1), saccades: hitch,
       update_ms: { moy: +avg(upd).toFixed(2), p95: +pct(upd, .95).toFixed(2) }, render_ms: { moy: +avg(rnd).toFixed(2), p95: +pct(rnd, .95).toFixed(2) },
-      canevas: canvas.width + '×' + canvas.height, dpr: window.devicePixelRatio || 1, res: RES || 'fenêtre', qualite_cran: ADAPT.level, invalide: b.hidden,
+      canevas: canvas.width + '×' + canvas.height, dpr: window.devicePixelRatio || 1, res: RES || 'fenêtre', qualite_cran: ADAPT.level, cadence_30: ADAPT.half, invalide: b.hidden,
       appareil: (navigator.userAgent.match(/\(([^)]+)\)/) || [, ''])[1],
     };
     r.longues = b.long.sort((x, y) => y.ms - x.ms).slice(0, 12);   // les 12 images les plus longues, pour trouver ce qui les cause
@@ -574,7 +601,7 @@
       ['intervalle médian ' + r.intervalle_ms.median + ' ms', '#fff'], ['p95 ' + r.intervalle_ms.p95 + ' · p99 ' + r.intervalle_ms.p99 + ' · max ' + r.intervalle_ms.max + ' ms', '#fff'],
       ['images lentes ' + r.images_lentes + ' (' + r.images_lentes_pct + ' %) · saccades ' + r.saccades, '#fff'],
       ['logique ' + r.update_ms.moy + ' ms (p95 ' + r.update_ms.p95 + ')', '#cbd5e1'], ['dessin ' + r.render_ms.moy + ' ms (p95 ' + r.render_ms.p95 + ')', '#cbd5e1'],
-      ['canevas ' + r.canevas + ' · dpr ' + r.dpr + (r.qualite_cran ? ' · qualité −' + r.qualite_cran : '') + ' · ' + r.images + ' images / ' + r.secondes + ' s', '#94a3b8'], [r.appareil, '#94a3b8'],
+      ['canevas ' + r.canevas + ' · dpr ' + r.dpr + (r.qualite_cran ? ' · qualité −' + r.qualite_cran : '') + (r.cadence_30 ? ' · cadence 30 i/s' : '') + ' · ' + r.images + ' images / ' + r.secondes + ' s', '#94a3b8'], [r.appareil, '#94a3b8'],
     ];
     if (r.surface) { const s = r.surface; lines.unshift(['surface ' + s.total + ' écrans/image · flou ' + s.flou, '#7dd3fc'], ['images ' + s.images + ' · formes ' + s.formes + ' · traits ' + s.traits + ' · textes ' + s.textes, '#7dd3fc'], [s.appels + ' ordres · ' + s.degrades + ' dégradés/image', '#7dd3fc']); }
     ctx.save(); ctx.fillStyle = 'rgba(2,6,23,.88)'; roundRect(50, 380, W - 100, 170 + lines.length * 72, 36); ctx.fill(); ctx.restore();
@@ -593,15 +620,18 @@
   // musique repartait dès qu'on ouvrait la boutique ou la carte des niveaux depuis la pause.
   // Fondu de 80 ms à l'entrée et à la sortie : couper la musique net en plein milieu d'une onde fait un petit grésillement. Le contexte n'est
   // suspendu qu'une fois le fondu fini (sinon il gèle le son à mi-chemin) ; à la reprise, le son remonte depuis zéro.
-  let paused = false, pauseTimer = 0;
+  // La boucle elle-même s'arrête pendant la pause (21 oct. 2026) : même vide, une image demandée au navigateur 60 fois par seconde le forçait à
+  // recalculer les styles des menus à chaque image (boutons qui respirent) et gardait le processeur éveillé. `looping` : une image est demandée.
+  let paused = false, pauseTimer = 0, looping = false;
   const PAUSE_FADE = .08;
+  function loop() { if (!looping) { looping = true; requestAnimationFrame(frame); } }
   function fadeBus(to) {
     const g = gameBus.gain, t = actx.currentTime;
     g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(to, t + PAUSE_FADE);
   }
   function pause(on) {
     on = !!on; if (on === paused) return; paused = on; last = 0;
-    clearTimeout(pauseTimer);
+    clearTimeout(pauseTimer); if (!on && game) loop();
     if (!actx) return;
     if (on) {
       fadeBus(0);
@@ -609,19 +639,20 @@
     } else { wake(); fadeBus(1); }
   }
   function frame(ts) {
-    requestAnimationFrame(frame);
-    if (paused) return;
-    if (last && ts - last < CAP_MS) return;
+    looping = false; if (paused) return;
+    loop();
+    if (last && ts - last < (ADAPT.half ? 28 : CAP_MS)) return;   // cadence réduite (voir CADENCE) : une image sur deux à 60 Hz
     if (!document.hidden && actx && actx.state !== 'running' && ts > resumeAt) { resumeAt = ts + 1000; wake(); }   // navigateur sans geste utilisateur (OBS) : on tente de reprendre l'audio chaque seconde
     // pas de temps plafonné à 1/15 s (et non 1/30) : un navigateur qui ne rend que 20 images/s (source « navigateur » d'OBS sans accélération matérielle)
     // faisait tourner le jeu au ralenti (prise du 19 sept. 2026 : 22 s de chrono pour 30 s de vidéo). Au-dessous de 15 images/s le ralenti revient.
     const real = last ? (ts - last) / 1000 : 1 / 60, dt = Math.min(1 / 15, real); last = ts;
     fpsAvg = fpsAvg ? fpsAvg * .95 + (1 / Math.max(real, 1e-3)) * .05 : 60;
-    adaptRecord(real * 1000);
-    if (!BENCH) { step(dt); render(); if (OD) odFrame(); return; }
+    adaptRecord(real * 1000, lastWork);
     const t0 = performance.now(); step(dt); const t1 = performance.now(); render(); const t2 = performance.now();
-    if (OD) odFrame(); benchRecord(real * 1000, t1 - t0, t2 - t1);
+    lastWork = t2 - t0;
+    if (OD) odFrame(); if (BENCH) benchRecord(real * 1000, t1 - t0, t2 - t1);
   }
+  let lastWork = 0;   // logique + dessin de l'image précédente (ms), pour la cadence adaptative
   function step(dt) {
     time += dt;
     updateTimers(dt); updateBot(dt); updateTweens(dt);
@@ -686,7 +717,7 @@
 
   function restart() { tweens.length = 0; timers.length = 0; parts.length = 0; floaters.length = 0; banner = null; bot.clear(); if (bot.down) { bot.down = false; pointer.down = false; } if (game && game.init) game.init(); }
   function start(g) {
-    game = g; requestAnimationFrame(frame); if (g.init) g.init();
+    game = g; loop(); if (g.init) g.init();
     if (URLP.film && !g.ownFilm && !film) toggleFilm();   // ?film : mode tournage dès le chargement (les protos 2 et 3, ownFilm, le font eux-mêmes)
     if (URLP.auto) ensureAudio();   // tournage sans les mains (source « navigateur » d'OBS, aucun clic) : on ouvre l'audio tout de suite ; s'il reste suspendu, frame() réessaie
     if (g.useKit && KIT.autostart) setBot(true);          // kit de clip : ?auto (les protos 2 et 4 le font eux-mêmes)
@@ -698,5 +729,5 @@
   global.Core = { W, H, ctx, canvas, rand, randi, pick, lerp, clamp, dist, shuffle, ease, shade, rgba, roundRect, text, fitSize, emoji, bgGradient, blit, FONT, CONFETTI,
     tween, killTweens, after, tick, tone, noise, audio: () => ({ ctx: actx, master: gameBus }), burst, confetti, floatText, shake, flash, showBanner, sfx, pointer, bot, setBot, start, restart,
     URLP, KIT, kit, seeded, updateLegend, FILM, lang: LANG, tr, i18n, byLang, get time() { return time; }, get film() { return film; },
-    pause, get paused() { return paused; }, HUD_CLEAR: 170, setSound, loadSamples, fetchBytes, playSample, haptic, setHaptics(on) { hapticsOn = !!on; }, unlockAudio: ensureAudio, native, DEV };
+    pause, get paused() { return paused; }, HUD_CLEAR: 170, setSound, get soundOn() { return !muted; }, loadSamples, fetchBytes, playSample, haptic, setHaptics(on) { hapticsOn = !!on; }, unlockAudio: ensureAudio, native, DEV, APP };
 })(window);

@@ -63,6 +63,19 @@ h2 { margin: 0; font-weight: 900; font-size: 30px; color: var(--ink); text-align
 .toggle b { background: #22c55e; color: #fff; border-radius: 999px; padding: 4px 12px; font-size: 16px; }
 .toggle.off b { background: #94a3b8; }
 .pause .row .toggle { flex-direction: column; gap: 6px; font-size: 18px; }
+/* quatre boutons sur la ligne de la pause (son, musique, réglages, accueil ; 21 oct. 2026) : resserrés pour tenir sur un petit Android (360 px) */
+.pause .row { gap: 8px; }
+.pause .row .toggle { min-width: 0; padding: 10px 4px; font-size: min(15px, 4vw); letter-spacing: 0; }
+.pause .row .btn.icon { width: 50px; height: 50px; padding: 11px; }
+/* écran de résultat : REJOUER, NIVEAUX et accueil sur une ligne, resserrés de même (la ligne débordait sur un petit Android) */
+.result .row { gap: 8px; }
+.result .row > .btn:not(.icon) { min-width: 0; padding: 14px 4px; font-size: min(18px, 4.3vw); letter-spacing: 0; white-space: nowrap; }
+.result .row .btn.icon { width: 50px; height: 50px; padding: 11px; }
+/* écran de résultat plus haut que l'écran (petit Android, texte sur deux lignes, grille du jour) : centré s'il tient, sinon on le fait défiler
+   au lieu d'en couper le haut et le bas ; plus serré sur les écrans courts (21 oct. 2026) */
+.screen.result { justify-content: flex-start; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.result .panel { margin: auto 0; flex-shrink: 0; }
+@media (max-height: 800px) { .result .panel { padding-top: 16px; padding-bottom: 16px; gap: 8px; } .result .bigstars { transform: scale(.85); margin: -6px 0; } }
 
 /* bouton pause posé sur le jeu (coin haut gauche du canevas, placé par shell.js) */
 .hud-pause { position: fixed; z-index: 5; display: none; box-sizing: border-box; padding: 0; border-radius: 30%; background: rgba(255,255,255,.85); color: var(--ink);
@@ -163,7 +176,7 @@ h1.logo { margin-bottom: 4vh; }
 /* carte des niveaux et réglages : fond plus sombre (le décor du jeu est chargé derrière) */
 #shell.open .screen.levels, #shell.open .screen.settings { background: rgba(20, 10, 5, .55); }
 .pause .row { align-items: center; }
-.pause .row .btn.icon { background: var(--ink); box-shadow: 0 4px 0 rgba(0,0,0,.3); }
+.pause .row .btn.icon, .result .row .btn.icon { background: var(--ink); box-shadow: 0 4px 0 rgba(0,0,0,.3); }
 .hud-pause svg { width: 50%; height: 50%; }   /* marge en % = % de la LARGEUR DE L ECRAN : le bouton gonflait (172 px) et l icône tombait à 0 */
 
 /* ------------------------------------------------------------ économie : compteur de pièces, gains, boutique, secours */

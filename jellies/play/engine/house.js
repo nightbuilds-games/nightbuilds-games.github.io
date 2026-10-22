@@ -16,14 +16,14 @@
      publié par jeux/tools/pubs-maison.js) et gardée en mémoire du téléphone, pour qu'un jeu sorti plus tard soit présenté par les applis
      déjà installées. Un jeu sans lien pour le store du téléphone n'est jamais présenté.
 
-   LA PUB : plein écran, la vidéo verticale du jeu (muette), son icône, son nom, une accroche et un bouton vers le store. Elle porte la
+   LA PUB : plein écran, la vidéo verticale du jeu (avec son si le son du jeu est allumé, sinon muette ; 22/10), son icône, son nom, une accroche et un bouton vers le store. Elle porte la
      mention « Pub », comme toute publicité : on ne la déguise pas en contenu du jeu. En revanche elle ne nomme pas le studio, pas plus
      qu'une pub payante ne nomme son annonceur. Fermeture après 5 s (entre niveaux) ou à la fin du décompte (récompensée).
 
    MISE AU POINT (développement seulement) : ?maison force les pubs maison à la place de la simulation, même pour un jeu sans lien de store
      (le bouton n'ouvre alors rien) ; ?maison=ecrin choisit le jeu présenté. */
 (function (global) {
-  const C = global.Core, DEV = /^https?:$/.test(location.protocol), U = C.URLP || {};
+  const C = global.Core, DEV = /^https?:$/.test(location.protocol) && !C.APP, U = C.URLP || {};
   const REMOTE = 'https://nightbuilds.app/promo/catalog.json', KEY = 'house.catalog', FORCE = DEV && U.maison !== undefined ? U.maison : null;
   const INTER_S = 5, REWARD_S = 15;
   C.i18n({ 'Pub': 'Ad', 'OBTENIR': 'GET', 'Récompense dans {s} s': 'Reward in {s} s', 'Fermer dans {s} s': 'Close in {s} s', 'Fermer': 'Close' });
@@ -66,7 +66,7 @@
       const g = r.g, v = r.v, lang = C.lang, tag = (g.tagline && (g.tagline[lang] || g.tagline.en)) || '';
       const o = document.createElement('div'); o.className = 'house-ad';
       o.style.cssText = 'position:fixed;inset:0;z-index:60;background:#05050c;display:flex;align-items:center;justify-content:center;font-family:Nunito,system-ui,sans-serif;color:#fff;-webkit-user-select:none;user-select:none';
-      v.style.cssText = 'height:100%;max-width:100%;aspect-ratio:9/16;object-fit:cover;display:block';
+      v.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block';   // tout l'écran, sans bandes : la vidéo 9:16 est rognée sur les côtés des téléphones plus allongés (avant le 22/10 : hauteur + aspect-ratio, ignoré par les vieux Android, la vidéo débordait ; puis contain, bandes en haut et en bas)
       o.appendChild(v);
       const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
       const ui = document.createElement('div'); ui.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:max(14px,env(safe-area-inset-top)) 14px max(18px,env(safe-area-inset-bottom));pointer-events:none';
@@ -81,8 +81,11 @@
           '<span style="flex:none;font-weight:900;font-size:17px;border-radius:999px;padding:11px 20px;background:' + esc(g.color || '#2E6BFF') + ';box-shadow:0 4px 0 rgba(0,0,0,.35)">' + C.tr('OBTENIR') + '</span>' +
         '</div>';
       o.appendChild(ui); document.body.appendChild(o);
+      const sound = C.soundOn !== false;   // relu avant que la coquille coupe le son du jeu pour la pub
       if (global.Monet && Monet.onAd) Monet.onAd(true);
-      try { v.currentTime = 0; const p = v.play(); if (p && p.catch) p.catch(() => { }); } catch (_) { }
+      // la pub s'ouvre après un appui : la lecture avec son est permise ; si le téléphone la refuse quand même, elle repart muette
+      const play = () => { const p = v.play(); return p && p.catch ? p : Promise.resolve(); };
+      try { v.currentTime = 0; v.muted = !sound; play().catch(() => { if (v.muted) return; v.muted = true; play().catch(() => { }); }); } catch (_) { }
       const x = ui.querySelector('.x'); let s = rewarded ? REWARD_S : INTER_S; if (global.MONET_SIM_SECONDS !== undefined) s = global.MONET_SIM_SECONDS;   // tests automatiques
       const paint = () => { x.textContent = s > 0 ? (rewarded ? C.tr('Récompense dans {s} s', { s }) : C.tr('Fermer dans {s} s', { s })) : '✕'; x.style.opacity = s > 0 ? .85 : 1; };
       const done = () => { clearInterval(iv); try { v.pause(); } catch (_) { } o.remove(); if (global.Monet && Monet.onAd) Monet.onAd(false); prepare(); resolve(true); };

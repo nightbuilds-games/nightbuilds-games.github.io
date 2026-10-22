@@ -26,7 +26,7 @@
        Sur le PC de développement (localhost, réseau local), rien n'est envoyé, comme pour le jeu. */
 (function (global) {
   const C = global.Core, U = C.URLP || {};
-  const HTTP = /^https?:$/.test(location.protocol), LOG = U.stats === 'log', LOCAL = /^(localhost|127.|192.168.|10.|[::1])/.test(location.hostname);
+  const HTTP = /^https?:$/.test(location.protocol) && !C.APP, LOG = U.stats === 'log', LOCAL = /^(localhost|127.|192.168.|10.|[::1])/.test(location.hostname);
   let SEND = !HTTP || (U.stats !== undefined && !LOG), WEB = false;   // WEB : démo du site (voir plus haut), réglé par init
   const API = 'https://api.gameanalytics.com/v2/', SDK = 'rest api v2', MAX_QUEUE = 500, BATCH = 100, EVERY = 15000;
 

@@ -13,7 +13,8 @@
    Niveaux déterministes (graine = niveau) avec un solveur : la difficulté visée est le nombre de détours nécessaires. */
 (function (global) {
   const C = Core;
-  const { W, H, ctx, ease, rand, randi, pick, lerp, clamp, dist, shuffle, shade, rgba, roundRect, text, sfx, bot, pointer } = Core;
+  const { W, H, ease, rand, randi, pick, lerp, clamp, dist, shuffle, shade, rgba, roundRect, text, sfx, bot, pointer } = Core;
+  let ctx = Core.ctx;   // let : l'assiette redirige un instant le dessin vers son image en cache (drawPlate)
   // textes affichés en anglais avec ?lang=en (22 sept. 2026, campagne en anglais) : le code garde le français, C.tr traduit à l'affichage
   const tr = C.tr;
   C.i18n({
@@ -891,7 +892,25 @@
     if (CACHE.plate) ctx.drawImage(CACHE.plate, px, py); else base(ctx);
     // rangs du fond (le plus haut à l'écran) d'abord, puis le vol par-dessus
     const sorted = plate.slice().sort((a, b) => (a.row - b.row) || (a.t < 1 ? 1 : 0) - (b.t < 1 ? 1 : 0));
-    for (const it of sorted) {
+    // Les gelées posées et immobiles (rebond éteint) ne bougent plus : en tête de l'ordre de dessin, elles sont dessinées une fois dans une image
+    // à la résolution du canevas, puis recopiées (21 oct. 2026 : chaque gelée de l'assiette coûtait un dessin complet à chaque image).
+    let n = 0; while (n < sorted.length && sorted[n].t >= 1 && Math.abs(sorted[n].sq) < .002) n++;
+    if (n && URLP.caches !== '0' && typeof document !== 'undefined' && document.createElement) {   // ?caches=0 : dessin direct (comparaison)
+      const k = C.canvas.width / W, key = n + '|' + k + '|' + symbolsOn(); let L = CACHE.plateLayer;
+      if (!L || L.plate !== plate || L.key !== key) {
+        const s = PLATE.scale, pad = 30; let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+        for (let i = 0; i < n; i++) { const it = sorted[i], w = (it.lay ? it.b.bh : it.b.bw) * S * s, hgt = (it.lay ? it.b.bw : it.b.bh) * S * s; x0 = Math.min(x0, it.tx - w / 2 - pad); x1 = Math.max(x1, it.tx + w / 2 + pad); y0 = Math.min(y0, it.ty - hgt - pad); y1 = Math.max(y1, it.ty + pad); }
+        x0 = Math.floor(x0); y0 = Math.floor(y0);
+        const cv = L && L.cv && L.cv.width >= Math.ceil((x1 - x0) * k) && L.cv.height >= Math.ceil((y1 - y0) * k) ? L.cv : offscreen((x1 - x0) * k, (y1 - y0) * k);
+        L = CACHE.plateLayer = { plate, key, cv, x: x0, y: y0, w: cv.width / k, h: cv.height / k };
+        const c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height); c.setTransform(k, 0, 0, k, -x0 * k, -y0 * k);
+        const main = ctx; ctx = c;
+        try { for (let i = 0; i < n; i++) { const it = sorted[i]; if (it.lay) drawMini(it.b, it.tx - it.b.bh * S * s / 2, it.ty - it.b.bw * S * s / 2, s, 1, 1, Math.PI / 2); else drawMini(it.b, it.tx, it.ty, s, 1, 1, 0); } }
+        finally { ctx = main; }
+      }
+      ctx.drawImage(L.cv, L.x, L.y, L.w, L.h);
+    } else n = 0;
+    for (let i = n; i < sorted.length; i++) { const it = sorted[i];
       const p = ease.inOutQuad(it.t); let x = lerp(it.fx, it.tx, p), y = lerp(it.fy, it.ty, p) - Math.sin(p * Math.PI) * 260;
       const wob = it.sq * Math.sin(it.sqT * 24), s = PLATE.scale;
       // couchée : tournée d'un quart de tour, l'ancre (milieu du bord bas) est décalée pour que la gelée reste centrée, posée sur son rang
@@ -1184,7 +1203,7 @@
     if (FEATURES.plate) drawPlate(h);
     if (FEATURES.life) drawLife();
     if (FEATURES.kid) drawKid();
-    if (!C.film) { const hint = state === 'play' && !started ? tr('Glisse chaque gelée jusqu’à la trappe de sa couleur') : tr('Vite, avant que ça fonde !'); const hs = C.fitSize(hint, 40, W - 100);   // taille réduite au besoin pour tenir dans l'écran
+    if (!C.film) { const hint = state === 'play' && !started ? tr('Glisse chaque gelée jusqu’à la trappe de sa couleur') : tr('Vite, avant que ça fonde !'); const hs = fitOnce(hint, 40, W - 100);   // taille réduite au besoin pour tenir dans l'écran
       text(hint, W / 2, FEATURES.summer ? BOT + (global.Shell ? 226 : 292) : FEATURES.plate ? BOT + 152 : BOT + 52, FEATURES.summer ? { size: hs, color: '#fff', stroke: FEATURES.grass ? '#1F5A2A' : '#3E2612', strokeW: 8 } : { size: hs, color: '#7c2d12', alpha: .85 }); }   // plein été : sur la table, en blanc
     if (state === 'over') drawOver();
   }
@@ -1196,6 +1215,8 @@
     pts.forEach(([px, py], i) => { const j = (Math.sin(i * 12.9 + heatWave * 40) * 14); const [ox, oy] = i % 2 ? [j, j] : [-j, j]; if (i === 0) ctx.moveTo(px + ox, py + oy); else ctx.lineTo(px + ox, py + oy); });
     ctx.closePath(); ctx.stroke(); ctx.restore();
   }
+  const fitMemo = new Map(), fitOnce = (str, size, maxW) => { const k = str + '|' + size + '|' + maxW; let v = fitMemo.get(k); if (v === undefined) { v = C.fitSize(str, size, maxW); fitMemo.set(k, v); } return v; };   // C.fitSize mesure le texte : une fois par phrase, pas à chaque image
+  if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitMemo.clear(), () => { });   // mesures prises avec la police de secours : refaites une fois Nunito chargée
   const hex = c => [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)];
   const mix = (a, b, t) => { const A = hex(a), B = hex(b); return 'rgb(' + A.map((v, i) => Math.round(lerp(v, B[i], t))).join(',') + ')'; };
   // Décor de pique-nique (FEATURES.picnic) : nappe à carreaux pâles (bleus, pour ne pas concurrencer les gelées), bord de table en bois en bas,
@@ -1811,6 +1832,7 @@
 
   // ------------------------------------------------------------ débogage / tests
   C.dbg = () => ({ level, state, why, t: +levelT.toFixed(1), timeLeft: +timeLeft.toFixed(1), timeTotal, started, blocks: blocks.filter(b => b.state !== 'gone').length, total: blocks.length, botHuman, botStyle, features: { clip: FEATURES.clip, loop: FEATURES.loop, hook: FEATURES.hook, level: shownLevel() }, finales, camZ: +cam.z.toFixed(2), rescued, stars: starsFor(), diff, drag: drag ? { id: drag.b.id, x: +drag.b.x.toFixed(2), y: +drag.b.y.toFixed(2) } : null, gates: gates.map(g => [g.wall, g.i, g.len, g.color].join(':')).join(' '), layout: blocks.map(b => b.state === 'gone' ? '-' : b.r + ',' + b.c).join(' '), heat: +Math.max(0, ...blocks.filter(b => b.state !== 'gone').map(b => b.heat)).toFixed(2), sunDepth: sunDepth.join(''), plan: plan ? plan.length : null, stats: Object.assign({}, stats, { detours: diff.detours, moves: diff.moves, blocks0: blocks.length, time: timeTotal }) });
+  C.setCaches = on => { URLP.caches = on ? '1' : '0'; };   // essais : assiette en cache (true) ou dessin direct (false), pour comparer les deux rendus
   C.test = { level(n) { level = n; C.restart(); }, audioReady() { updateMusic(); return !A || !AUDIO || !AUDIO.music || !musicOn || !trackName || !!trackSrc; }, /* audioReady, pour l'outil de clips : lance le chargement du morceau de la zone et dit s'il joue */ boost(key, i) { if (key === 'ice') return useBoost('ice'); aim = key; useAim(blocks[i]); return true; }, gen(n) { const g = genLevel(n); return { d: g.detours, tries: g.tries, ms: g.ms, rej: g.rej0 || g.rej, fallback: !!g.rej0, board: g.M.board }; }, check(n) { const g = PRE && PRE[n - 1] ? unpackLevel(PRE[n - 1]) : genLevel(n); const s = solve(g.M, g.M.pos, 4000); return { ok: s.ok, detours: s.detours, ice: g.M.blocks.filter(b => b.ice).length }; }, pack(n) { return packLevel(genLevel(n)); }, solve(cap = GEN.nodes, exact = false) { const M = model(); const s = solve(M, M.pos, cap, exact); return { ok: s.ok, detours: s.detours, moves: s.plan.length, nodes: s.nodes, ms: Math.round(s.ms), blocks: M.blocks.length, gen: diff }; }, melt() { if (state === 'play') { started = true; timeLeft = 0; } }, tune(o) { Object.assign(TUNE, o); C.restart(); return Object.assign({}, TUNE); }, model, closure, TIME, GEN };
   const say = s => C.floatText(MIDX, MIDY, s, { color: '#fff', size: 72, dur: 1.4, vy: -70 });
   function onKey(k) {

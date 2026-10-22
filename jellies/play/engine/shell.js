@@ -56,7 +56,7 @@
     'RECOMMENCER': 'RESTART', 'SUIVANT': 'NEXT', 'REJOUER': 'REPLAY', 'Son': 'Sound', 'Musique': 'Music', 'Vibrations': 'Vibration',
     'NIVEAU {n} RÉUSSI !': 'LEVEL {n} CLEARED!', 'Temps : {t}': 'Time: {t}', 'Record : {t}': 'Best: {t}', 'NOUVEAU RECORD !': 'NEW BEST!',
     'Effacer la progression': 'Reset progress', 'Effacer toute la progression ? Les étoiles et les niveaux débloqués seront perdus.': 'Reset all progress? Stars and unlocked levels will be lost.',
-    'Retour': 'Back', 'Pause': 'Pause', 'Niveau verrouillé': 'Locked level', 'Politique de confidentialité': 'Privacy policy',
+    'Retour': 'Back', 'Accueil': 'Home', 'Pause': 'Pause', 'Niveau verrouillé': 'Locked level', 'Politique de confidentialité': 'Privacy policy',
     'BOUTIQUE': 'SHOP', 'Pièces': 'Coins', '×2 avec une pub': '×2 with an ad', 'CONTINUER ?': 'CONTINUE?', 'CONTINUER': 'CONTINUE', 'Continuer · {c}': 'Continue · {c}',
     'Regarder une pub': 'Watch an ad', 'Non merci': 'No thanks', 'Pas assez de pièces': 'Not enough coins', 'Sans pubs': 'No ads', 'Acheté': 'Owned',
     'Pièces gratuites (pub)': 'Free coins (ad)', 'Restaurer les achats': 'Restore purchases', 'Plus de pièces gratuites aujourd’hui': 'No more free coins today',
@@ -96,6 +96,7 @@
   // ------------------------------------------------------------ éléments
   const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
   const ICON = {
+    home: '<svg viewBox="0 0 24 24"><path d="M3.5 11.2 12 4l8.5 7.2V20a1 1 0 0 1-1 1h-5v-6h-5v6h-5a1 1 0 0 1-1-1Z"/></svg>',
     pause: '<svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1.5"/><rect x="14" y="4" width="4" height="16" rx="1.5"/></svg>',
     gear: '<svg viewBox="0 0 24 24"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm8.4 2.3-1.9-.3a6.9 6.9 0 0 0-.7-1.6l1.1-1.6a.8.8 0 0 0-.1-1l-1.1-1.1a.8.8 0 0 0-1-.1l-1.6 1.1c-.5-.3-1-.5-1.6-.7l-.3-1.9a.8.8 0 0 0-.8-.6h-1.6a.8.8 0 0 0-.8.6l-.3 1.9c-.6.2-1.1.4-1.6.7L6.5 5.1a.8.8 0 0 0-1 .1L4.4 6.3a.8.8 0 0 0-.1 1l1.1 1.6c-.3.5-.5 1-.7 1.6l-1.9.3a.8.8 0 0 0-.6.8v1.6c0 .4.3.7.6.8l1.9.3c.2.6.4 1.1.7 1.6l-1.1 1.6a.8.8 0 0 0 .1 1l1.1 1.1c.3.3.7.3 1 .1l1.6-1.1c.5.3 1 .5 1.6.7l.3 1.9c.1.4.4.6.8.6h1.6c.4 0 .7-.3.8-.6l.3-1.9c.6-.2 1.1-.4 1.6-.7l1.6 1.1c.3.2.7.2 1-.1l1.1-1.1c.3-.3.3-.7.1-1l-1.1-1.6c.3-.5.5-1 .7-1.6l1.9-.3c.4-.1.6-.4.6-.8v-1.6a.8.8 0 0 0-.6-.8Z"/></svg>',
     back: '<svg viewBox="0 0 24 24"><path d="M15.5 4.5 8 12l7.5 7.5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -155,7 +156,15 @@
     for (const k in screens) screens[k].classList.toggle('on', k === name);
     current = name; root.classList.toggle('open', !!name);
     hudPause.classList.toggle('on', !name); if (boostBar) { boostBar.classList.toggle('on', !name && boostList().length > 0); if (!name) paintBoosts(); } wallet.classList.toggle('on', !!name && name !== 'pause' && name !== 'settings'); paintWallet();
-    if (name) { if (screens[name].refresh) screens[name].refresh(); C.pause(true); } else C.pause(false);
+    if (name) { if (screens[name].refresh) screens[name].refresh(); C.pause(true); } else { C.pause(false); hintLoop(); }
+    awake(!name);
+  }
+  // écran allumé pendant une partie (22 oct. 2026 : le téléphone se mettait en veille en pleine réflexion) ; dans les menus et en pause, la veille
+  // normale du téléphone reprend. Module natif KeepAwake (@capacitor-community/keep-awake) : rien dans un navigateur.
+  let awakeOn = false;
+  function awake(on) {
+    const K = C.native('KeepAwake'); if (!K || on === awakeOn) return; awakeOn = on;
+    (on ? K.keepAwake() : K.allowSleep()).catch(() => { awakeOn = !on; });
   }
   // grille du jour : numéro du jour (date du téléphone), série en cours (perdue si un jour entier a été sauté)
   const today = () => { const d = new Date(); return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5); };
@@ -245,9 +254,13 @@
     p.appendChild(button(tr('NIVEAUX'), 'secondary', () => { levelsBack = 'pause'; show('levels'); }));
     if (!demo()) p.appendChild(button(tr('BOUTIQUE'), 'secondary', () => toShop('pause')));
     const tg = [soundToggle(), musicToggle()]; const row = el('div', 'row'); tg.forEach(x => row.appendChild(x));
-    row.appendChild(button(ICON.gear, 'icon', () => { settingsBack = 'pause'; show('settings'); })); p.appendChild(row);
+    row.appendChild(button(ICON.gear, 'icon', () => { settingsBack = 'pause'; show('settings'); })); row.appendChild(homeButton()); p.appendChild(row);   // son, musique, réglages, accueil : une ligne (boutons resserrés dans shell.css)
     s.appendChild(p); s.refresh = () => tg.forEach(x => x.repaint()); return s;
   }
+  // RETOUR À L'ÉCRAN TITRE (21 oct. 2026, remarque de Pierre du 12/10) : l'écran titre ne venait qu'au lancement, et la grille du jour, qui n'est
+  // que sur lui, restait hors d'atteinte tant que l'appli restait en mémoire. Bouton « accueil » dans la pause et sur l'écran de résultat ; la
+  // partie en cours est abandonnée (JOUER la recommence, comme RECOMMENCER).
+  function homeButton() { const b = button(ICON.home, 'icon home', () => { S.event('ui:home'); show('title'); }); b.setAttribute('aria-label', tr('Accueil')); return b; }
   let resultEl = null;
   function buildResult() {
     const s = el('section', 'screen result'); const p = el('div', 'panel');
@@ -262,8 +275,8 @@
     p.appendChild(button(tr('SUIVANT'), 'big primary', () => resultEl.daily ? startLevel(save.unlocked) : nextLevel(resultEl.level + 1)));   // après la grille du jour : retour au niveau en cours
     const row = el('div', 'row');
     row.appendChild(button(tr('REJOUER'), 'secondary', () => resultEl.daily ? startDaily() : startLevel(resultEl.level)));
-    row.appendChild(button(tr('NIVEAUX'), 'secondary', () => { levelsBack = 'result'; show('levels'); }));
-    p.appendChild(row); if (demo()) p.appendChild(storeButton('result', 'small')); s.appendChild(p); return s;
+    row.appendChild(button(tr('NIVEAUX'), 'secondary', () => { levelsBack = 'result'; show('levels'); })); row.appendChild(homeButton());
+    p.appendChild(row); if (demo()) p.appendChild(storeButton('result', 'small')); s.appendChild(p); return s;   // grille du jour : sur l'écran titre seulement (retirée d'ici le 21 oct. 2026, à la demande de Pierre)
   }
   // démo : écran de fin, après le dernier niveau offert
   function buildDemoEnd() {
@@ -432,9 +445,13 @@
     window.addEventListener('pointerup', () => { hintQuiet = performance.now() + 1500; hintT0 = hintQuiet; }, true);
   }
   function hintHide() { if (hintEls) for (const k in hintEls) hintEls[k].style.opacity = 0; }
+  // la boucle de la main ne tourne que pendant la partie : derrière un menu elle s'arrête (comme celle du moteur) et show(null) la relance
+  let hintLooping = false;
+  function hintLoop() { if (hint && !hintLooping) { hintLooping = true; requestAnimationFrame(hintFrame); } }
   function hintFrame(now) {
-    if (!hint) return hintHide();
-    requestAnimationFrame(hintFrame);
+    hintLooping = false;
+    if (!hint || current || C.paused) return hintHide();
+    hintLoop();
     const pts = !current && !C.paused && !C.bot.active && now > hintQuiet ? hint.path() : null;
     if (!pts || !pts.length) return hintHide();
     const r = C.canvas.getBoundingClientRect(), k = r.width / C.W, X = x => r.left + x * k, Y = y => r.top + y * k;
@@ -594,7 +611,7 @@
     hint(key, spec) {
       if (save.tuto[key] || C.KIT.clip || C.KIT.loop) return false;
       if (!hintEls) hintBuild();
-      const was = hint; hint = Object.assign({ key }, spec); hintT0 = performance.now(); if (!was) requestAnimationFrame(hintFrame);
+      hint = Object.assign({ key }, spec); hintT0 = performance.now(); hintLoop();
       return true;
     },
     hintDone(key) { if (hint && hint.key === key) hint = null; if (!save.tuto[key]) { save.tuto[key] = true; persist(); S.event('tuto:' + key); } },

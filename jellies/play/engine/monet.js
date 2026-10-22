@@ -27,7 +27,7 @@
    dire explicitement, car la démo est servie en http(s) comme le développement. */
 (function (global) {
   const C = global.Core;
-  const DEV = /^https?:$/.test(location.protocol);
+  const DEV = /^https?:$/.test(location.protocol) && !C.APP;   // l'appli Android est servie en https://localhost : sans C.APP, pubs de test
   let off = false; const sim = () => DEV && !off;   // simulation : en développement seulement, et jamais dans la démo du site
   C.i18n({
     'PUBLICITÉ (simulation)': 'AD (simulation)', 'Fermer': 'Close', 'Passer': 'Skip', 'Récompense dans {s} s': 'Reward in {s} s',
@@ -120,8 +120,14 @@
       try { await A.initialize({ initializeForTesting: test.length > 0, testingDevices: test }); dbg('AdMob initialisé'); } catch (e) { dbg('AdMob : initialisation en échec', err(e)); return; }
       let info = null;
       try { info = await A.requestConsentInfo(); dbg('consentement', info); if (info.isConsentFormAvailable) { info = Object.assign(info, await A.showConsentForm()); dbg('après le message', info); } } catch (e) { dbg('consentement : échec', err(e)); }
-      // filet : aucun message à afficher (hors EEE, message d'explication absent) et suivi jamais demandé → demande de suivi d'Apple directe
-      if (!ANDROID) try { const t = await A.trackingAuthorizationStatus(); dbg('suivi', t); if (info && info.status === 'NOT_REQUIRED' && t.status === 'notDetermined') await A.requestTrackingAuthorization(); } catch (e) { dbg('suivi : échec', err(e)); }
+      // filet : suivi jamais demandé après le consentement (hors EEE sans message d'explication, refus du RGPD, ou consentement en échec)
+      // → demande de suivi d'Apple directe. Avant le 21/10, le filet exigeait une réponse « NOT_REQUIRED » : si la demande de consentement
+      // échouait (appli AdMob sans message configuré, réseau), la demande de suivi ne venait jamais (refus de Jewel Box par Apple, 2.1).
+      // Elle n'apparaît que l'appli au premier plan : on attend que la page soit visible.
+      if (!ANDROID) try {
+        if (document.visibilityState !== 'visible') await new Promise(r => { const f = () => { if (document.visibilityState === 'visible') { document.removeEventListener('visibilitychange', f); r(); } }; document.addEventListener('visibilitychange', f); });
+        const t = await A.trackingAuthorizationStatus(); dbg('suivi', t); if (t.status === 'notDetermined') dbg('suivi demandé', await A.requestTrackingAuthorization());
+      } catch (e) { dbg('suivi : échec', err(e)); }
       if (!info || !info.canRequestAds) return;   // pas de réponse (hors ligne) ou pubs non permises : aucune pub cette fois-ci
       st.privacy = info.privacyOptionsRequirementStatus === 'REQUIRED';
       loadRew(); loadInter();

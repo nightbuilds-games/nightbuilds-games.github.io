@@ -22,12 +22,12 @@
 </head>
 <body>
 <div id="splash" style="background-color:#FF9A55;background-image:url(splash.webp)"></div>   <!-- écran de démarrage dès la première image (engine/shell.js, splash) ; retiré hors appli -->
-<canvas id="game"></canvas>
+<canvas id="game" data-opaque="#FF9A55"></canvas>   <!-- opaque : le jeu peint tout son canevas à chaque image (engine/core.js, CANEVAS OPAQUE) ; couleur de l écran de démarrage avant la première image -->
 <script>
   // DÉMO du site, fabriquée par `node jeux/build.js gelees --demo` : ne pas modifier à la main.
   // Les paramètres d'URL de développement (?level, ?zone, ?dev, ?bot…) sont ignorés : seuls la langue (?lang) et ?mute sont gardés.
   (function () { var keep = (location.search.match(/[?&](lang=(fr|en|es|pt)|mute)(?=&|$)/g) || []).map(function (s) { return s.slice(1); }), q = keep.length ? "?" + keep.join("&") : ""; try { if (location.search !== q || location.hash) history.replaceState(null, "", location.pathname + q); } catch (e) { } })();
-  window.GAME_DEMO = {"levels":12,"url":"","label":"preorder","android":"https://play.google.com/store/apps/details?id=com.nightbuilds.jellies&referrer=utm_source%3Dsite%26utm_medium%3Ddemo","stats":{"key":"0e8f8bd8f044c424a9d705d2940fca9f","secret":"b7e95af423f9935257e5bd6c1f719fb9a08f5407"}};
+  window.GAME_DEMO = {"levels":12,"url":"https://apps.apple.com/app/id6817679582?ct=demo","label":"download","android":"https://play.google.com/store/apps/details?id=com.nightbuilds.jellies&referrer=utm_source%3Dsite%26utm_medium%3Ddemo","stats":{"key":"0e8f8bd8f044c424a9d705d2940fca9f","secret":"b7e95af423f9935257e5bd6c1f719fb9a08f5407"}};
 </script>
 <script src="engine/core.js"></script>
 <script src="engine/stats.js"></script>   <!-- statistiques GameAnalytics (rien n est envoyé en développement) -->
@@ -43,7 +43,7 @@
   // configuration de la coquille pour ce jeu : nom, couleurs des menus et du fond de page (ciel en haut, herbe en bas, comme le décor)
   Shell.init({
     id: 'gelees',
-    version: '1.0.0',
+    version: '1.0.1',
     title: { fr: 'Jellies on the Run', en: 'Jellies on the Run' },   // le nom ne se traduit pas
     maxShown: 24,
     splash: { bg: '#FF9A55' },   // écran de démarrage repris au lancement (splash.webp, node jeux/tools/splash-web.js gelees) ; bg : couleur de ses bords
