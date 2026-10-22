@@ -21,12 +21,13 @@
 <link rel="stylesheet" href="engine/shell.css">
 </head>
 <body>
-<canvas id="game"></canvas>
+<div id="splash" style="background-color:#09162e;background-image:url(splash.webp)"></div>   <!-- écran de démarrage dès la première image (engine/shell.js, splash) ; retiré hors appli -->
+<canvas id="game" data-opaque="#08091c"></canvas>   <!-- canevas opaque (engine/core.js) : le jeu peint tout l écran à chaque image -->
 <script>
   // DÉMO du site, fabriquée par `node jeux/build.js ecrin --demo` : ne pas modifier à la main.
   // Les paramètres d'URL de développement (?level, ?zone, ?dev, ?bot…) sont ignorés : seuls la langue (?lang) et ?mute sont gardés.
   (function () { var keep = (location.search.match(/[?&](lang=(fr|en|es|pt)|mute)(?=&|$)/g) || []).map(function (s) { return s.slice(1); }), q = keep.length ? "?" + keep.join("&") : ""; try { if (location.search !== q || location.hash) history.replaceState(null, "", location.pathname + q); } catch (e) { } })();
-  window.GAME_DEMO = {"levels":12,"url":"","label":"preorder","stats":{"key":"fec0cb516a827c6d949ec97827fcf6ba","secret":"642a1fb785075d9ed95fd272e0226ffc1a05cdf2"}};
+  window.GAME_DEMO = {"levels":12,"url":"","label":"preorder","android":"https://play.google.com/store/apps/details?id=com.nightbuilds.jewelbox&referrer=utm_source%3Dsite%26utm_medium%3Ddemo","stats":{"key":"fec0cb516a827c6d949ec97827fcf6ba","secret":"642a1fb785075d9ed95fd272e0226ffc1a05cdf2"}};
 </script>
 <script src="engine/core.js"></script>
 <script src="engine/stats.js"></script>   <!-- statistiques GameAnalytics (rien n est envoyé en développement) -->
@@ -38,12 +39,14 @@
 <script src="lang.js"></script>   <!-- jeu en espagnol et en portugais -->
 <script src="objets.js"></script>   <!-- les objets à démonter, un par niveau -->
 <script src="niveaux.js"></script>   <!-- le réglage de chaque niveau (difficulté mesurée par tools/ecrin-difficulte.js) -->
+<script src="totaux.js"></script>   <!-- nombre de gemmes de chaque objet, précalculé (node jeux/tools/ecrin-totaux.js) : lancement des zones sans attente -->
 <script src="game.js"></script>
 <script>
   // configuration de la coquille pour ce jeu : nom, couleurs des menus (rubis, saphir, crème) et du fond de page (velours bleu nuit, comme le décor)
   Shell.init({
     id: 'ecrin',
     version: '1.0.0',
+    pause: { x: 28, y: 56, size: 104 }, boosts: { y: 1834, size: 100 },   // écartés des bords de l'écran (21 oct. 2026, remarque de Pierre : trop près depuis que le décor remplit l'écran)
     title: { fr: 'Jewel Box', en: 'Jewel Box' },   // un seul nom dans toutes les langues (décidé le 6 oct. 2026), comme Jellies on the Run
     maxShown: 24,
     splash: { bg: '#09162e' },   // écran de démarrage repris au lancement (splash.webp, node jeux/tools/splash-web.js ecrin) ; bg : couleur de ses bords

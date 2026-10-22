@@ -153,22 +153,43 @@
     const im = decorImgs[d.img] || (decorImgs[d.img] = Object.assign(new Image(), { src: 'decors/' + d.img + '.webp' }));
     return im.complete && im.naturalWidth ? im : null;
   }
-  // le décor posé une fois hors écran : le fond plein écran, et la partie qui passe sous le plateau, assombrie et arrondie comme lui
+  // le décor posé une fois hors écran : le fond plein écran, et la partie qui passe sous le plateau, assombrie et arrondie comme lui.
+  // À la résolution réelle du canevas (cacheK), pas en 1080 × 1920 : sur un téléphone, deux fois moins de mémoire graphique et de pixels à lire.
   function buildDecor(im, d) {
-    const bg = offscreen(W, H); if (!bg) return;
-    const c = bg.getContext('2d'), iw = im.naturalWidth, ih = im.naturalHeight, cut = Math.round(d.cut * ih);
+    const k = cacheK(), bg = offscreen(W * k, H * k); if (!bg) return; bg.k = k;
+    const c = bg.getContext('2d'), iw = im.naturalWidth, ih = im.naturalHeight, cut = Math.round(d.cut * ih); c.scale(k, k);
     c.drawImage(im, 0, 0, iw, cut, 0, 0, W, d.top + 2); c.drawImage(im, 0, cut, iw, ih - cut, 0, d.top, W, H - d.top);
     const g = c.createLinearGradient(0, 0, 0, 210); g.addColorStop(0, 'rgba(8,9,28,.8)'); g.addColorStop(.6, 'rgba(8,9,28,.55)'); g.addColorStop(1, 'rgba(8,9,28,0)'); c.fillStyle = g; c.fillRect(0, 0, W, 210);   // le numéro du niveau reste lisible
-    const bx = BOARD.x - 20, by = BOARD.y - 20, bw = BOARD.w + 40, bh = BOARD.h + 40, b = offscreen(bw, bh), o = b.getContext('2d');
-    o.beginPath(); o.roundRect(0, 0, bw, bh, 40); o.clip(); o.drawImage(bg, bx, by, bw, bh, 0, 0, bw, bh);
+    const bx = BOARD.x - 20, by = BOARD.y - 20, bw = BOARD.w + 40, bh = BOARD.h + 40, b = offscreen(bw * k, bh * k), o = b.getContext('2d'); o.scale(k, k);
+    o.beginPath(); o.roundRect(0, 0, bw, bh, 40); o.clip(); o.drawImage(bg, bx * k, by * k, bw * k, bh * k, 0, 0, bw, bh);
     o.fillStyle = 'rgba(10,11,40,' + d.dim + ')'; o.fillRect(0, 0, bw, bh);
-    decorBg = bg; decorBoard = b;
+    decorBg = bg; decorBoard = b; placeBands();
   }
+  // DÉCOR PLEIN ÉCRAN (21 oct. 2026) : le jeu est dessiné en 9:16, un téléphone est plus allongé : il restait une bande bleu nuit unie au-dessus et
+  // au-dessous du canevas, qu'Apple a prise pour un cadre autour de la vidéo d'aperçu (refus 2.3.4). Deux calques HTML derrière le canevas montrent
+  // maintenant le décor en miroir de part et d'autre du bord (l'eau en haut, sous le même voile sombre que le haut du canevas ; le sol de joyaux en bas) :
+  // aucun raccord visible, et rien ne bouge pour le plateau ni pour les lumières du décor. Comme dans les Gelées (gelees/game.js, placeBands).
+  const BANDS = typeof document !== 'undefined' && document.createElement && document.body && !clipMode() ? [0, 1].map(() => { const d = document.createElement('div'); d.style.cssText = 'position:fixed;z-index:-1;pointer-events:none;background-repeat:no-repeat;transform:scaleY(-1);display:none'; document.body.appendChild(d); return d; }) : null;
+  function clipMode() { return /[?&#]clip/.test(String(window.location && window.location.href)); }
+  function placeBands() {
+    if (!BANDS) return; const im = decor && decorBg ? decorImage(decor) : null, r = C.canvas.getBoundingClientRect(), top = Math.round(r.top), bot = Math.round(window.innerHeight - r.bottom), on = !!im && (top > 1 || bot > 1) && !film;
+    for (const d of BANDS) d.style.display = on ? 'block' : 'none'; document.body.style.background = on ? 'transparent' : '';   // le fond du corps de page masquerait les calques
+    if (!on) return;
+    const d = decor, k = r.width / W, iw = im.naturalWidth, ih = im.naturalHeight, cut = d.cut * ih, src = 'url("' + im.src + '")', [a, b] = BANDS;
+    // calques retournés (scaleY(-1)) : avant retournement, le haut du calque du haut montre la ligne 0 du jeu, le bas du calque du bas la ligne H
+    const sTop = (d.top + 2) / cut, sBot = (H - d.top) / (ih - cut);   // points de jeu par pixel d'image, pour chacune des deux parties de l'image (buildDecor)
+    a.style.left = b.style.left = r.left + 'px'; a.style.width = b.style.width = r.width + 'px';
+    a.style.top = '0'; a.style.height = top + 'px';
+    a.style.backgroundImage = 'linear-gradient(rgba(8,9,28,.8),rgba(8,9,28,.8)),' + src; a.style.backgroundSize = '100% 100%,' + r.width + 'px ' + ih * sTop * k + 'px'; a.style.backgroundPosition = '0 0,0 0';
+    b.style.top = Math.round(r.bottom) + 'px'; b.style.height = bot + 'px';
+    b.style.backgroundImage = src; b.style.backgroundSize = r.width + 'px ' + ih * sBot * k + 'px'; b.style.backgroundPosition = '0 ' + (bot - (H - (d.top - cut * sBot)) * k) + 'px';
+  }
+  if (BANDS) window.addEventListener('resize', placeBands);
   const decorReady = () => { if (!decor) return null; if (!decorBg) { const im = decorImage(decor); if (im) buildDecor(im, decor); } return decorBg ? decor : null; };
   // au début du niveau : le décor et la musique de la zone de l'objet ; les lumières du décor prennent la place des lumières du décor
   function zoneLook() {
     const d = DECORS[objet.z] || null;
-    if (d !== decor) { decor = d; decorBg = decorBoard = null; }
+    if (d !== decor) { decor = d; decorBg = decorBoard = null; placeBands(); for (const k in decorImgs) if (!d || k !== d.img) delete decorImgs[k]; }   // une seule image de décor gardée en mémoire ; bandes cachées jusqu'au nouveau décor
     theme = THEMES[objet.z] || THEMES.base;
     if (!d) return;
     decorImage(d);
@@ -353,13 +374,21 @@
     if (sh.t === 'c') return Math.hypot(x, y) - sh.r;
     if (sh.t === 'e') { const f = Math.hypot(x / sh.rx, y / sh.ry), m = Math.min(sh.rx, sh.ry); if (f < 1e-6) return -m; return Math.max(-m, (f - 1) * f / Math.hypot(x / (sh.rx * sh.rx), y / (sh.ry * sh.ry))); }
     if (sh.t === 'r') { const r = Math.min(sh.r, sh.w / 2, sh.h / 2), qx = Math.abs(x) - (sh.w / 2 - r), qy = Math.abs(y) - (sh.h / 2 - r); return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - r; }
-    let d = Infinity, inside = false; const P = sh.pts;
-    for (let i = 0, j = P.length - 1; i < P.length; j = i++) {
-      const x1 = P[j][0], y1 = P[j][1], dx = P[i][0] - x1, dy = P[i][1] - y1, t = clamp(((x - x1) * dx + (y - y1) * dy) / (dx * dx + dy * dy || 1), 0, 1);
-      d = Math.min(d, Math.hypot(x - x1 - t * dx, y - y1 - t * dy));
-      if ((y1 > y) !== (P[i][1] > y) && x < x1 + (y - y1) / dy * dx) inside = !inside;
+    // polygone (jusqu'à plusieurs centaines de côtés pour une pièce courbe, appelé des centaines de milliers de fois quand un objet est placé) :
+    // les côtés sont précalculés une fois (origine, vecteur, longueur² ; mêmes opérations, donc mêmes résultats au bit près)
+    const E = sh._e || (sh._e = edgesOf(sh.pts)), n = E.length;
+    let d = Infinity, inside = false;
+    for (let k = 0; k < n; k += 6) {
+      const x1 = E[k], y1 = E[k + 1], dx = E[k + 2], dy = E[k + 3], u = ((x - x1) * dx + (y - y1) * dy) / E[k + 4], t = u < 0 ? 0 : u > 1 ? 1 : u;
+      const h = Math.hypot(x - x1 - t * dx, y - y1 - t * dy); if (h < d) d = h;
+      if ((y1 > y) !== (E[k + 5] > y) && x < x1 + (y - y1) / dy * dx) inside = !inside;
     }
     return inside ? -d : d;
+  }
+  function edgesOf(P) {   // [x1, y1, dx, dy, dx² + dy² (1 si nul), y2] par côté, du sommet j au sommet i
+    const E = new Float64Array(P.length * 6);
+    for (let i = 0, j = P.length - 1, k = 0; i < P.length; j = i++, k += 6) { const x1 = P[j][0], y1 = P[j][1], dx = P[i][0] - x1, dy = P[i][1] - y1; E[k] = x1; E[k + 1] = y1; E[k + 2] = dx; E[k + 3] = dy; E[k + 4] = dx * dx + dy * dy || 1; E[k + 5] = P[i][1]; }
+    return E;
   }
   const sdPlate = (p, x, y) => { const lx = x - (p.x + p.w / 2), ly = y - (p.y + p.h / 2), far = Math.max(Math.abs(lx) - p.w / 2, Math.abs(ly) - p.h / 2); return far > 60 ? far : sdShape(shapeOf(p), lx, ly); };   // loin de la boîte : inutile de calculer la forme
   const covers = (p, x, y, m = 20) => sdPlate(p, x, y) < m;   // une gemme est sous la pièce dès que son centre est à moins de 20 du bord
@@ -432,6 +461,21 @@
   function objGeom(o, want = 0, v = 0) {
     const gk = want + '|' + v; o._g = o._g || {}; if (o._g[gk]) return o._g[gk];
     setGeo(o.gem || 1);
+    // PERFORMANCES (21 oct. 2026) : les pièces et les places possibles des gemmes ne dépendent ni du nombre de gemmes voulu ni de la variante. Elles
+    // étaient recalculées pour chaque réglage (l'entrée dans une zone trie ses objets, puis chaque niveau refait le sien) : jusqu'à 0,9 s sur le PC au
+    // premier niveau d'une zone, plusieurs secondes de gel sur un vieil Android. Elles sont gardées par objet (o._b) et recopiées avant d'être retaillées.
+    if (!o._b) o._b = objBase(o);
+    const B = o._b, P = B.P.slice(), SUR = B.SUR.slice(), warn = B.warn.slice(), picks = B.picks.map(a => a.slice()), auto = B.auto.slice();
+    const mid = q => [q.x + q.w / 2, q.y + q.h / 2];
+    const attach = i => {
+      let best = -1, bd = Infinity; const [cx, cy] = mid(P[i]);
+      P.forEach((q, j) => { if (j === i || !picks[j].length || picks[j].some(([x, y]) => sdPlate(P[i], x, y) < CLEAR)) return; const [qx, qy] = mid(q), d = Math.hypot(qx - cx, qy - cy); if (d < bd) { bd = d; best = j; } });
+      if (best >= 0) { SUR[i] = best; auto.push(i); return true; }
+      return false;
+    };
+    return objFinish(o, want, v, gk, P, SUR, warn, picks, auto, attach);
+  }
+  function objBase(o) {
     const P = o.pieces.map((pc, i) => pieceShape(o, pc, i)), warn = [];
     // sur : la pièce porteuse d'un ornement, par son numéro ou par son nom (id)
     const SUR = o.pieces.map(pc => pc.sur === undefined ? -1 : typeof pc.sur === 'number' ? pc.sur : o.pieces.findIndex(q => q.id === pc.sur));
@@ -466,6 +510,9 @@
       return false;
     };
     picks.forEach((a, i) => { if (!a.length && SUR[i] < 0 && !attach(i)) warn.push('pièce ' + i + ' : aucune place pour une gemme, et aucune pièce pour la porter'); });
+    return { P, SUR, warn, picks, auto };
+  }
+  function objFinish(o, want, v, gk, P, SUR, warn, picks, auto, attach) {
     let total = picks.reduce((t, a) => t + a.length, 0); const cap = total, goal = want ? Math.min(want, total) : total, target = goal - goal % 3;
     while (total > target) { let bi = -1; picks.forEach((a, i) => { if (a.length > 1 && !o.pieces[i].garde && (bi < 0 || a.length > picks[bi].length)) bi = i; }); if (bi < 0) break; picks[bi].pop(); total--; }
     // que des pièces à une gemme : les dernières (celles du dessus) qui ne portent rien perdent leur gemme et deviennent des ornements
@@ -500,7 +547,19 @@
     return o._g[gk] = { P, picks, total, cap, hidden, warn, SUR, auto };
   }
   let objSorted = null;   // les objets du plus petit au plus gros (nombre de gemmes)
-  const objList = () => objSorted || (objSorted = OBJETS.map(o => ({ o, cap: objGeom(o).total })).sort((a, b) => a.cap - b.cap).map(e => e.o));
+  const objList = () => objSorted || (objSorted = OBJETS.map(o => ({ o, cap: objTotal(o, 0) })).sort((a, b) => a.cap - b.cap).map(e => e.o));
+  // NOMBRE DE GEMMES D'UN OBJET (21 oct. 2026) : pour ranger les objets d'une zone, il fallait placer les gemmes des vingt objets de la zone, soit
+  // jusqu'à 0,7 s sur le PC au premier niveau de chaque zone et plusieurs secondes de gel sur un vieil Android. Ces nombres sont précalculés
+  // (ecrin/totaux.js, window.ECRIN_TOTAUX, refait par node jeux/tools/ecrin-totaux.js) ; ils sont rangés sous la signature de l'objet (ses pièces) : un objet
+  // modifié depuis n'y est plus trouvé et il est recalculé comme avant, le résultat est donc toujours le même.
+  const TOTAUX = global.ECRIN_TOTAUX || {};
+  function objSig(o) { const t = JSON.stringify([o.pieces, o.gem || 1, SCREW_R, BOARD]); let h = 2166136261; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
+  function objTotal(o, v) {
+    if (o._g && o._g['0|' + v]) return o._g['0|' + v].total;
+    const e = TOTAUX[(o._sig || (o._sig = objSig(o))) + '|' + v];   // clé : signature de l'objet (ses pièces) et variante
+    if (e !== undefined) return e;
+    return objGeom(o, 0, v).total;
+  }
   let OBJ_URL = (href.match(/[?&]objet=(\d+)/) || [])[1];   // ?objet=3 : toujours le 3e objet de objets.js (mise au point)
   // ZONES (7 oct. 2026) : 15 zones à thème de 20 niveaux (objets.js, ECRIN_ZONES). Dans une zone, les objets ordinaires vont du plus petit au plus gros et
   // les objets de fin de zone (final: true) s'intercalent : trois par zone le plus souvent, aux niveaux 7, 13 et 20 ; le dernier est le plus dur.
@@ -513,7 +572,7 @@
   const zoneSeq = {};
   function zoneOrder(zi, v) {   // les objets de la zone dans l'ordre des niveaux : [{ obj, fin }] (fin : 0 ordinaire, 1 gros objet en cours de zone, 2 le dernier)
     const key = zi + '|' + v; if (zoneSeq[key]) return zoneSeq[key];
-    const tot = o => objGeom(o, 0, v).total, by = (a, b) => tot(a) - tot(b), all = OBJETS.filter(o => o.z === ZONES[zi].key);
+    const tot = o => objTotal(o, v), by = (a, b) => tot(a) - tot(b), all = OBJETS.filter(o => o.z === ZONES[zi].key);
     let ord = all.filter(o => !o.final).sort(by), fins = all.filter(o => o.final).sort(by);
     if (!fins.length) fins = ord.splice(-1);   // zone facile : son plus gros objet la termine
     const m = ord.length + fins.length, seq = new Array(m).fill(null);
@@ -589,7 +648,7 @@
     }
     return out;
   }
-  function objectFor(want) { const L = objList(); return OBJ_URL ? OBJETS[(+OBJ_URL - 1) % OBJETS.length] : L.find(o => objGeom(o).total >= want) || L[L.length - 1]; }
+  function objectFor(want) { const L = objList(); return OBJ_URL ? OBJETS[(+OBJ_URL - 1) % OBJETS.length] : L.find(o => objTotal(o, 0) >= want) || L[L.length - 1]; }
   // construit pièces + gemmes sans rien animer (appelé en boucle : seules les couleurs changent d'un essai à l'autre)
   function generate(prm, geo) {
     const G = objGeom(prm.obj, prm.want, prm.v || 0), plates = G.P.map(p => mkPlate({ x: p.x, y: p.y, w: p.w, h: p.h, z: p.z, color: p.color, shape: p.shape, skey: p.skey })), screws = [];
@@ -1133,7 +1192,7 @@
     C.floatText(W / 2, BOARD.y + 90, loopMode ? 'MODE BOUCLE' : 'BOUCLE COUPÉE', { color: GOLD_LIGHT, stroke: '#1a1005', size: 54, dur: 1.2 });
   }
   function applyFilm() { C.pointer.showFinger = true; if (document.body && document.body.classList) document.body.classList.toggle('film', film); }   // classe `film` : l'aide reste cachée même après H
-  function toggleFilm() { film = !film; applyFilm(); C.floatText(W / 2, BOARD.y + 90, film ? 'MODE TOURNAGE' : 'MODE NORMAL', { color: GOLD_LIGHT, stroke: '#1a1005', size: 54, dur: 1.2 }); }
+  function toggleFilm() { film = !film; applyFilm(); placeBands(); C.floatText(W / 2, BOARD.y + 90, film ? 'MODE TOURNAGE' : 'MODE NORMAL', { color: GOLD_LIGHT, stroke: '#1a1005', size: 54, dur: 1.2 }); }
   function toggleClip() {
     clip = !clip;
     const el = document.getElementById('legend'); const li = el && el.querySelector && el.querySelector('[data-k="c"]');
@@ -1337,6 +1396,16 @@
   // Le temps JavaScript n'y est pour rien (2,6 ms par image) : c'est la carte graphique qui peine sur les ombres floues (une par tablette) et les aplats plein
   // écran redessinés à chaque image. Ce qui ne change pas est dessiné une fois hors écran puis recopié : le fond (velours, halo, damas), le velours du plateau,
   // chaque tablette avec son ombre, chaque gemme (par couleur, mise à l'échelle), le corps de chaque écrin. Le rendu est identique ; en headless, dessin direct.
+  // échelle des images hors écran : celle du canevas (pixels réels par point de jeu), jamais au-delà de 1 (le dessin d'origine)
+  const cacheK = () => Math.min(1, C.canvas.width / W);
+  // C.blit pour une image plein écran fabriquée à l'échelle bg.k : bords calés sur les pixels réels (bandes jointives sans ligne visible)
+  function blitBg(img, x, y, w, h) {
+    const m = ctx.getTransform(), k = img.k || 1;
+    if (m.b || m.c) { ctx.drawImage(img, x * k, y * k, w * k, h * k, x, y, w, h); return; }
+    const sx = v => (Math.round(v * m.a + m.e) - m.e) / m.a, sy = v => (Math.round(v * m.d + m.f) - m.f) / m.d;
+    const x0 = sx(Math.max(x, 0)), y0 = sy(Math.max(y, 0)), x1 = sx(Math.min(x + w, W)), y1 = sy(Math.min(y + h, H));
+    if (x1 > x0 && y1 > y0) ctx.drawImage(img, x0 * k, y0 * k, (x1 - x0) * k, (y1 - y0) * k, x0, y0, x1 - x0, y1 - y0);
+  }
   const offscreen = (w, h) => { if (typeof document === 'undefined' || !document.createElement) return null; const c = document.createElement('canvas'); c.width = Math.max(1, Math.ceil(w)); c.height = Math.max(1, Math.ceil(h)); return c; };
   let bgCache = null, boardCache = null; const plateSprites = {}, gemSprites = {}, boxSprites = {};
   function drawVelvet(c) {   // fond : velours bleu nuit, halo central, motif damassé
@@ -1358,8 +1427,10 @@
   function plateSprite(p) {   // nacre et ombre floue d'une tablette, par taille et couleur
     const key = (p.skey || p.w + '|' + p.h) + '|' + p.color; let sp = plateSprites[key];
     if (sp !== undefined) return sp;
-    const M = 64; sp = offscreen(p.w + 2 * M, p.h + 2 * M); plateSprites[key] = sp || null; if (!sp) return null;
-    const c = sp.getContext('2d'); c.shadowColor = 'rgba(0,0,0,.5)'; c.shadowBlur = 28; c.shadowOffsetY = 12; c.fillStyle = p.color; c.translate(M + p.w / 2, M + p.h / 2); shapePath(c, shapeOf(p)); c.fill(); sp.M = M; return sp;
+    // à la résolution réelle du canevas ; marges juste assez grandes pour l'ombre (flou 28 → ~42 de rayon, décalée de 12 vers le bas)
+    const k = cacheK(), ML = 46, MT = 34, MB = 60, lw = p.w + 2 * ML, lh = p.h + MT + MB; sp = offscreen(lw * k, lh * k); plateSprites[key] = sp || null; if (!sp) return null;
+    const c = sp.getContext('2d'); c.scale(k, k); c.shadowColor = 'rgba(0,0,0,.5)'; c.shadowBlur = 28 * k; c.shadowOffsetY = 12 * k; c.fillStyle = p.color; c.translate(ML + p.w / 2, MT + p.h / 2); shapePath(c, shapeOf(p)); c.fill();
+    Object.assign(sp, { ML, MT, lw, lh }); return sp;
   }
   function drawGemBody(c, r, color) {   // sertissure, pierre facettée, table, liseré, éclats (c = contexte, origine au centre de la gemme)
     const polyOn = pts => { c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.closePath(); };
@@ -1464,8 +1535,8 @@
       if (sp.t < 0) continue;   // étincelle programmée avec un léger retard
       const k = Math.sin(Math.PI * sp.t / sp.dur), s = sp.size * k;
       ctx.save(); ctx.translate(sp.x, sp.y); ctx.rotate(sp.rot + sp.t * sp.vr);
-      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, s * 1.4); g.addColorStop(0, sp.glow.replace(/,1\)$/, ',' + (.6 * k) + ')')); g.addColorStop(1, 'rgba(255,240,190,0)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, s * 1.3, 0, Math.PI * 2); ctx.fill();
+      const a = q32(.6 * k);
+      if (s > 0) glow(0, 0, s * 1.4, 1.3 / 1.4, sp.glow + a, () => { const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, sp.glow.replace(/,1\)$/, ',' + a + ')')); g.addColorStop(1, 'rgba(255,240,190,0)'); return g; });
       ctx.fillStyle = 'rgba(255,255,255,' + (.95 * k) + ')';
       poly([[0, -s], [s * .22, -s * .22], [s, 0], [s * .22, s * .22], [0, s], [-s * .22, s * .22], [-s, 0], [-s * .22, -s * .22]]); ctx.fill();
       ctx.restore();
@@ -1487,8 +1558,7 @@
     ctx.save(); roundRect(bx, by, bw, bh, 40); ctx.clip(); ctx.globalCompositeOperation = 'lighter';
     for (const [x0, ph, dir] of [[bx + bw * .2, 0, 1], [bx + bw * .8, 2.1, -1]]) {
       const a = Math.sin(tm * .35 + ph) * .35, x1 = x0 + Math.tan(a) * bh * dir, hw = 90 + 40 * Math.sin(tm * .5 + ph);
-      const g = ctx.createLinearGradient(0, by, 0, by + bh); g.addColorStop(0, 'rgba(255,240,200,.10)'); g.addColorStop(1, 'rgba(255,240,200,0)');
-      ctx.fillStyle = g; poly([[x0 - 30, by - 10], [x0 + 30, by - 10], [x1 + hw * 2.2, by + bh], [x1 - hw * 2.2, by + bh]]); ctx.fill();
+      ctx.fillStyle = constGrad('rays', () => { const g = ctx.createLinearGradient(0, by, 0, by + bh); g.addColorStop(0, 'rgba(255,240,200,.10)'); g.addColorStop(1, 'rgba(255,240,200,0)'); return g; }); poly([[x0 - 30, by - 10], [x0 + 30, by - 10], [x1 + hw * 2.2, by + bh], [x1 - hw * 2.2, by + bh]]); ctx.fill();
     }
     ctx.restore();
   }
@@ -1498,8 +1568,7 @@
       const a = Math.sin(tm * 1.6 + d.ph) * .09, ex = d.x + Math.sin(a) * d.len, ey = 52 + Math.cos(a) * d.len;
       ctx.strokeStyle = rgba(GOLD_LIGHT, .8); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(d.x, 52); ctx.lineTo(ex, ey); ctx.stroke();
       ctx.save(); ctx.translate(ex, ey); ctx.rotate(-a);
-      const g = ctx.createLinearGradient(-8, 0, 8, 18); g.addColorStop(0, 'rgba(255,255,255,.95)'); g.addColorStop(.5, 'rgba(210,225,255,.6)'); g.addColorStop(1, 'rgba(255,255,255,.9)');
-      ctx.fillStyle = g; poly([[0, 0], [8, 9], [0, 22], [-8, 9]]); ctx.fill(); ctx.strokeStyle = rgba(GOLD_LIGHT, .7); ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = constGrad('drop', () => { const g = ctx.createLinearGradient(-8, 0, 8, 18); g.addColorStop(0, 'rgba(255,255,255,.95)'); g.addColorStop(.5, 'rgba(210,225,255,.6)'); g.addColorStop(1, 'rgba(255,255,255,.9)'); return g; }); poly([[0, 0], [8, 9], [0, 22], [-8, 9]]); ctx.fill(); ctx.strokeStyle = rgba(GOLD_LIGHT, .7); ctx.lineWidth = 1; ctx.stroke();
       ctx.restore();
     }
   }
@@ -1528,8 +1597,8 @@
       let fl = st.lit ? Math.max(0, 1 - (tm - st.litAt) / .8) : 0;
       if (finale) { const u = (finale.t - .4 - i * .2) / .5; if (u > 0 && u < 1) fl = Math.max(fl, Math.sin(Math.PI * u)); }
       const r = (st.lit ? 22 : 8 + 12 * g) * (1 + .12 * tw + 1.1 * fl), hal = r * (2.6 + 2 * fl);
-      const hg = ctx.createRadialGradient(st.x, st.y, 0, st.x, st.y, hal); hg.addColorStop(0, 'rgba(255,245,220,' + ((.5 + .3 * boost) * g + .4 * fl) + ')'); hg.addColorStop(.35, 'rgba(255,225,160,' + (.18 * g + .25 * fl) + ')'); hg.addColorStop(1, 'rgba(255,220,150,0)');
-      ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(st.x, st.y, hal, 0, Math.PI * 2); ctx.fill();
+      const a0 = q256((.5 + .3 * boost) * g + .4 * fl), a1 = q256(.18 * g + .25 * fl);
+      glow(st.x, st.y, hal, 1, 'sky' + a0 + '|' + a1, () => { const hg = ctx.createRadialGradient(0, 0, 0, 0, 0, 1); hg.addColorStop(0, 'rgba(255,245,220,' + a0 + ')'); hg.addColorStop(.35, 'rgba(255,225,160,' + a1 + ')'); hg.addColorStop(1, 'rgba(255,220,150,0)'); return hg; });
       ctx.fillStyle = 'rgba(255,250,235,' + (.55 + .45 * g) + ')'; starShape(st.x, st.y, r, .2); ctx.fill();
       ctx.fillStyle = 'rgba(255,255,255,' + (.7 * g) + ')'; ctx.beginPath(); ctx.arc(st.x, st.y, r * .22, 0, Math.PI * 2); ctx.fill();
     });
@@ -1541,14 +1610,14 @@
     ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(0, h / 2 + 4 * k, w * .5, 5 * k, 0, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = shade(color, -.2); roundRect(-w / 2, -h / 2, w, h, 7 * k); ctx.fill();
     ctx.fillStyle = shade(color, .05); roundRect(-w / 2, -h / 2, w, h * .42, 7 * k); ctx.fill();
-    ctx.lineWidth = 1.5 * k; ctx.strokeStyle = gold(0, -h / 2, 0, h / 2); roundRect(-w / 2, -h / 2, w, h, 7 * k); ctx.stroke();
-    ctx.fillStyle = gold(0, -4 * k, 0, 4 * k); ctx.fillRect(-2 * k, -h / 2, 4 * k, h); ctx.beginPath(); ctx.arc(0, -h * .08, 4.5 * k, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = 1.5 * k; roundRect(-w / 2, -h / 2, w, h, 7 * k); goldLine(-h / 2, h / 2);
+    ctx.beginPath(); ctx.rect(-2 * k, -h / 2, 4 * k, h); ctx.moveTo(4.5 * k, -h * .08); ctx.arc(0, -h * .08, 4.5 * k, 0, Math.PI * 2); goldFill(-4 * k, 4 * k);
     ctx.restore();
   }
   function drawShelf() {
     const n = shelfN(), p0 = shelfPos(0), p1 = shelfPos(n - 1);
-    ctx.strokeStyle = gold(0, SHELF_Y + 14, 0, SHELF_Y + 22); ctx.lineWidth = 4; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(p0.x - 44, SHELF_Y + 20); ctx.lineTo(p1.x + 44, SHELF_Y + 20); ctx.stroke();
+    ctx.lineWidth = 4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(p0.x - 44, SHELF_Y + 20); ctx.lineTo(p1.x + 44, SHELF_Y + 20); goldLine(SHELF_Y + 14, SHELF_Y + 22);
     for (let i = 0; i < n; i++) {
       const p = shelfPos(i);
       // final : chaque miniature rebondit à son tour
@@ -1617,7 +1686,7 @@
     const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#4a1d48'); g.addColorStop(1, '#2c1030');
     ctx.fillStyle = g; ctx.fillRect(-40, -200, x1 + 40, h + 200);
     ctx.strokeStyle = 'rgba(0,0,0,.18)'; ctx.lineWidth = 26; ctx.beginPath(); for (let x = 60; x < x1; x += 120) { ctx.moveTo(x, -200); ctx.lineTo(x, h); } ctx.stroke();   // plis
-    ctx.strokeStyle = gold(0, h - 8, 0, h + 8); ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(-40, h - 2); ctx.lineTo(x1, h - 2); ctx.stroke();
+    ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(-40, h - 2); ctx.lineTo(x1, h - 2); goldLine(h - 8, h + 8);
     ctx.strokeStyle = 'rgba(255,225,160,.85)'; ctx.lineWidth = 2; ctx.beginPath(); for (let x = 4; x < x1; x += 9) { ctx.moveTo(x, h); ctx.lineTo(x, h + 20); } ctx.stroke();   // franges
   }
   function drawCornerOrnaments(bx, by, bw, bh) {
@@ -1642,7 +1711,36 @@
     for (const [k, c] of stops) g.addColorStop(k, c);
     return g;
   }
-  function goldStroke(x, y, w, h, r, lw = 5) { ctx.lineWidth = lw; ctx.strokeStyle = gold(x, y, x, y + h); roundRect(x, y, w, h, r); ctx.stroke(); }
+  // PERFORMANCES (21 oct. 2026, téléphones Android d'entrée de gamme) : l'or vertical ne crée plus un dégradé par liseré, sertissure ou pastille
+  // (une cinquantaine par image au niveau 40). Un seul dégradé par image, de (0, 0) à (0, 1), est posé sur la hauteur voulue en plaçant le repère
+  // juste le temps de peindre (le tracé, lui, est déjà fait) : même rendu, reflet compris. goldFill / goldLine peignent le tracé en cours.
+  let goldU = null, goldT = -1;
+  function goldUnit() {
+    if (goldT === tm && goldU) return goldU;
+    goldT = tm; goldU = gold(0, 0, 0, 1); return goldU;
+  }
+  function goldPaint(y0, y1, line) {
+    const s = y1 - y0 || 1e-3, lw = ctx.lineWidth;
+    ctx.translate(0, y0); ctx.scale(s, s);
+    if (line) { ctx.lineWidth = lw / s; ctx.strokeStyle = goldUnit(); ctx.stroke(); ctx.lineWidth = lw; }
+    else { ctx.fillStyle = goldUnit(); ctx.fill(); }
+    ctx.scale(1 / s, 1 / s); ctx.translate(0, -y0);
+  }
+  const goldFill = (y0, y1) => goldPaint(y0, y1, false), goldLine = (y0, y1) => goldPaint(y0, y1, true);
+  // dégradés qui ne changent jamais (faisceaux, présentoir, couvercles, ombres du bas) : créés une fois, puis réutilisés
+  const grads = new Map();
+  const constGrad = (key, make) => { let g = grads.get(key); if (!g) { g = make(); grads.set(key, g); } return g; };
+  // dégradés animés (halos qui pulsent, lumières, étincelles, reflet nacré) : leur réglage est arrondi au 32e ou au 256e (invisible) et chaque
+  // réglage est gardé ; la plupart sont dessinés à la taille 1 puis agrandis par le repère (glow). On réutilise ainsi les mêmes d'une image à l'autre.
+  const animGrads = new Map(), q32 = v => Math.round(v * 32) / 32, q256 = v => Math.round(v * 256) / 256;
+  const cachedGrad = (key, make) => { let g = animGrads.get(key); if (!g) { if (animGrads.size > 600) animGrads.clear(); g = make(); animGrads.set(key, g); } return g; };
+  // disque de rayon R * disc rempli du dégradé radial `key` (fait pour le rayon 1, centre à l'origine)
+  function glow(x, y, R, disc, key, make) {
+    ctx.translate(x, y); ctx.scale(R, R); ctx.fillStyle = cachedGrad(key, make);
+    ctx.beginPath(); ctx.arc(0, 0, disc, 0, Math.PI * 2); ctx.fill();
+    ctx.scale(1 / R, 1 / R); ctx.translate(-x, -y);
+  }
+  function goldStroke(x, y, w, h, r, lw = 5) { ctx.lineWidth = lw; roundRect(x, y, w, h, r); goldLine(y, y + h); }
 
   // gemme facettée dans une sertissure d'or
   // SYMBOLE PAR COULEUR (réglage « Symboles des couleurs » de la coquille, pour les daltoniens, 8 oct. 2026) : rond, triangle, carré, losange, étoile,
@@ -1701,7 +1799,7 @@
     ctx.strokeStyle = '#3a2408'; ctx.lineWidth = r * .26; ctx.beginPath(); ctx.arc(0, -r * .1, r * .24, Math.PI, 0); ctx.stroke();
     ctx.strokeStyle = GOLD_LIGHT; ctx.lineWidth = r * .13; ctx.beginPath(); ctx.arc(0, -r * .1, r * .24, Math.PI, 0); ctx.stroke();
     ctx.fillStyle = '#3a2408'; roundRect(-r * .44, -r * .14, r * .88, r * .66, r * .14); ctx.fill();
-    ctx.fillStyle = gold(0, -r * .1, 0, r * .5); roundRect(-r * .37, -r * .07, r * .74, r * .52, r * .1); ctx.fill();
+    roundRect(-r * .37, -r * .07, r * .74, r * .52, r * .1); goldFill(-r * .1, r * .5);
     ctx.fillStyle = '#3a2408'; ctx.beginPath(); ctx.arc(0, r * .14, r * .09, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(-r * .035, r * .14, r * .07, r * .18);
   }
   // chaîne d'or entre deux gemmes : maillons vus à plat et de chant, en alternance
@@ -1741,18 +1839,19 @@
     ctx.rotate(p.rot); ctx.scale(p.s, p.s); ctx.globalAlpha = p.alpha;
     const x = -p.w / 2, y = -p.h / 2;
     const sp = plateSprite(p);   // nacre et ombre floue pré-dessinées (l'ombre floue de chaque tablette coûtait le plus)
-    if (sp) ctx.drawImage(sp, x - sp.M, y - sp.M);
+    if (sp) ctx.drawImage(sp, x - sp.ML, y - sp.MT, sp.lw, sp.lh);
     else { ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = 28; ctx.shadowOffsetY = 12; ctx.fillStyle = p.color; shapePath(ctx, SHP); ctx.fill(); ctx.shadowColor = 'transparent'; }
     // reflet nacré en diagonale, qui glisse lentement (irisation)
-    const k = .5 + .5 * Math.sin(tm * .7 + p.z * .9), g = ctx.createLinearGradient(x, y, x + p.w, y + p.h);
-    g.addColorStop(0, 'rgba(255,255,255,.36)'); g.addColorStop(.2 + .12 * k, 'rgba(255,255,255,0)'); g.addColorStop(.46 + .12 * k, 'rgba(255,235,255,.12)'); g.addColorStop(.66 + .12 * k, 'rgba(20,10,60,0)'); g.addColorStop(1, 'rgba(20,10,60,.24)');
-    ctx.fillStyle = g; shapePath(ctx, SHP); ctx.fill();
-    ctx.lineWidth = 5; ctx.strokeStyle = gold(x, y, x, y + p.h); shapePath(ctx, SHP); ctx.stroke();
+    const k = q32(.5 + .5 * Math.sin(tm * .7 + p.z * .9));
+    ctx.fillStyle = cachedGrad('nacre' + p.w + 'x' + p.h + '|' + k, () => { const g = ctx.createLinearGradient(x, y, x + p.w, y + p.h);
+      g.addColorStop(0, 'rgba(255,255,255,.36)'); g.addColorStop(.2 + .12 * k, 'rgba(255,255,255,0)'); g.addColorStop(.46 + .12 * k, 'rgba(255,235,255,.12)'); g.addColorStop(.66 + .12 * k, 'rgba(20,10,60,0)'); g.addColorStop(1, 'rgba(20,10,60,.24)'); return g; });
+    shapePath(ctx, SHP); ctx.fill();
+    ctx.lineWidth = 5; shapePath(ctx, SHP); goldLine(y, y + p.h);
     ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.55)'; shapePath(ctx, SHP, 9); ctx.stroke();
     // sertissures vides laissées par les gemmes
     for (const h of p.holes) {
       const hx = h.x + x, hy = h.y + y, GR = SCREW_R * gemK;
-      ctx.fillStyle = gold(hx, hy - GR * .6, hx, hy + GR * .6); ctx.beginPath(); ctx.arc(hx, hy, GR * .62, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(hx, hy, GR * .62, 0, Math.PI * 2); goldFill(hy - GR * .6, hy + GR * .6);
       ctx.fillStyle = shade(p.color, -.4); ctx.beginPath(); ctx.arc(hx, hy, GR * .48, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.beginPath(); ctx.arc(hx, hy + 4, GR * .4, 0, Math.PI * 2); ctx.fill();
     }
@@ -1770,10 +1869,8 @@
     for (const s of p.screws) if (s.state === 'on') {
       // halo pulsé : gemme jouable dont l'écrin est ouvert
       if (playable.has(s)) {
-        const k = .5 + .5 * Math.sin(tm * 5 + s.x * .01), r = SCREW_R * gemK * (1.35 + .2 * k);
-        const g = ctx.createRadialGradient(s.x, s.y, SCREW_R * gemK * .8, s.x, s.y, r);
-        g.addColorStop(0, 'rgba(255,240,180,' + (.55 + .3 * k) + ')'); g.addColorStop(1, 'rgba(255,220,120,0)');
-        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, Math.PI * 2); ctx.fill();
+        const k = q32(.5 + .5 * Math.sin(tm * 5 + s.x * .01)), r = SCREW_R * gemK * (1.35 + .2 * k);
+        glow(s.x, s.y, r, 1, 'gem' + k, () => { const g = ctx.createRadialGradient(0, 0, .8 / (1.35 + .2 * k), 0, 0, 1); g.addColorStop(0, 'rgba(255,240,180,' + (.55 + .3 * k) + ')'); g.addColorStop(1, 'rgba(255,220,120,0)'); return g; });
       }
       drawGem(s);
     }
@@ -1788,9 +1885,9 @@
     ctx.save(); ctx.translate(b.x, b.y); const sc = b.s * (1 + Math.sin(b.wob * Math.PI) * .06); ctx.scale(sc, sc);
     // halo coloré pulsé quand une gemme jouable peut rejoindre cet écrin
     if (readyBoxes.has(b)) {
-      const k = .5 + .5 * Math.sin(tm * 4), gr = ctx.createRadialGradient(0, 0, BOX_W * .3, 0, 0, BOX_W * .75);
-      gr.addColorStop(0, rgba(b.color, .35 + .25 * k)); gr.addColorStop(1, rgba(b.color, 0));
-      ctx.fillStyle = gr; ctx.beginPath(); ctx.ellipse(0, 0, BOX_W * .75, BOX_H * .95, 0, 0, Math.PI * 2); ctx.fill();
+      const k = q32(.5 + .5 * Math.sin(tm * 4)), R = BOX_W * .75;
+      ctx.scale(R, R); ctx.fillStyle = cachedGrad('box' + b.color + k, () => { const gr = ctx.createRadialGradient(0, 0, .4, 0, 0, 1); gr.addColorStop(0, rgba(b.color, .35 + .25 * k)); gr.addColorStop(1, rgba(b.color, 0)); return gr; });
+      ctx.beginPath(); ctx.ellipse(0, 0, 1, BOX_H * .95 / R, 0, 0, Math.PI * 2); ctx.fill(); ctx.scale(1 / R, 1 / R);
     }
     const bs = boxSprite(b.color);   // ombre, velours, dégradé et coussin pré-dessinés ; le liseré d'or (reflet animé) reste en direct, par-dessus
     if (bs) ctx.drawImage(bs, -BOX_W / 2 - bs.M, -BOX_H / 2 - bs.M);
@@ -1817,21 +1914,19 @@
     }
     // compteur de remplissage sur une pastille d'or
     const filledN = b.slots.filter(x => x && x.state === 'box').length;
-    ctx.fillStyle = gold(0, -BOX_H / 2 - 16, 0, -BOX_H / 2 + 16); roundRect(BOX_W / 2 - 74, -BOX_H / 2 - 14, 64, 30, 15); ctx.fill();
-    text(filledN + ' / 3', BOX_W / 2 - 42, -BOX_H / 2 + 1, { size: 21, color: '#3a2408', font: SERIF });
+    roundRect(BOX_W / 2 - 74, -BOX_H / 2 - 14, 64, 30, 15); goldFill(-BOX_H / 2 - 16, -BOX_H / 2 + 16);
+    text(filledN + ' / 3', BOX_W / 2 - 42, -BOX_H / 2 + 1, { size: 21, color: '#3a2408', font: SERIF, cache: true });   // textes fixes : copiés d'une image en cache (moteur, cache: true)
     ctx.restore();
     for (const s of b.slots) if (s && s.state === 'box') drawGem(s);
     if (b.lid > 0) {
       ctx.save(); ctx.translate(b.x, b.y - BOX_H / 2 - 6); ctx.scale(b.s, b.s * b.lid);   // se rabat depuis la charnière arrière
       const lw = BOX_W + 16, lh = BOX_H + 12;
-      const gl = ctx.createLinearGradient(0, 0, 0, lh); gl.addColorStop(0, shade(b.color, -.05)); gl.addColorStop(1, shade(b.color, -.4));
-      ctx.fillStyle = gl; roundRect(-lw / 2, 0, lw, lh, 30); ctx.fill();
+      ctx.fillStyle = constGrad('lid' + b.color, () => { const g = ctx.createLinearGradient(0, 0, 0, lh); g.addColorStop(0, shade(b.color, -.05)); g.addColorStop(1, shade(b.color, -.4)); return g; }); roundRect(-lw / 2, 0, lw, lh, 30); ctx.fill();
       goldStroke(-lw / 2, 0, lw, lh, 30, 5);
       // ruban croisé et cabochon central
-      const ga = ctx.globalAlpha; ctx.fillStyle = gold(0, 0, 0, lh); ctx.globalAlpha = ga * .9; ctx.fillRect(-13, 0, 26, lh); ctx.fillRect(-lw / 2, lh / 2 - 13, lw, 26); ctx.globalAlpha = ga;
-      ctx.fillStyle = gold(0, lh / 2 - 30, 0, lh / 2 + 30); ctx.beginPath(); ctx.arc(0, lh / 2, 30, 0, Math.PI * 2); ctx.fill();
-      const gc = ctx.createRadialGradient(-6, lh / 2 - 6, 2, 0, lh / 2, 18); gc.addColorStop(0, shade(b.color, .6)); gc.addColorStop(1, shade(b.color, -.3));
-      ctx.fillStyle = gc; ctx.beginPath(); ctx.arc(0, lh / 2, 18, 0, Math.PI * 2); ctx.fill();
+      const ga = ctx.globalAlpha; ctx.globalAlpha = ga * .9; ctx.beginPath(); ctx.rect(-13, 0, 26, lh); ctx.rect(-lw / 2, lh / 2 - 13, lw, 26); goldFill(0, lh); ctx.globalAlpha = ga;   // les deux rubans d'un seul tracé : leur croisement est sous le cabochon
+      ctx.beginPath(); ctx.arc(0, lh / 2, 30, 0, Math.PI * 2); goldFill(lh / 2 - 30, lh / 2 + 30);
+      ctx.fillStyle = constGrad('cab' + b.color, () => { const g = ctx.createRadialGradient(-6, lh / 2 - 6, 2, 0, lh / 2, 18); g.addColorStop(0, shade(b.color, .6)); g.addColorStop(1, shade(b.color, -.3)); return g; }); ctx.beginPath(); ctx.arc(0, lh / 2, 18, 0, Math.PI * 2); ctx.fill();
       text('✓', lw / 2 - 52, lh - 44, { size: 54, color: CREAM, font: SERIF, stroke: 'rgba(0,0,0,.35)', strokeW: 8 });
       // reflet qui balaie le couvercle pendant qu'il se rabat
       const sw = ctx.createLinearGradient(-lw / 2 + (b.lid * 1.6 - .3) * lw, 0, -lw / 2 + (b.lid * 1.6 + .1) * lw, lh);
@@ -1843,13 +1938,15 @@
 
   function draw() {
     // velours bleu nuit, halo central, étoiles
-    if (!deco) buildDeco();
+    // le velours, le lambrequin et le marbre ne servent qu'aux niveaux sans décor (mode clip) : leurs trois images plein écran (≈ 20 Mo de mémoire
+    // graphique) ne sont plus fabriquées dans les zones à décor ; le temps que l'image du décor arrive, le velours est dessiné directement
+    if (!deco && !decor) buildDeco();
     // fond recopié autour du plateau seulement (le velours du plateau, opaque, le cache ; ses coins arrondis de rayon 40 restent dans les bandes) :
     // 0,43 écran de moins par image (30 sept. 2026). En tournage, le plateau est déplacé : fond entier.
     const DZ = decorReady(), bgc = DZ ? decorBg : bgCache;   // zone à décor : son image à la place du velours, du lambrequin et du marbre
     if (bgc && !film) { const t = BOARD.y - 20 + 40, b = BOARD.y + BOARD.h + 20 - 40, l = BOARD.x - 20 + 40, r = BOARD.x + BOARD.w + 20 - 40;
-      C.blit(bgc, 0, 0, 0, 0, W, t); C.blit(bgc, 0, 0, 0, b, W, H - b); C.blit(bgc, 0, 0, 0, t, l, b - t); C.blit(bgc, 0, 0, r, t, W - r, b - t); }
-    else if (bgc) ctx.drawImage(bgc, 0, 0); else drawVelvet(ctx);
+      blitBg(bgc, 0, 0, W, t); blitBg(bgc, 0, b, W, H - b); blitBg(bgc, 0, t, l, b - t); blitBg(bgc, r, t, W - r, b - t); }
+    else if (bgc) ctx.drawImage(bgc, 0, 0, W, H); else drawVelvet(ctx);
     ctx.fillStyle = '#fff';
     for (const st of STARS) { ctx.globalAlpha = .25 + .3 * Math.sin(tm * st.sp + st.ph); ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2); ctx.fill(); }
     ctx.globalAlpha = 1;
@@ -1857,7 +1954,7 @@
       // lambrequin, pompons, comptoir de marbre : seules les deux bandes peintes sont recopiées (l'image pleine page est vide au milieu, et la
       // recopier entière coûtait un écran de pixels de plus par image à la puce graphique)
       if (deco && !DZ) { ctx.drawImage(deco, 0, 0, W, DECO_TOP, 0, 0, W, DECO_TOP); ctx.drawImage(deco, 0, FLOOR_Y - 12, W, H - FLOOR_Y + 12, 0, FLOOR_Y - 12, W, H - FLOOR_Y + 12); }
-      if (!DZ) drawDrops();
+      if (!decor) drawDrops();
     } else {
       // tournage : ni lambrequin ni titre ; le contenu est agrandi dans la zone sûre (transformation non défaite : les particules et textes
       // flottants de Core, dessinés ensuite, restent alignés) et le comptoir de marbre est étiré jusqu'en bas de l'écran
@@ -1876,8 +1973,8 @@
     }
     // plateau : velours capitonné à liseré d'or
     const bx = BOARD.x - 20, by = BOARD.y - 20, bw = BOARD.w + 40, bh = BOARD.h + 40;
-    if (!boardCache) { boardCache = offscreen(bw, bh); if (boardCache) { const c = boardCache.getContext('2d'); c.translate(-bx, -by); drawBoardVelvet(c, bx, by, bw, bh); } }
-    if (DZ) ctx.drawImage(decorBoard, bx, by); else if (boardCache) ctx.drawImage(boardCache, bx, by); else drawBoardVelvet(ctx, bx, by, bw, bh);
+    if (!boardCache && !decor) { boardCache = offscreen(bw, bh); if (boardCache) { const c = boardCache.getContext('2d'); c.translate(-bx, -by); drawBoardVelvet(c, bx, by, bw, bh); } }
+    if (DZ) ctx.drawImage(decorBoard, bx, by, bw, bh); else if (boardCache) ctx.drawImage(boardCache, bx, by); else drawBoardVelvet(ctx, bx, by, bw, bh);
     goldStroke(bx, by, bw, bh, 40, 4);
     drawCornerOrnaments(bx, by, bw, bh);
     drawSky(0, DZ ? 'in' : undefined);
@@ -1900,23 +1997,22 @@
     ctx.save();
     if (tension === 2) { const cx = tx + tw / 2, cy = ty + 65, sc = 1 + .025 * pulse; ctx.translate(cx, cy); ctx.scale(sc, sc); ctx.translate(-cx, -cy); }
     ctx.fillStyle = '#2b2360'; roundRect(tx, ty, tw, 130, 40); ctx.fill();
-    const tg = ctx.createLinearGradient(0, ty, 0, ty + 130); tg.addColorStop(0, 'rgba(255,255,255,.14)'); tg.addColorStop(1, 'rgba(0,0,0,.3)');
-    ctx.fillStyle = tg; roundRect(tx, ty, tw, 130, 40); ctx.fill();
+    ctx.fillStyle = constGrad('tray', () => { const g = ctx.createLinearGradient(0, ty, 0, ty + 130); g.addColorStop(0, 'rgba(255,255,255,.14)'); g.addColorStop(1, 'rgba(0,0,0,.3)'); return g; }); roundRect(tx, ty, tw, 130, 40); ctx.fill();
     if (tension) { ctx.fillStyle = tension === 2 ? 'rgba(255,50,80,' + (.3 + .25 * pulse) + ')' : 'rgba(255,170,40,' + (.2 + .15 * pulse) + ')'; roundRect(tx, ty, tw, 130, 40); ctx.fill(); }
     if (tension) { ctx.lineWidth = 5; ctx.strokeStyle = tension === 2 ? 'rgba(255,110,130,' + (.6 + .4 * pulse) + ')' : 'rgba(255,200,90,' + (.6 + .4 * pulse) + ')'; roundRect(tx, ty, tw, 130, 40); ctx.stroke(); }
     else goldStroke(tx, ty, tw, 130, 40, 4);
     for (let k = 0; k < bufN; k++) { const t = bufPos(k); ctx.fillStyle = '#171238'; ctx.beginPath(); ctx.arc(t.x, t.y, SCREW_R * .9, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = 'rgba(255,225,160,.3)'; ctx.lineWidth = 2; ctx.stroke(); }
-    text(filled + ' / ' + bufN, tx + tw + 50, ty + 65, { size: 30, color: tension === 2 ? '#ff8fa8' : tension === 1 ? '#ffd27a' : CREAM, font: SERIF, align: 'left' });
+    text(filled + ' / ' + bufN, tx + tw + 50, ty + 65, { size: 30, color: tension === 2 ? '#ff8fa8' : tension === 1 ? '#ffd27a' : CREAM, font: SERIF, align: 'left', cache: true });
     ctx.restore();
     // les deux prochains écrins de la file, à gauche du présentoir : on peut planifier
     const n1 = queue[queueIdx] || null, n2 = queue[queueIdx + 1] || null;
-    text(tr('À SUIVRE'), 85, ty + 20, { size: 19, color: rgba(CREAM, .85), font: SERIF });
+    text(tr('À SUIVRE'), 85, ty + 20, { size: 19, color: rgba(CREAM, .85), font: SERIF, cache: true });
     [n1, n2].forEach((c, i) => {
       const mx = 55 + i * 62, my = ty + 58, mw = 48 - i * 6, mh = 34 - i * 4;
       ctx.save(); ctx.globalAlpha = i ? .7 : 1;
       if (c) {
         ctx.fillStyle = shade(c, -.25); roundRect(mx - mw / 2, my - mh / 2, mw, mh, 8); ctx.fill();
-        ctx.lineWidth = 2; ctx.strokeStyle = gold(0, my - mh / 2, 0, my + mh / 2); roundRect(mx - mw / 2, my - mh / 2, mw, mh, 8); ctx.stroke();
+        ctx.lineWidth = 2; roundRect(mx - mw / 2, my - mh / 2, mw, mh, 8); goldLine(my - mh / 2, my + mh / 2);
         if (symbolsOn()) drawSymbol(c, mx, my, mh * .26); else { ctx.fillStyle = shade(c, -.6); for (let k = 0; k < 3; k++) { ctx.beginPath(); ctx.arc(mx - 12 + k * 12, my + 2, 4, 0, Math.PI * 2); ctx.fill(); } }
       } else { ctx.setLineDash([6, 5]); ctx.lineWidth = 2; ctx.strokeStyle = rgba(CREAM, .35); roundRect(mx - mw / 2, my - mh / 2, mw, mh, 8); ctx.stroke(); ctx.setLineDash([]); }
       ctx.restore();
@@ -1930,12 +2026,10 @@
       for (const b of leaving) drawBox(b);
       for (const b of boxes) drawBox(b);
       ctx.restore();
-      const rg = ctx.createLinearGradient(0, FLOOR_Y, 0, SH()); rg.addColorStop(0, 'rgba(12,9,26,.1)'); rg.addColorStop(.7, 'rgba(12,9,26,.8)'); rg.addColorStop(1, 'rgba(12,9,26,.97)');
-      ctx.fillStyle = rg; ctx.fillRect(-40, FLOOR_Y, W + 240, SH() - FLOOR_Y);
+      ctx.fillStyle = constGrad('marbre' + SH(), () => { const g = ctx.createLinearGradient(0, FLOOR_Y, 0, SH()); g.addColorStop(0, 'rgba(12,9,26,.1)'); g.addColorStop(.7, 'rgba(12,9,26,.8)'); g.addColorStop(1, 'rgba(12,9,26,.97)'); return g; }); ctx.fillRect(-40, FLOOR_Y, W + 240, SH() - FLOOR_Y);
     } else {
       // zone à décor : pas de marbre ni de reflet (le sol est celui du décor), seulement une ombre tout en bas sous le nom de la maison
-      const rg = ctx.createLinearGradient(0, H - 150, 0, SH()); rg.addColorStop(0, 'rgba(8,9,28,0)'); rg.addColorStop(1, 'rgba(8,9,28,.72)');
-      ctx.fillStyle = rg; ctx.fillRect(-40, H - 150, W + 240, SH() - H + 150);
+      ctx.fillStyle = constGrad('sol' + SH(), () => { const g = ctx.createLinearGradient(0, H - 150, 0, SH()); g.addColorStop(0, 'rgba(8,9,28,0)'); g.addColorStop(1, 'rgba(8,9,28,.72)'); return g; }); ctx.fillRect(-40, H - 150, W + 240, SH() - H + 150);
       drawSky(0, 'out');
     }
     if (!film && !global.Shell) {   // dans le jeu, la rangée des aides de la coquille prend cette place
@@ -1981,7 +2075,7 @@
     text(tr('Une place de plus pour continuer ?'), 0, -40, { size: 26, color: rgba(CREAM, .8), font: SERIF });
     ctx.restore();
     ctx.save(); ctx.translate(B.x, B.y); ctx.scale(1 + .04 * pk, 1 + .04 * pk);
-    ctx.fillStyle = gold(0, -B.h / 2, 0, B.h / 2); roundRect(-B.w / 2, -B.h / 2, B.w, B.h, B.h / 2); ctx.fill();
+    roundRect(-B.w / 2, -B.h / 2, B.w, B.h, B.h / 2); goldFill(-B.h / 2, B.h / 2);
     ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(80,50,0,.6)'; roundRect(-B.w / 2, -B.h / 2, B.w, B.h, B.h / 2); ctx.stroke();
     text(tr('✦  +1 PLACE  ✦'), 0, 2, { size: 40, color: '#3a2408', font: SERIF });
     ctx.restore();
@@ -2000,6 +2094,8 @@
     // Core.test.objets() : contrôle des objets (jeux/tools/ecrin-objets.js) : gemmes, gemmes cachées, pièces, avertissements
     objets(v = 0) { return OBJETS.map(o => { const G = objGeom(o, 0, v); return { nom: o.name.fr, gemmes: G.total, places: G.cap, cachees: G.hidden, pieces: o.pieces.length, parPiece: G.picks.map(a => a.length).join(" "), ornementsAuto: G.auto.join(" "), alertes: G.warn }; }); },
     objet() { return objet && objet.name.fr; },
+    // Core.test.totaux(4) : le nombre de gemmes de chaque objet pour les variantes 0 à 4, calculé (jamais lu dans ECRIN_TOTAUX) → jeux/tools/ecrin-totaux.js
+    totaux(vmax = 4) { const t = {}; for (const o of OBJETS) for (let v = 0; v <= vmax; v++) t[objSig(o) + '|' + v] = objGeom(o, 0, v).total; return t; },
     // l'empreinte du niveau en cours (file des écrins, couleur et nouveauté de chaque gemme) : sert à vérifier qu'un niveau est le même à chaque essai
     empreinte() { return queue.map(c => COLORS.indexOf(c)).join('') + '|' + screws.map(s => COLORS.indexOf(s.color) + (s.mystery ? 'm' : '') + (s.key ? 'k' : '') + (s.pair ? 'c' : '') + (s.plate.lockKey ? 'l' : '')).join(''); },
     audioReady() { updateMusic(); return !A || !musicOn || !trackName || !!trackSrc; },   // pour l'outil de clips : le morceau de la zone est chargé
