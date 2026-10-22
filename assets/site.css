@@ -67,6 +67,8 @@ p { margin: 0; }
 .btn.blue:active { box-shadow: 0 1px 0 var(--blue-dark), 0 4px 8px rgba(0, 0, 0, .2); }
 .btn.store { background: #111; box-shadow: 0 7px 0 #000, 0 14px 22px rgba(0, 0, 0, .25); flex-direction: column; align-items: flex-start; gap: 0; line-height: 1.1; padding: 11px 28px 14px; border-radius: 18px; }
 .btn.store small { font-size: 12px; font-weight: 800; opacity: .8; }
+.btn.store:hover { box-shadow: 0 9px 0 #000, 0 18px 26px rgba(0, 0, 0, .27); }
+.btn.store:active { box-shadow: 0 1px 0 #000, 0 4px 8px rgba(0, 0, 0, .2); }
 .btn.store.soon { background: rgba(10, 20, 60, .42); box-shadow: 0 7px 0 rgba(10, 20, 60, .35); cursor: default; }
 .btn.store.soon:hover, .btn.store.soon:active { transform: none; box-shadow: 0 7px 0 rgba(10, 20, 60, .35); }
 .cta { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 18px; margin-top: 28px; }
@@ -150,6 +152,11 @@ section.light { padding: 56px 0 30px; position: relative; }
 .picnic p { margin-top: 10px; font-size: 19px; }
 .picnic .cta { justify-content: center; }
 .picnic .btn { background: var(--sun); color: var(--ink); box-shadow: 0 7px 0 var(--sun-dark), 0 14px 22px rgba(0, 0, 0, .22); }
+/* survol et appui des boutons du bloc du bas (22 oct. 2026) : ils restent jaunes, l'ombre aussi (avant : ombre rose ou bleue, celle des règles générales) */
+.picnic .btn:hover, .picnic .btn.blue:hover { box-shadow: 0 9px 0 var(--sun-dark), 0 18px 26px rgba(0, 0, 0, .24); }
+.picnic .btn:active, .picnic .btn.blue:active { box-shadow: 0 1px 0 var(--sun-dark), 0 4px 8px rgba(0, 0, 0, .2); }
+/* bouton « Bientôt sur l'App Store » : inactif partout, rien ne change au survol ni à l'appui, y compris dans le bloc du bas */
+.picnic .btn.store.soon, .picnic .btn.store.soon:hover, .picnic .btn.store.soon:active { background: rgba(10, 20, 60, .42); color: #fff; transform: none; box-shadow: 0 7px 0 rgba(10, 20, 60, .35); }
 footer.grass { background: linear-gradient(180deg, var(--grass), var(--grass-dark)); color: #fff; padding: 46px 0 34px; position: relative; text-align: center; font-size: 16px; }
 footer.grass::before { content: ""; position: absolute; left: 0; right: 0; top: -17px; height: 18px; background: var(--grass);
   -webkit-mask: radial-gradient(9px 16px at 9px 100%, #000 98%, transparent) 0 0 / 18px 100%; mask: radial-gradient(9px 16px at 9px 100%, #000 98%, transparent) 0 0 / 18px 100%; }
@@ -216,6 +223,9 @@ body.night .step:nth-child(2) b { background: #2E6BFF; box-shadow: 0 5px 0 #1e3a
 body.night .picnic { background: linear-gradient(180deg, #2a2f7a, #141447); }
 body.night .picnic::before { background: radial-gradient(600px 260px at 50% 0%, rgba(216, 173, 66, .28), transparent 70%); }
 body.night .picnic .btn { background: #FFD86B; color: #3a2408; box-shadow: 0 7px 0 #a8791c, 0 14px 22px rgba(0, 0, 0, .3); }
+body.night .picnic .btn:hover, body.night .picnic .btn.blue:hover { box-shadow: 0 9px 0 #a8791c, 0 18px 26px rgba(0, 0, 0, .32); }
+body.night .picnic .btn:active, body.night .picnic .btn.blue:active { box-shadow: 0 1px 0 #a8791c, 0 4px 8px rgba(0, 0, 0, .25); }
+body.night .picnic .btn.store.soon, body.night .picnic .btn.store.soon:hover, body.night .picnic .btn.store.soon:active { background: rgba(255, 255, 255, .14); color: #fff; transform: none; box-shadow: 0 7px 0 rgba(0, 0, 0, .3); }
 body.night .gem { position: absolute; width: 74px; height: 74px; border-radius: 50%; background: radial-gradient(circle at 34% 30%, #fff6c8, #d9ab3c 58%, #6b4a0c); box-shadow: 0 8px 0 rgba(0, 0, 0, .22); animation: bob 5s ease-in-out infinite; }
 body.night .gem::after { content: ""; position: absolute; inset: 13%; background: radial-gradient(circle at 34% 28%, #fff 0 7%, color-mix(in srgb, var(--c) 55%, #fff) 9%, var(--c) 52%, color-mix(in srgb, var(--c) 50%, #000) 100%);
   clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); }
