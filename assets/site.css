@@ -110,6 +110,9 @@ section.light { padding: 56px 0 30px; position: relative; }
 .feature h3 { font-size: clamp(30px, 4.6vw, 46px); text-shadow: 0 3px 0 rgba(0, 0, 0, .18); margin-top: 14px; }
 .feature p { margin-top: 10px; font-size: 19px; }
 .feature .icon { width: 96px; height: 96px; border-radius: 23px; box-shadow: 0 6px 0 rgba(0, 0, 0, .2); display: block; }
+.feature.f-ecrin { background: linear-gradient(160deg, #312E81 0%, #6D28D9 55%, #9F1239 100%); }
+.feature.f-reines { background: linear-gradient(160deg, #F5A300 0%, #C2700A 55%, #6b4210 100%); }
+.games.one { grid-template-columns: minmax(0, 380px); justify-content: center; }
 
 /* téléphone (clip ou capture) */
 .phone { position: relative; width: min(290px, 78vw); margin: 0 auto; border-radius: 42px; border: 9px solid #17171d; background: #17171d; box-shadow: 0 10px 0 rgba(0, 0, 0, .22), var(--shadow); overflow: hidden; rotate: 3deg; transition: rotate .4s cubic-bezier(.2, 1.5, .4, 1); }
